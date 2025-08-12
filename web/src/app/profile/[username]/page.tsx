@@ -1,18 +1,20 @@
 import { PlayerProfile } from '@/components/profile/PlayerProfile'
 
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     username: string
-  }
+  }>
 }
 
-export default function ProfilePage({ params }: ProfilePageProps) {
-  return <PlayerProfile username={params.username} />
+export default async function ProfilePage({ params }: ProfilePageProps) {
+  const { username } = await params
+  return <PlayerProfile username={username} />
 }
 
-export function generateMetadata({ params }: ProfilePageProps) {
+export async function generateMetadata({ params }: ProfilePageProps) {
+  const { username } = await params
   return {
-    title: `Perfil de ${params.username} - Fortnite Hub`,
-    description: `Veja as estatísticas, partidas e histórico de equipes de ${params.username}`,
+    title: `Perfil de ${username} - Fortnite Hub`,
+    description: `Veja as estatísticas, partidas e histórico de equipes de ${username}`,
   }
 }
