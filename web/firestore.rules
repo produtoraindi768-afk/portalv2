@@ -1,0 +1,174 @@
+// Firestore Security Rules para dashboard-f0217
+// Baseado nas estruturas do PROJETO_SEED_DATA.md
+// 
+// Para aplicar essas regras:
+// 1. Acesse o Firebase Console (https://console.firebase.google.com)
+// 2. Selecione o projeto dashboard-f0217
+// 3. Vá em Firestore Database > Rules
+// 4. Cole este conteúdo e publique
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(resource) {
+      return request.auth.uid == resource.data.createdBy;
+    }
+    
+    function isValidEmail(email) {
+      return email.matches('.*@.*\\..*');
+    }
+    
+    // NEWS COLLECTION
+    // Estrutura: title, content, contentHtml, excerpt, author, category, tags, slug, etc.
+    match /news/{newsId} {
+      // Todos podem ler notícias publicadas
+      allow read: if resource.data.status == 'published';
+      
+      // Apenas usuários autenticados podem criar/atualizar (admins apenas)
+      allow create, update: if isAuthenticated() && 
+        request.auth.token.admin == true &&
+        request.resource.data.keys().hasAll([
+          'title', 'content', 'contentHtml', 'excerpt', 'author', 
+          'category', 'tags', 'slug', 'featuredImage', 'seoTitle',
+          'seoDescription', 'readingTime', 'status', 'publishDate',
+          'isFeatured', 'bannerUrl'
+        ]) &&
+        request.resource.data.status in ['draft', 'published'] &&
+        request.resource.data.tags is list &&
+        request.resource.data.readingTime is number &&
+        request.resource.data.isFeatured is bool;
+      
+      // Apenas admins podem deletar
+      allow delete: if isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    // STREAMERS COLLECTION  
+    // Estrutura: id, name, platform, streamUrl, avatarUrl, category, isOnline, isFeatured, etc.
+    match /streamers/{streamerId} {
+      // Todos podem ler streamers
+      allow read: if true;
+      
+      // Apenas usuários autenticados podem criar streamers
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll([
+          'id', 'name', 'platform', 'streamUrl', 'avatarUrl',
+          'category', 'isOnline', 'isFeatured', 'createdAt', 'lastStatusUpdate'
+        ]) &&
+        request.resource.data.platform in ['twitch', 'youtube'] &&
+        request.resource.data.isOnline is bool &&
+        request.resource.data.isFeatured is bool;
+      
+      // Apenas o próprio streamer ou admin pode atualizar
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.createdBy ||
+        request.auth.token.admin == true
+      );
+      
+      // Apenas admins podem deletar
+      allow delete: if isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    // TOURNAMENTS COLLECTION
+    // Estrutura: name, game, format, description, startDate, endDate, etc.
+    match /tournaments/{tournamentId} {
+      // Todos podem ler torneios ativos
+      allow read: if resource.data.isActive == true;
+      
+      // Apenas admins podem criar torneios
+      allow create: if isAuthenticated() && 
+        request.auth.token.admin == true &&
+        request.resource.data.keys().hasAll([
+          'name', 'game', 'format', 'description', 'startDate', 'endDate',
+          'registrationDeadline', 'maxParticipants', 'prizePool', 'entryFee',
+          'rules', 'status', 'isActive'
+        ]) &&
+        request.resource.data.status in ['upcoming', 'ongoing', 'finished'] &&
+        request.resource.data.maxParticipants is number &&
+        request.resource.data.prizePool is number &&
+        request.resource.data.entryFee is number &&
+        request.resource.data.isActive is bool;
+      
+      // Apenas admins podem atualizar/deletar
+      allow update, delete: if isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    // TEAMS COLLECTION
+    // Estrutura: name, tag, game, region, description, members, captain, etc.
+    match /teams/{teamId} {
+      // Todos podem ler equipes ativas
+      allow read: if resource.data.isActive == true;
+      
+      // Usuários autenticados podem criar equipes
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll([
+          'name', 'tag', 'game', 'region', 'description', 'members',
+          'captain', 'contactEmail', 'discordServer', 'avatar', 'isActive'
+        ]) &&
+        request.resource.data.tag.matches('[A-Z]+') && // Tag em maiúsculas
+        isValidEmail(request.resource.data.contactEmail) &&
+        request.resource.data.members is list &&
+        request.resource.data.isActive is bool;
+      
+      // Apenas capitão ou membros podem atualizar
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.captain ||
+        request.auth.uid in resource.data.members ||
+        request.auth.token.admin == true
+      );
+      
+      // Apenas capitão ou admin podem deletar
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.captain ||
+        request.auth.token.admin == true
+      );
+    }
+    
+    // MATCHES COLLECTION
+    // Estrutura: tournamentId, team1Id, team2Id, scheduledDate, format, etc.
+    match /matches/{matchId} {
+      // Todos podem ler partidas
+      allow read: if true;
+      
+      // Apenas admins podem criar partidas
+      allow create: if isAuthenticated() && 
+        request.auth.token.admin == true &&
+        request.resource.data.keys().hasAll([
+          'tournamentId', 'team1Id', 'team2Id', 'scheduledDate', 'format',
+          'game', 'isFeatured', 'tournamentName', 'team1', 'team2', 'maps',
+          'status', 'result', 'resultMD3', 'resultMD5'
+        ]) &&
+        request.resource.data.format in ['MD1', 'MD3', 'MD5'] &&
+        request.resource.data.status in ['scheduled', 'ongoing', 'finished'] &&
+        request.resource.data.isFeatured is bool &&
+        request.resource.data.maps is list;
+      
+      // Admins e organizadores podem atualizar
+      allow update: if isAuthenticated() && (
+        request.auth.token.admin == true ||
+        request.auth.token.tournament_organizer == true
+      );
+      
+      // Apenas admins podem deletar
+      allow delete: if isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    // USERS COLLECTION (para perfis de usuário)
+    match /users/{userId} {
+      // Usuário pode ler seu próprio perfil, outros apenas dados públicos
+      allow read: if request.auth.uid == userId || 
+        (resource.data.public == true);
+      
+      // Usuário pode criar/atualizar apenas seu próprio perfil
+      allow create, update: if request.auth.uid == userId;
+      
+      // Apenas o próprio usuário pode deletar seu perfil
+      allow delete: if request.auth.uid == userId;
+    }
+  }
+}

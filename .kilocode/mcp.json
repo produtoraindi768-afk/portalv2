@@ -1,0 +1,40 @@
+{
+  "mcpServers": {
+    "shadcn-ui": {
+      "command": "C:\\projetosia\\node_modules\\.bin\\shadcn-mcp.cmd",
+      "args": [
+        "--github-api-key",
+        "${GITHUB_API_KEY}"
+      ],
+      "env": {
+        "LOG_LEVEL": "info"
+      },
+      "alwaysAllow": [
+        "list_components",
+        "get_component"
+      ]
+    },
+    "Firebase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@gannonh/firebase-mcp"
+      ],
+      "env": {
+        "FIREBASE_STORAGE_BUCKET": "dashboard-f0217.appspot.com",
+        "SERVICE_ACCOUNT_KEY_PATH": "C:/Users/PC/Desktop/PROJETOS IA/safe-zone-esports-src/safe-zone-esports/src/dashboard-f0.json"
+      }
+    },
+    "Animate-UI": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "shadcn@canary",
+        "registry:mcp"
+      ],
+      "env": {
+        "REGISTRY_URL": "https://animate-ui.com/r/registry.json"
+      }
+    }
+  }
+}
