@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react"
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore"
 
 import { getClientFirestore } from "@/lib/safeFirestore"
@@ -37,8 +37,15 @@ export function HeaderFeaturedMatchesTab() {
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const itemRefs = useRef<HTMLDivElement[]>([])
   const [activeIndex, setActiveIndex] = useState(0)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   useEffect(() => {
+    // restaurar estado recolhido
+    try {
+      const raw = localStorage.getItem("sz.headerFeatured.collapsed")
+      if (raw != null) setIsCollapsed(raw === "1")
+    } catch {}
+
     const db = getClientFirestore()
     if (!db) {
       setMissingConfig(true)
@@ -125,9 +132,34 @@ export function HeaderFeaturedMatchesTab() {
     setActiveIndex(nearestIdx)
   }
 
+  function toggleCollapsed() {
+    setIsCollapsed((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem("sz.headerFeatured.collapsed", next ? "1" : "0")
+      } catch {}
+      return next
+    })
+  }
+
   return (
-    <div className="border-b border-t bg-card/50 text-card-foreground backdrop-blur supports-[backdrop-filter]:bg-card/50">
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-2 py-2 lg:px-4">
+    <div
+      className={cn(
+        "border-b border-t bg-card/50 text-card-foreground backdrop-blur supports-[backdrop-filter]:bg-card/50",
+        isCollapsed ? "" : ""
+      )}
+    >
+      <div className={cn("mx-auto flex w-full max-w-7xl items-center gap-2 px-2 lg:px-4", isCollapsed ? "py-1" : "py-2")}>        
+        <Button
+          variant="outline"
+          size="icon"
+          className="shrink-0 rounded-full bg-background/30 hover:bg-background/50"
+          aria-pressed={isCollapsed}
+          aria-label={isCollapsed ? "Expandir partidas em destaque" : "Recolher partidas em destaque"}
+          onClick={toggleCollapsed}
+        >
+          <ChevronsUpDown className="size-5" />
+        </Button>
         {hasArrows && (
           <Button
             variant="outline"
@@ -149,21 +181,34 @@ export function HeaderFeaturedMatchesTab() {
           {isLoading && (
             <>
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="min-w-[300px] snap-center rounded-xl border bg-card px-4 py-3 transition-all duration-700 ease-in-out">
+                <div
+                  key={i}
+                  className={cn(
+                    "snap-center rounded-xl border bg-card transition-all duration-700 ease-in-out",
+                    isCollapsed ? "min-w-[260px] px-3 py-2" : "min-w-[300px] px-4 py-3"
+                  )}
+                >
                   <div className="flex items-center justify-between gap-3 text-xs">
                     <Skeleton className="h-4 w-40" />
                     <Skeleton className="h-4 w-16" />
                   </div>
-                  <div className="mt-3 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-6 w-6 rounded-full" />
-                      <Skeleton className="h-4 w-32" />
+                  {isCollapsed ? (
+                    <div className="mt-2 flex items-center gap-2 text-sm">
+                      <Skeleton className="h-5 w-5 rounded-full" />
+                      <Skeleton className="h-4 w-40" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-6 w-6 rounded-full" />
-                      <Skeleton className="h-4 w-28" />
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-6 w-6 rounded-full" />
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-6 w-6 rounded-full" />
+                        <Skeleton className="h-4 w-28" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </>
@@ -178,29 +223,16 @@ export function HeaderFeaturedMatchesTab() {
                 }}
                 data-active={activeIndex === i}
                 className={cn(
-                  "min-w-[300px] snap-center rounded-xl border bg-card px-4 py-3 transition-all duration-700 ease-in-out",
+                  "snap-center rounded-xl border bg-card transition-all duration-700 ease-in-out",
+                  isCollapsed ? "min-w-[260px] px-3 py-2" : "min-w-[300px] px-4 py-3",
                   activeIndex === i ? "opacity-100 scale-100" : "opacity-80 scale-[0.98]"
                 )}
               >
-                <div className="flex items-center justify-between gap-3 text-xs">
-                  <div className="truncate text-muted-foreground" title={m.tournamentName ?? undefined}>
-                    {m.tournamentName ?? "Partida"}
-                  </div>
-                  {m.isLive ? (
-                    <div className="font-medium text-destructive">Ao vivo</div>
-                  ) : (
-                    <div className="font-medium text-primary">{formatDateTime(m.scheduledDate)}</div>
-                  )}
-                </div>
-
-                <div className="mt-3 space-y-2">
-                  <TeamRow name={m.team1?.name ?? "Time 1"} avatarUrl={m.team1?.logo ?? m.team1?.avatar ?? null} />
-                  <TeamRow name={m.team2?.name ?? "Time 2"} avatarUrl={m.team2?.logo ?? m.team2?.avatar ?? null} />
-                </div>
-
-                <div className="mt-3 text-xs text-muted-foreground">
-                  {(m.format ?? "").toUpperCase()} {m.game ? `• ${m.game}` : ""}
-                </div>
+                {isCollapsed ? (
+                  <CollapsedItem m={m} />
+                ) : (
+                  <ExpandedItem m={m} />
+                )}
               </div>
             ))}
 
@@ -305,6 +337,77 @@ function TeamRow({ name, avatarUrl }: { name: string; avatarUrl: string | null }
       <div className="truncate text-sm font-medium" title={name}>
         {name}
       </div>
+    </div>
+  )
+}
+
+function ExpandedItem({ m }: { m: MatchDoc }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <div className="truncate text-muted-foreground" title={m.tournamentName ?? undefined}>
+          {m.tournamentName ?? "Partida"}
+        </div>
+        {m.isLive ? (
+          <div className="font-medium text-destructive">Ao vivo</div>
+        ) : (
+          <div className="font-medium text-primary">{formatDateTime(m.scheduledDate)}</div>
+        )}
+      </div>
+
+      <div className="mt-3 space-y-2">
+        <TeamRow name={m.team1?.name ?? "Time 1"} avatarUrl={m.team1?.logo ?? m.team1?.avatar ?? null} />
+        <TeamRow name={m.team2?.name ?? "Time 2"} avatarUrl={m.team2?.logo ?? m.team2?.avatar ?? null} />
+      </div>
+
+      <div className="mt-3 text-xs text-muted-foreground">
+        {(m.format ?? "").toUpperCase()} {m.game ? `• ${m.game}` : ""}
+      </div>
+    </div>
+  )
+}
+
+function CollapsedItem({ m }: { m: MatchDoc }) {
+  const team1Name = m.team1?.name ?? "Time 1"
+  const team2Name = m.team2?.name ?? "Time 2"
+  const title = `${team1Name} vs ${team2Name}`
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {/* Time 1 */}
+        <div className="flex min-w-0 items-center gap-2">
+          <Avatar className="size-5">
+            {m.team1?.logo || m.team1?.avatar ? (
+              <AvatarImage src={(m.team1.logo ?? m.team1.avatar)!} alt={team1Name} />
+            ) : (
+              <AvatarFallback className="text-[10px]">{team1Name.slice(0, 1)}</AvatarFallback>
+            )}
+          </Avatar>
+          <div className="truncate text-sm max-w-[8rem]" title={team1Name}>
+            {team1Name}
+          </div>
+        </div>
+        {/* Espaço para placar (hoje VS) */}
+        <div className="w-10 shrink-0 text-center text-xs text-muted-foreground">vs</div>
+        {/* Time 2 com avatar à direita */}
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="truncate text-sm max-w-[8rem]" title={team2Name}>
+            {team2Name}
+          </div>
+          <Avatar className="size-5">
+            {m.team2?.logo || m.team2?.avatar ? (
+              <AvatarImage src={(m.team2.logo ?? m.team2.avatar)!} alt={team2Name} />
+            ) : (
+              <AvatarFallback className="text-[10px]">{team2Name.slice(0, 1)}</AvatarFallback>
+            )}
+          </Avatar>
+        </div>
+      </div>
+      {m.isLive ? (
+        <div className="text-xs font-medium text-destructive">Ao vivo</div>
+      ) : (
+        <div className="text-xs font-medium text-primary">{formatDateTime(m.scheduledDate)}</div>
+      )}
     </div>
   )
 }
