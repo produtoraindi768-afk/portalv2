@@ -32,16 +32,22 @@ export function FeaturedMatchesSection() {
   const [isLoading, setIsLoading] = useState(true)
   const [missingConfig, setMissingConfig] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false)
 
   useEffect(() => {
     const db = getClientFirestore()
     if (!db) {
       setMissingConfig(true)
       setIsLoading(false)
+      setHasAttemptedLoad(true)
       return
     }
-    ;(async () => {
+
+    let timeoutId: NodeJS.Timeout
+
+    const loadMatches = async () => {
       const nowIso = new Date().toISOString()
+      
       try {
         // Preferir filtrar partidas futuras e ordenar na consulta
         const q = query(
@@ -70,8 +76,23 @@ export function FeaturedMatchesSection() {
         }
       } finally {
         setIsLoading(false)
+        setHasAttemptedLoad(true)
       }
-    })()
+    }
+
+    // Usar setTimeout mínimo para evitar skeleton flash em loads rápidos
+    timeoutId = setTimeout(() => {
+      if (!hasAttemptedLoad) {
+        loadMatches()
+      }
+    }, 100)
+
+    // Cleanup
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+    }
   }, [])
 
   function mapMatches(
@@ -116,7 +137,7 @@ export function FeaturedMatchesSection() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {isLoading && (
+              {isLoading && hasAttemptedLoad && (
                 <>
                   {Array.from({ length: 3 }).map((_, idx) => (
                     <div key={idx} className="rounded-xl border p-4">

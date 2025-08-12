@@ -145,7 +145,7 @@ function StreamerCard({ streamer }: { streamer: StreamerDoc }) {
           />
           
           {/* Overlay com controles */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors flex items-center justify-center">
             <div className="opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
               <Button
                 onClick={handlePlayInMiniplayer}

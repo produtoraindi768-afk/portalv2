@@ -154,6 +154,81 @@ export async function seedDataWithAdmin(): Promise<boolean> {
           discordServer: "https://discord.gg/alpha123",
           avatar: "https://example.com/alpha-logo.png",
           isActive: true
+        },
+        'team_beta': {
+          name: "Equipe Beta",
+          tag: "BETA",
+          game: "Fortnite: Ballistic",
+          region: "BR",
+          description: "Time competitivo especializado em estratégias avançadas",
+          members: ["player_004", "player_005", "player_006"],
+          captain: "player_004",
+          contactEmail: "contato@beta.gg",
+          discordServer: "https://discord.gg/beta456",
+          avatar: "https://example.com/beta-logo.png",
+          isActive: true
+        }
+      },
+      matches: {
+        'match_001': {
+          tournamentId: "ballistic_open_2025",
+          team1Id: "team_alpha",
+          team2Id: "team_beta",
+          scheduledDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Amanhã
+          format: "MD3",
+          game: "Fortnite: Ballistic",
+          isFeatured: true,
+          tournamentName: "Ballistic Open 2025",
+          team1: {
+            id: "team_alpha",
+            name: "Equipe Alpha",
+            logo: "https://example.com/alpha-logo.png",
+            avatar: null
+          },
+          team2: {
+            id: "team_beta", 
+            name: "Equipe Beta",
+            logo: "https://example.com/beta-logo.png",
+            avatar: null
+          },
+          maps: [
+            { name: "Mapa 1", winner: null },
+            { name: "Mapa 2", winner: null },
+            { name: "Mapa 3", winner: null }
+          ],
+          status: "scheduled",
+          result: { team1Score: 0, team2Score: 0, winner: null }
+        },
+        'match_002': {
+          tournamentId: "ballistic_open_2025",
+          team1Id: "team_alpha",
+          team2Id: "team_beta",
+          scheduledDate: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(), // Depois de amanhã
+          format: "MD5",
+          game: "Fortnite: Ballistic",
+          isFeatured: true,
+          tournamentName: "Ballistic Open 2025 - Final",
+          team1: {
+            id: "team_alpha",
+            name: "Equipe Alpha",
+            logo: "https://example.com/alpha-logo.png",
+            avatar: null
+          },
+          team2: {
+            id: "team_beta",
+            name: "Equipe Beta", 
+            logo: "https://example.com/beta-logo.png",
+            avatar: null
+          },
+          maps: [
+            { name: "Mapa 1", winner: null },
+            { name: "Mapa 2", winner: null },
+            { name: "Mapa 3", winner: null },
+            { name: "Mapa 4", winner: null },
+            { name: "Mapa 5", winner: null }
+          ],
+          status: "scheduled",
+          result: { team1Score: 0, team2Score: 0, winner: null }
         }
       }
     }
