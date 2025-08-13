@@ -18,17 +18,18 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { title: "About", href: "#" },
-  { title: "Features", href: "#" },
-  { title: "Pricing", href: "#" },
-  { title: "Contact", href: "#" },
+  { title: "Home", href: "/#hero" },
+  { title: "Notícias", href: "/#news" },
+  { title: "Partidas", href: "/#matches" },
+  { title: "Lives", href: "/#streamers" },
+  { title: "Campeonatos", href: "/#tournaments" },
 ]
 
 export function SiteHeader() {
   return (
     <header className="glass">
       <nav className="mx-auto flex h-20 w-full items-center gap-6 px-6 lg:max-w-7xl">
-        <Link href="#" className="mr-auto inline-flex items-center gap-2" aria-label="Página inicial">
+        <Link href="/" className="mr-auto inline-flex items-center gap-2" aria-label="Página inicial">
           <Image src="/logo sz.svg" alt="SZ" width={85} height={32} priority />
         </Link>
 
@@ -57,7 +58,7 @@ export function SiteHeader() {
           </SheetTrigger>
           <SheetContent side="right" className="flex w-[90%] max-w-sm flex-col px-6 py-6">
             <SheetTitle>
-              <Link href="#" className="inline-flex items-center gap-2">
+              <Link href="/" className="inline-flex items-center gap-2">
                 <Image src="/logo sz.svg" alt="SZ" width={85} height={32} />
               </Link>
             </SheetTitle>
