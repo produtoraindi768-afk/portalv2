@@ -14,6 +14,7 @@ type NewsDoc = {
   publishDate?: string
   status?: "draft" | "published"
   slug?: string
+  isFeatured?: boolean
 }
 
 export function NewsSection({ limit }: { limit?: number }) {
@@ -45,7 +46,10 @@ export function NewsSection({ limit }: { limit?: number }) {
           const bd = b.publishDate ?? ""
           return bd.localeCompare(ad)
         })
-        setItems(docs)
+        // Identifica a notícia usada no herói: prioriza uma marcada como isFeatured
+        const featuredInHero = docs.filter((d) => d.isFeatured)[0] ?? docs[0]
+        const filtered = featuredInHero ? docs.filter((d) => d.id !== featuredInHero.id) : docs
+        setItems(filtered)
         setErrorMsg(null)
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Erro ao carregar notícias"
@@ -76,6 +80,7 @@ export function NewsSection({ limit }: { limit?: number }) {
           : undefined,
       status: raw.status as NewsDoc["status"],
       slug: typeof raw.slug === "string" ? raw.slug : undefined,
+      isFeatured: Boolean(raw.isFeatured),
     } satisfies NewsDoc
   }
 
