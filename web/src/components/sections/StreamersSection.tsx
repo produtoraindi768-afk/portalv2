@@ -31,10 +31,9 @@ export function StreamersSection() {
     const db = getClientFirestore()
     if (!db) return
     ;(async () => {
-      // Somente em destaque E online
+      // Todos os streamers online (não apenas em destaque)
       const q = query(
         collection(db, "streamers"),
-        where("isFeatured", "==", true),
         where("isOnline", "==", true)
       )
       const snap = await getDocs(q)
@@ -81,7 +80,7 @@ export function StreamersSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Streamers em Destaque</CardTitle>
+        <CardTitle>Streamers Online</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -90,7 +89,7 @@ export function StreamersSection() {
           ))}
           {items.length === 0 && (
             <div className="text-muted-foreground col-span-full text-center py-8">
-              Sem streamers em destaque.
+              Nenhum streamer online no momento.
             </div>
           )}
         </div>

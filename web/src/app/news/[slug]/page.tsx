@@ -6,6 +6,7 @@ import { getClientFirestore } from "@/lib/safeFirestore"
 import { collection, getDocs, limit, query, where } from "firebase/firestore"
 import { FirebaseError } from "firebase/app"
 import NewsHero from "@/components/sections/NewsHero"
+import { Badge } from "@/components/ui/badge"
 // removed unused Image import
 
 type NewsDetail = {
@@ -15,6 +16,7 @@ type NewsDetail = {
   featuredImage?: string
   publishDate?: string
   author?: string
+  category?: string
   tags?: string[]
   isNew?: boolean
   excerpt?: string
@@ -54,6 +56,7 @@ export default function NewsDetailPage() {
               typeof data.featuredImage === "string" ? data.featuredImage : undefined,
             publishDate: typeof data.publishDate === "string" ? data.publishDate : undefined,
             author: typeof data.author === "string" ? data.author : undefined,
+            category: typeof data.category === "string" ? data.category : undefined,
             tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
             isNew: Boolean(data.isNew),
             excerpt: typeof data.excerpt === "string" ? data.excerpt : undefined,
@@ -78,6 +81,7 @@ export default function NewsDetailPage() {
             const publishDateValue = data["publishDate"]
             const authorValue = data["author"]
             const tagsValue = data["tags"]
+            const categoryValue = data["category"]
             const isNewValue = data["isNew"]
             const excerptValue = data["excerpt"]
 
@@ -88,6 +92,7 @@ export default function NewsDetailPage() {
               featuredImage: typeof featuredImageValue === "string" ? featuredImageValue : undefined,
               publishDate: typeof publishDateValue === "string" ? publishDateValue : undefined,
               author: typeof authorValue === "string" ? authorValue : undefined,
+              category: typeof categoryValue === "string" ? categoryValue : undefined,
               tags: Array.isArray(tagsValue)
                 ? (tagsValue as unknown[]).filter((t): t is string => typeof t === "string")
                 : [],
@@ -142,9 +147,14 @@ export default function NewsDetailPage() {
           <h1 className="sr-only">{news.title}</h1>
           <div dangerouslySetInnerHTML={{ __html: news.contentHtml ?? "" }} />
           <hr className="my-8" />
-          <div className="text-muted-foreground text-sm">
-            {news.publishDate ? new Date(news.publishDate).toLocaleDateString() : null}
-            {news.author ? ` • ${news.author}` : null}
+          <div className="text-muted-foreground text-sm flex items-center gap-2">
+            <span>{news.publishDate ? new Date(news.publishDate).toLocaleDateString() : null}</span>
+            {news.author ? <span>• {news.author}</span> : null}
+            {news.category ? (
+              <Badge variant="secondary" className="rounded-full">
+                {news.category}
+              </Badge>
+            ) : null}
           </div>
           <div id="compartilhar" className="mt-8" />
         </article>

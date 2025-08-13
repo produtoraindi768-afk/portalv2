@@ -1,7 +1,7 @@
 import HeroSection from "@/components/sections/HeroSection"
 import { NewsSection } from "@/components/sections/NewsSection"
 import { StreamersSection } from "@/components/sections/StreamersSection"
-import { TournamentsSection } from "@/components/sections/TournamentsSection"
+// import { TournamentsSection } from "@/components/sections/TournamentsSection"
 import { FeaturedMatchesSection } from "@/components/sections/FeaturedMatchesSection"
 
 export default function Home() {
@@ -19,9 +19,9 @@ export default function Home() {
       <section id="streamers">
         <StreamersSection />
       </section>
-      <section id="tournaments">
+{/*       <section id="tournaments">
         <TournamentsSection />
-      </section>
+      </section> */}
     </>
   )
 }

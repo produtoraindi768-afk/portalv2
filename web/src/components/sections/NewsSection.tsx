@@ -6,6 +6,7 @@ import { getClientFirestore } from "@/lib/safeFirestore"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
 type NewsDoc = {
   id: string
@@ -175,8 +176,13 @@ export function NewsSection({
                 <div className="aspect-[16/9] w-full rounded-xl border bg-card" />
               )}
               <div className="mt-6 flex-1">
-                <div className="text-muted-foreground text-xs font-medium">
-                  {n.publishDate ?? ""}
+                <div className="text-muted-foreground text-xs font-medium flex items-center gap-2">
+                  <span>{n.publishDate ?? ""}</span>
+                  {n.category ? (
+                    <Badge variant="secondary" className="rounded-full">
+                      {n.category}
+                    </Badge>
+                  ) : null}
                 </div>
                 <h3 className="mt-2 text-lg font-semibold tracking-tight line-clamp-2">
                   {n.title}

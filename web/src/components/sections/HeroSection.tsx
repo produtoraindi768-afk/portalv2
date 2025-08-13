@@ -5,6 +5,7 @@ import { collection, getDocs, query, where, Timestamp } from "firebase/firestore
 import { getClientFirestore } from "@/lib/safeFirestore"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
 type NewsDoc = {
   id: string
@@ -16,6 +17,7 @@ type NewsDoc = {
   status?: "draft" | "published"
   slug?: string
   isFeatured?: boolean
+  category?: string
 }
 
 export default function HeroSection() {
@@ -78,6 +80,7 @@ export default function HeroSection() {
       status: raw.status as NewsDoc["status"],
       slug: typeof raw.slug === "string" ? raw.slug : undefined,
       isFeatured: Boolean(raw.isFeatured),
+      category: typeof raw.category === "string" ? raw.category : undefined,
     }
   }
 
@@ -103,6 +106,13 @@ export default function HeroSection() {
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="lg:order-2">
             <div className="ml-auto text-center lg:max-w-lg lg:text-left">
+              {featured.category ? (
+                <div className="mb-3 flex justify-center lg:justify-start">
+                  <Badge variant="secondary" className="rounded-full">
+                    {featured.category}
+                  </Badge>
+                </div>
+              ) : null}
               <h1 className="text-3xl/tight font-bold tracking-tight text-balance sm:text-4xl/tight lg:text-5xl/tight">
                 {featured.title}
               </h1>
