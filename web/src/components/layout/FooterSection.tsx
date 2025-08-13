@@ -12,7 +12,7 @@ export default function FooterSection() {
                 <Image src="/logo sz.svg" alt="SZ" width={85} height={32} />
               </Link>
               <p className="text-muted-foreground mt-6 text-sm/6">
-                Ajude a construir sites bonitos mais rápido com componentes e templates prontos para uso.
+                Hub da comunidade Fortnite: Ballistic — notícias, streamers ao vivo, partidas e torneios em um só lugar.
               </p>
             </div>
           </div>

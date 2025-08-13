@@ -13,9 +13,9 @@ export default function Home() {
       <section id="news">
         <NewsSection limit={3} showHeader={false} />
       </section>
-      <section id="matches">
+{/*       <section id="matches">
         <FeaturedMatchesSection />
-      </section>
+      </section> */}
       <section id="streamers">
         <StreamersSection />
       </section>

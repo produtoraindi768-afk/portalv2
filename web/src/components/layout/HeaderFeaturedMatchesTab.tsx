@@ -1,14 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight, ChevronsUpDown, Play, Calendar, Trophy } from "lucide-react"
+import { useEffect, useState } from "react"
+import { ChevronsUpDown, Play, Calendar, Trophy } from "lucide-react"
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore"
 
 import { getClientFirestore } from "@/lib/safeFirestore"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
@@ -54,9 +53,7 @@ export function HeaderFeaturedMatchesTab() {
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false)
   const [missingConfig, setMissingConfig] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const scrollerRef = useRef<HTMLDivElement | null>(null)
-  const itemRefs = useRef<HTMLDivElement[]>([])
-  const [activeIndex, setActiveIndex] = useState(0)
+
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   useEffect(() => {
@@ -119,61 +116,21 @@ export function HeaderFeaturedMatchesTab() {
     }
   }, [])
 
-  const hasArrows = useMemo(() => (items?.length ?? 0) > 0, [items])
 
-  function scrollToIndex(index: number) {
-    const el = itemRefs.current[index]
-    const scroller = scrollerRef.current
-    if (el && scroller) {
-      el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" })
-    }
-    setActiveIndex(index)
-  }
-
-  function handlePrev() {
-    setActiveIndex((prev) => {
-      const next = prev <= 0 ? items.length - 1 : prev - 1
-      queueMicrotask(() => scrollToIndex(next))
-      return next
-    })
-  }
-
-  function handleNext() {
-    setActiveIndex((prev) => {
-      const next = prev >= items.length - 1 ? 0 : prev + 1
-      queueMicrotask(() => scrollToIndex(next))
-      return next
-    })
-  }
-
-  function onScrollUpdateActive() {
-    const scroller = scrollerRef.current
-    if (!scroller) return
-    const centerX = scroller.clientWidth / 2
-    const scrollerRect = scroller.getBoundingClientRect()
-    let nearestIdx = 0
-    let minDist = Number.POSITIVE_INFINITY
-    itemRefs.current.forEach((child, idx) => {
-      if (!child) return
-      const rect = child.getBoundingClientRect()
-      const childCenter = rect.left - scrollerRect.left + rect.width / 2
-      const dist = Math.abs(childCenter - centerX)
-      if (dist < minDist) {
-        minDist = dist
-        nearestIdx = idx
-      }
-    })
-    setActiveIndex(nearestIdx)
-  }
 
   function toggleCollapsed() {
-    setIsCollapsed((prev) => {
+    setIsCollapsed((prev: boolean) => {
       const next = !prev
       try {
         localStorage.setItem("sz.headerFeatured.collapsed", next ? "1" : "0")
       } catch {}
       return next
     })
+  }
+
+  // Não renderizar nada se não há partidas ou ainda está carregando
+  if (isLoading || items.length === 0) {
+    return null
   }
 
   return (
@@ -195,131 +152,30 @@ export function HeaderFeaturedMatchesTab() {
         >
           <ChevronsUpDown className="size-4" />
         </Button>
-        
-        {hasArrows && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0 rounded-full bg-background/60 hover:bg-background/80 border-border/50 shadow-sm"
-            aria-label="Itens anteriores"
-            onClick={handlePrev}
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
-        )}
 
         <div className="relative w-full">
-          <div
-            ref={scrollerRef}
-            onScroll={onScrollUpdateActive}
-            className="scrollbar-none -mx-2 flex w-full snap-x snap-mandatory items-stretch justify-center gap-4 overflow-x-auto px-2 scroll-smooth"
-          >
-          {isLoading && hasAttemptedLoad && (
-            <>
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                    className={cn(
-                      "snap-center rounded-2xl border bg-card/80 backdrop-blur-sm shadow-sm transition-[opacity,transform,box-shadow] duration-300 ease-out",
-                      isCollapsed ? "min-w-[280px] px-4 py-2.5" : "min-w-[320px] px-5 py-4"
-                    )}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-6 w-16 rounded-full" />
-                  </div>
-                  {isCollapsed ? (
-                    <div className="mt-3 flex items-center gap-3">
-                      <Skeleton className="h-6 w-6 rounded-full" />
-                      <Skeleton className="h-4 w-32" />
-                    </div>
-                  ) : (
-                    <div className="mt-4 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                        <Skeleton className="h-4 w-36" />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                        <Skeleton className="h-4 w-32" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </>
-          )}
+          <div className="flex w-full items-stretch justify-center gap-4">
+            {items.map((m: MatchDoc, i: number) => (
+              <div
+                key={m.id}
+                className={cn(
+                  "overflow-hidden border bg-card/80 hover:bg-card/90 backdrop-blur-sm shadow-sm hover:shadow-md border-border/50",
+                  isCollapsed ? "rounded-full min-w-[320px] px-5 py-3" : "rounded-2xl min-w-[320px] px-5 py-4"
+                )}
+              >
+                {/* Versão compacta */}
+                <AnimatedCollapse open={isCollapsed}>
+                  <CollapsedItem m={m} />
+                </AnimatedCollapse>
 
-              {!isLoading &&
-                items.map((m, i) => (
-                  <div
-                    key={m.id}
-                    ref={(el) => {
-                      if (el) itemRefs.current[i] = el
-                    }}
-                    data-active={activeIndex === i}
-                    className={cn(
-                      "snap-center overflow-hidden border bg-card/80 hover:bg-card/90 backdrop-blur-sm shadow-sm hover:shadow-md",
-                      // Evita 'rounded' piscando ao alternar: aplica ambas e usa máscara
-                      isCollapsed ? "rounded-full min-w-[320px] px-5 py-3" : "rounded-2xl min-w-[320px] px-5 py-4",
-                      activeIndex === i ? "opacity-100 scale-100 border-primary/20 shadow-md" : "opacity-90 scale-[0.98] border-border/50"
-                    )}
-                  >
-                    {/* Versão compacta */}
-                    <AnimatedCollapse open={isCollapsed}>
-                      <CollapsedItem m={m} />
-                    </AnimatedCollapse>
-
-                    {/* Versão expandida */}
-                    <AnimatedCollapse open={!isCollapsed}>
-                      <ExpandedItem m={m} />
-                    </AnimatedCollapse>
-                  </div>
-                ))}
-
-          {!isLoading && items.length === 0 && (
-            <div className="flex min-w-full items-center justify-center py-8 text-sm text-muted-foreground">
-              {missingConfig
-                ? "Firebase não configurado. Defina .env e adicione documentos em /matches."
-                : errorMsg
-                ? `Erro: ${errorMsg}`
-                : "Sem partidas em destaque."}
-            </div>
-          )}
-          </div>
-
-          {/* Indicadores (dots) */}
-          {!isLoading && items.length > 1 && (
-            <div className="pointer-events-auto absolute -bottom-2 left-1/2 z-10 -translate-x-1/2">
-              <div className="flex items-center gap-1.5 rounded-full bg-background/80 px-2 py-1.5 shadow-sm backdrop-blur-sm">
-                {items.map((_, i) => (
-                  <button
-                    key={i}
-                    aria-label={`Ir para item ${i + 1}`}
-                    aria-current={activeIndex === i}
-                    onClick={() => scrollToIndex(i)}
-                    className={cn(
-                      "h-1.5 w-1.5 rounded-full transition-all duration-300",
-                      activeIndex === i ? "bg-primary w-4" : "bg-muted-foreground/40 hover:bg-muted-foreground/60"
-                    )}
-                  />
-                ))}
+                {/* Versão expandida */}
+                <AnimatedCollapse open={!isCollapsed}>
+                  <ExpandedItem m={m} />
+                </AnimatedCollapse>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
-
-        {hasArrows && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0 rounded-full bg-background/60 hover:bg-background/80 border-border/50 shadow-sm"
-            aria-label="Próximos itens"
-            onClick={handleNext}
-          >
-            <ChevronRight className="size-4" />
-          </Button>
-        )}
       </div>
     </div>
   )
@@ -481,7 +337,7 @@ function ExpandedItem({ m }: { m: MatchDoc }) {
  * transições somente-CSS para manter fluidez e evitar layout shift. A técnica
  * anima height/opacity/translate e usa um wrapper com overflow-hidden.
  */
-function AnimatedCollapse({ open, children }: { open: boolean; children: React.ReactNode }) {
+function AnimatedCollapse({ open, children }: { open: boolean; children: any }) {
   return (
     <div
       data-open={open}
