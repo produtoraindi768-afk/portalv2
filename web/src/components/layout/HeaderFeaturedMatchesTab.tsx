@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator"
 type TeamInfo = {
   id?: string
   name?: string
+  tag?: string
   logo?: string | null
   avatar?: string | null
 }
@@ -73,8 +74,6 @@ export function HeaderFeaturedMatchesTab() {
       return
     }
 
-    let timeoutId: NodeJS.Timeout
-
     const loadMatches = async () => {
       const nowIso = new Date().toISOString()
       try {
@@ -108,7 +107,7 @@ export function HeaderFeaturedMatchesTab() {
     }
 
     // Usar setTimeout mínimo para evitar skeleton flash em loads rápidos  
-    timeoutId = setTimeout(() => {
+    const id = setTimeout(() => {
       if (!hasAttemptedLoad) {
         loadMatches()
       }
@@ -116,9 +115,7 @@ export function HeaderFeaturedMatchesTab() {
 
     // Cleanup
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
+      clearTimeout(id)
     }
   }, [])
 
@@ -135,7 +132,7 @@ export function HeaderFeaturedMatchesTab() {
 
   function handlePrev() {
     setActiveIndex((prev) => {
-      const next = Math.max(prev - 1, 0)
+      const next = prev <= 0 ? items.length - 1 : prev - 1
       queueMicrotask(() => scrollToIndex(next))
       return next
     })
@@ -143,8 +140,7 @@ export function HeaderFeaturedMatchesTab() {
 
   function handleNext() {
     setActiveIndex((prev) => {
-      const last = Math.max(items.length - 1, 0)
-      const next = Math.min(prev + 1, last)
+      const next = prev >= items.length - 1 ? 0 : prev + 1
       queueMicrotask(() => scrollToIndex(next))
       return next
     })
@@ -265,7 +261,7 @@ export function HeaderFeaturedMatchesTab() {
                     className={cn(
                       "snap-center overflow-hidden border bg-card/80 hover:bg-card/90 backdrop-blur-sm shadow-sm hover:shadow-md",
                       // Evita 'rounded' piscando ao alternar: aplica ambas e usa máscara
-                      isCollapsed ? "rounded-full min-w-[280px] px-4 py-2.5" : "rounded-2xl min-w-[320px] px-5 py-4",
+                      isCollapsed ? "rounded-full min-w-[320px] px-5 py-3" : "rounded-2xl min-w-[320px] px-5 py-4",
                       activeIndex === i ? "opacity-100 scale-100 border-primary/20 shadow-md" : "opacity-90 scale-[0.98] border-border/50"
                     )}
                   >
@@ -339,12 +335,14 @@ function mapMatches(
     const team1: TeamInfo = {
       id: typeof team1Raw.id === "string" ? team1Raw.id : undefined,
       name: typeof team1Raw.name === "string" ? team1Raw.name : "",
+      tag: typeof team1Raw.tag === "string" ? team1Raw.tag : "",
       logo: (team1Raw.logo as string | null) ?? null,
       avatar: (team1Raw.avatar as string | null) ?? null,
     }
     const team2: TeamInfo = {
       id: typeof team2Raw.id === "string" ? team2Raw.id : undefined,
       name: typeof team2Raw.name === "string" ? team2Raw.name : "",
+      tag: typeof team2Raw.tag === "string" ? team2Raw.tag : "",
       logo: (team2Raw.logo as string | null) ?? null,
       avatar: (team2Raw.avatar as string | null) ?? null,
     }
@@ -355,7 +353,7 @@ function mapMatches(
         format: typeof raw.format === "string" ? raw.format : undefined,
         game: typeof raw.game === "string" ? raw.game : undefined,
         isFeatured: Boolean(raw.isFeatured),
-        isLive: Boolean((raw as any).isLive),
+        isLive: typeof (raw as Record<string, unknown>).isLive === "boolean" ? ((raw as Record<string, unknown>).isLive as boolean) : false,
         status: typeof raw.status === "string" ? raw.status as 'scheduled' | 'ongoing' | 'finished' : undefined,
         team1,
         team2,
@@ -370,24 +368,6 @@ function limitAndSortLiveFirst(items: MatchDoc[]): MatchDoc[] {
   const MAX = 3
   const sorted = [...items].sort((a, b) => Number(b.isLive) - Number(a.isLive))
   return sorted.slice(0, MAX)
-}
-
-function TeamRow({ name, avatarUrl }: { name: string; avatarUrl: string | null }) {
-  const initial = name?.[0]?.toUpperCase() ?? "?"
-  return (
-    <div className="flex items-center gap-2">
-      <Avatar className="size-6">
-        {avatarUrl ? (
-          <AvatarImage src={avatarUrl} alt={name} />
-        ) : (
-          <AvatarFallback className="text-xs">{initial}</AvatarFallback>
-        )}
-      </Avatar>
-      <div className="truncate text-sm font-medium" title={name}>
-        {name}
-      </div>
-    </div>
-  )
 }
 
 function ExpandedItem({ m }: { m: MatchDoc }) {
@@ -405,6 +385,8 @@ function ExpandedItem({ m }: { m: MatchDoc }) {
   const currentResult = getCurrentResult()
   const team1Score = currentResult?.team1Score ?? 0
   const team2Score = currentResult?.team2Score ?? 0
+  const scoreString = `${team1Score}:${team2Score}`
+  const showSeriesScore = (formatDisplay === 'MD3' || formatDisplay === 'MD5')
 
   return (
     <div className="space-y-4">
@@ -438,41 +420,40 @@ function ExpandedItem({ m }: { m: MatchDoc }) {
           <Badge variant="outline" className="text-xs">
             {formatDisplay}
           </Badge>
+
+          {/* Placar da série (MD3/MD5) no formato SCORE:SCORE */}
+          {showSeriesScore && (
+            <Badge variant="outline" className="text-xs font-mono tracking-wider">
+              {scoreString}
+            </Badge>
+          )}
         </div>
       </div>
 
       <Separator />
 
-      {/* Times com placar */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <TeamRow name={m.team1?.name ?? "Time 1"} avatarUrl={m.team1?.logo ?? m.team1?.avatar ?? null} />
-          {isFinished || isOngoing ? (
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">{team1Score}</span>
-              {isFinished && currentResult?.winner === 'team1' && (
-                <div className="size-2 rounded-full bg-green-500" />
-              )}
-            </div>
-          ) : null}
+      {/* Times com layout flexível para garantir nomes completos */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <TeamPill
+            side="left"
+            name={m.team1?.tag ?? m.team1?.name ?? "Time 1"}
+            avatarUrl={m.team1?.logo ?? m.team1?.avatar ?? null}
+            score={team1Score}
+            showScore={showSeriesScore}
+          />
         </div>
-        
-        <div className="flex items-center justify-center">
-          <div className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-            VS
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <TeamRow name={m.team2?.name ?? "Time 2"} avatarUrl={m.team2?.logo ?? m.team2?.avatar ?? null} />
-          {isFinished || isOngoing ? (
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">{team2Score}</span>
-              {isFinished && currentResult?.winner === 'team2' && (
-                <div className="size-2 rounded-full bg-green-500" />
-              )}
-            </div>
-          ) : null}
+
+        <div className="rounded-md bg-muted/50 px-2 py-1 text-[10px] font-medium text-muted-foreground shrink-0">VS</div>
+
+        <div className="flex-1 min-w-0">
+          <TeamPill
+            side="right"
+            name={m.team2?.tag ?? m.team2?.name ?? "Time 2"}
+            avatarUrl={m.team2?.logo ?? m.team2?.avatar ?? null}
+            score={team2Score}
+            showScore={showSeriesScore}
+          />
         </div>
       </div>
 
@@ -485,8 +466,8 @@ function ExpandedItem({ m }: { m: MatchDoc }) {
         
         {isFinished && currentResult?.winner && (
           <div className="flex items-center gap-1">
-            <span className="text-xs font-medium text-green-600">
-              Vencedor: {currentResult.winner === 'team1' ? m.team1?.name : m.team2?.name}
+            <span className="text-xs font-medium text-primary">
+              Vencedor: {currentResult.winner === 'team1' ? (m.team1?.tag ?? m.team1?.name) : (m.team2?.tag ?? m.team2?.name)}
             </span>
           </div>
         )}
@@ -524,59 +505,152 @@ function AnimatedCollapse({ open, children }: { open: boolean; children: React.R
 
 
 function CollapsedItem({ m }: { m: MatchDoc }) {
-  const team1Name = m.team1?.name ?? "Time 1"
-  const team2Name = m.team2?.name ?? "Time 2"
+  const team1Name = m.team1?.tag ?? m.team1?.name ?? "Time 1"
+  const team2Name = m.team2?.tag ?? m.team2?.name ?? "Time 2"
+  const formatDisplay = m.format?.toUpperCase() ?? 'MD1'
+  const showSeriesScore = formatDisplay === 'MD3' || formatDisplay === 'MD5'
+  const currentResult = (() => {
+    if (m.format === 'MD3' && m.resultMD3) return m.resultMD3
+    if (m.format === 'MD5' && m.resultMD5) return m.resultMD5
+    return m.result
+  })()
+  const t1 = currentResult?.team1Score ?? 0
+  const t2 = currentResult?.team2Score ?? 0
 
   return (
-    <div className="flex items-center justify-between gap-3">
-      {/* Lado esquerdo: times em linha no estilo "pílula" */}
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        {/* Time 1 */}
-        <div className="flex min-w-0 items-center gap-2">
-          <Avatar className="size-6 ring-1 ring-border/50">
-            {m.team1?.logo || m.team1?.avatar ? (
-              <AvatarImage src={(m.team1.logo ?? m.team1.avatar)!} alt={team1Name} />
-            ) : (
-              <AvatarFallback className="text-xs bg-primary/10">{team1Name.slice(0, 1)}</AvatarFallback>
-            )}
-          </Avatar>
-          <span className="text-sm font-medium whitespace-nowrap" title={team1Name}>
-            {team1Name}
+    <div className="flex items-center justify-between gap-4 text-[15px]">
+             {/* Layout alinhado: TEAM SCORE VS SCORE TEAM */}
+       <div className="flex min-w-0 flex-1 items-center">
+         {/* Time 1 */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Avatar className="size-7 ring-1 ring-border/50 shrink-0">
+             {m.team1?.logo || m.team1?.avatar ? (
+               <AvatarImage src={(m.team1.logo ?? m.team1.avatar)!} alt={team1Name} />
+             ) : (
+               <AvatarFallback className="text-xs bg-primary/10">{team1Name.slice(0, 1)}</AvatarFallback>
+             )}
+           </Avatar>
+            <span className="text-base font-medium whitespace-nowrap" title={team1Name}>
+             {team1Name}
+           </span>
+         </div>
+
+         {/* Score 1 + VS + Score 2 - centralizados */}
+          <div className="flex items-center gap-1.5 mx-auto">
+           {showSeriesScore ? (
+              <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold font-mono leading-none text-primary">
+               {t1}
+             </span>
+           ) : (
+             <span className="w-4"></span>
+           )}
+            <span className="shrink-0 text-[10px] font-semibold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-full">
+             VS
+           </span>
+           {showSeriesScore ? (
+              <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold font-mono leading-none text-primary">
+               {t2}
+             </span>
+           ) : (
+             <span className="w-4"></span>
+           )}
+         </div>
+
+         {/* Time 2 */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="text-base font-medium whitespace-nowrap" title={team2Name}>
+             {team2Name}
+           </span>
+            <Avatar className="size-7 ring-1 ring-border/50 shrink-0">
+             {m.team2?.logo || m.team2?.avatar ? (
+               <AvatarImage src={(m.team2.logo ?? m.team2.avatar)!} alt={team2Name} />
+             ) : (
+               <AvatarFallback className="text-xs bg-primary/10">{team2Name.slice(0, 1)}</AvatarFallback>
+             )}
+           </Avatar>
+         </div>
+       </div>
+
+      {/* Lado direito: status ao vivo (design) */}
+      {m.isLive && (
+        <div className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-1">
+          <span className="relative inline-flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive"></span>
           </span>
-        </div>
-
-        {/* VS */}
-        <span className="shrink-0 text-[10px] font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
-          VS
-        </span>
-
-        {/* Time 2 */}
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="text-sm font-medium whitespace-nowrap" title={team2Name}>
-            {team2Name}
-          </span>
-          <Avatar className="size-6 ring-1 ring-border/50">
-            {m.team2?.logo || m.team2?.avatar ? (
-              <AvatarImage src={(m.team2.logo ?? m.team2.avatar)!} alt={team2Name} />
-            ) : (
-              <AvatarFallback className="text-xs bg-primary/10">{team2Name.slice(0, 1)}</AvatarFallback>
-            )}
-          </Avatar>
-        </div>
-      </div>
-
-      {/* Lado direito: status/data compacto */}
-      {m.isLive ? (
-        <Badge variant="destructive" className="shrink-0 gap-1 px-2 py-0.5 text-[11px]">
-          <div className="size-1.5 rounded-full bg-current animate-pulse" />
-          Ao vivo
-        </Badge>
-      ) : (
-        <div className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-primary">
-          <Play className="size-3" />
-          {formatDateTime(m.scheduledDate)}
+          <span className="text-[11px] font-semibold text-destructive">Ao vivo</span>
         </div>
       )}
+    </div>
+  )
+}
+
+/** Pílula do time usada no modo expandido */
+function TeamPill({
+  side,
+  name,
+  avatarUrl,
+  score,
+  showScore,
+}: {
+  side: 'left' | 'right'
+  name: string
+  avatarUrl: string | null
+  score?: number
+  showScore?: boolean
+}) {
+  return (
+    <div className={cn(
+      'flex items-center justify-between gap-1 rounded-full border border-border/50 bg-muted/40 px-3 py-2 w-full',
+      side === 'right' ? 'flex-row-reverse text-right' : 'text-left'
+    )}>
+      <div className={cn('flex items-center gap-2 flex-1', side === 'right' ? 'flex-row-reverse' : undefined)}>
+        <Avatar className="size-6 ring-1 ring-border/50 shrink-0">
+          {avatarUrl ? (
+            <AvatarImage src={avatarUrl} alt={name} />
+          ) : (
+            <AvatarFallback className="text-xs bg-primary/10">{name.slice(0, 1)}</AvatarFallback>
+          )}
+        </Avatar>
+        <span className="text-sm font-medium whitespace-nowrap" title={name}>
+          {name}
+        </span>
+      </div>
+
+      {showScore && (
+        <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-semibold font-mono leading-none text-primary">
+          {typeof score === 'number' ? score : 0}
+        </span>
+      )}
+    </div>
+  )
+}
+
+/** Linha compacta com placar do formato: TEAM1 0 VS 0 TEAM2 */
+function SeriesScoreRow({
+  team1Name,
+  team1Score,
+  team2Name,
+  team2Score,
+}: {
+  team1Name: string
+  team1Score: number
+  team2Name: string
+  team2Score: number
+}) {
+  return (
+    <div className="mt-2 flex items-center justify-between text-sm">
+      <div className="inline-flex items-center gap-2">
+        <span className="font-medium text-foreground">{team1Name}</span>
+        <span className="rounded-md bg-muted/60 px-2 py-0.5 font-mono text-foreground">{team1Score}</span>
+      </div>
+
+      <div className="rounded-md bg-muted/50 px-3 py-0.5 text-xs font-medium text-muted-foreground">VS</div>
+
+      <div className="inline-flex items-center gap-2">
+        <span className="rounded-md bg-muted/60 px-2 py-0.5 font-mono text-foreground">{team2Score}</span>
+        <span className="font-medium text-foreground">{team2Name}</span>
+      </div>
     </div>
   )
 }
