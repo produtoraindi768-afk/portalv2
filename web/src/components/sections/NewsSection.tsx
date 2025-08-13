@@ -17,7 +17,7 @@ type NewsDoc = {
   isFeatured?: boolean
 }
 
-export function NewsSection({ limit }: { limit?: number }) {
+export function NewsSection({ limit, showHeader = true }: { limit?: number; showHeader?: boolean }) {
   const [items, setItems] = useState<NewsDoc[]>([])
   const [missingConfig, setMissingConfig] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -85,20 +85,23 @@ export function NewsSection({ limit }: { limit?: number }) {
   }
 
   const displayItems = limit ? items.slice(0, limit) : items
+  const gridTopMargin = showHeader ? "mt-12" : "mt-6"
 
   return (
-    <section className="py-16 lg:py-32">
+    <section className="pt-6 pb-16 lg:pt-10 lg:pb-24">
       <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
-        <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-3xl/tight font-semibold tracking-tight sm:text-4xl/tight">
-            Últimas notícias
-          </h2>
-          <p className="text-muted-foreground mt-4 text-base/7 sm:text-lg/8">
-            Acompanhe as atualizações e novidades da comunidade.
-          </p>
-        </div>
+        {showHeader && (
+          <div className="mx-auto max-w-xl text-center">
+            <h2 className="text-3xl/tight font-semibold tracking-tight sm:text-4xl/tight">
+              Últimas notícias
+            </h2>
+            <p className="text-muted-foreground mt-4 text-base/7 sm:text-lg/8">
+              Acompanhe as atualizações e novidades da comunidade.
+            </p>
+          </div>
+        )}
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-3 lg:gap-12">
+        <div className={`${gridTopMargin} grid gap-8 lg:grid-cols-3 lg:gap-12`}>
           {displayItems.map((n) => (
             <div key={n.id} className="flex flex-col items-start">
               {n.featuredImage ? (

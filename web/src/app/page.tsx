@@ -11,7 +11,7 @@ export default function Home() {
         <HeroSection />
       </section>
       <section id="news">
-        <NewsSection limit={3} />
+        <NewsSection limit={3} showHeader={false} />
       </section>
       <section id="matches">
         <FeaturedMatchesSection />

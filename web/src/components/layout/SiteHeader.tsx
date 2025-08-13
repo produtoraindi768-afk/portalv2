@@ -12,18 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 
-interface NavItem {
-  title: string
-  href: string
-}
-
-const navItems: NavItem[] = [
-  { title: "Home", href: "/#hero" },
-  { title: "Notícias", href: "/#news" },
-  { title: "Partidas", href: "/#matches" },
-  { title: "Lives", href: "/#streamers" },
-  { title: "Campeonatos", href: "/#tournaments" },
-]
+import { navItems } from "./nav-items"
 
 export function SiteHeader() {
   return (

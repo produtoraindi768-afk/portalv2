@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { navItems } from "./nav-items"
 export default function FooterSection() {
   return (
     <footer className="py-16 glass">
@@ -16,20 +17,17 @@ export default function FooterSection() {
             </div>
           </div>
           <div>
-            <h3 className="text-base font-semibold tracking-tight">Pages</h3>
+            <h3 className="text-base font-semibold tracking-tight">Páginas</h3>
             <div className="mt-6 flex flex-col items-start gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
-                Home
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
-                Services
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
-                Projects
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
-                News
-              </a>
+              {navItems.map((item) => (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+                >
+                  {item.title}
+                </Link>
+              ))}
             </div>
           </div>
           <div>
