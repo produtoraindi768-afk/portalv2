@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { collection, getDocs, query, where, Timestamp } from "firebase/firestore"
 import { getClientFirestore } from "@/lib/safeFirestore"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 type NewsDoc = {
   id: string
@@ -15,12 +16,33 @@ type NewsDoc = {
   status?: "draft" | "published"
   slug?: string
   isFeatured?: boolean
+  category?: string
+  tags?: string[]
 }
 
-export function NewsSection({ limit, showHeader = true }: { limit?: number; showHeader?: boolean }) {
+export function NewsSection({
+  limit,
+  showHeader = true,
+  excludeFeaturedFromList = true,
+  category,
+  tag,
+  enablePagination = false,
+  pageSize = 9,
+  onMeta,
+}: {
+  limit?: number
+  showHeader?: boolean
+  excludeFeaturedFromList?: boolean
+  category?: string
+  tag?: string
+  enablePagination?: boolean
+  pageSize?: number
+  onMeta?: (meta: { categories: string[]; tags: string[] }) => void
+}) {
   const [items, setItems] = useState<NewsDoc[]>([])
   const [missingConfig, setMissingConfig] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [visibleCount, setVisibleCount] = useState<number>(enablePagination ? pageSize : Number.POSITIVE_INFINITY)
 
   useEffect(() => {
     const db = getClientFirestore()
@@ -46,10 +68,26 @@ export function NewsSection({ limit, showHeader = true }: { limit?: number; show
           const bd = b.publishDate ?? ""
           return bd.localeCompare(ad)
         })
-        // Identifica a notícia usada no herói: prioriza uma marcada como isFeatured
-        const featuredInHero = docs.filter((d) => d.isFeatured)[0] ?? docs[0]
-        const filtered = featuredInHero ? docs.filter((d) => d.id !== featuredInHero.id) : docs
-        setItems(filtered)
+        // Emitir meta (categorias e tags) para filtros
+        if (onMeta) {
+          const categorySet = new Set<string>()
+          const tagSet = new Set<string>()
+          for (const d of docs) {
+            if (d.category) categorySet.add(d.category)
+            if (Array.isArray(d.tags)) {
+              for (const t of d.tags) if (typeof t === "string" && t.trim()) tagSet.add(t)
+            }
+          }
+          onMeta({ categories: Array.from(categorySet).sort(), tags: Array.from(tagSet).sort() })
+        }
+        // Opcionalmente remove a notícia de destaque da lista (usado na Home, não no índice)
+        if (excludeFeaturedFromList) {
+          const featuredInHero = docs.filter((d) => d.isFeatured)[0] ?? docs[0]
+          const filtered = featuredInHero ? docs.filter((d) => d.id !== featuredInHero.id) : docs
+          setItems(filtered)
+        } else {
+          setItems(docs)
+        }
         setErrorMsg(null)
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Erro ao carregar notícias"
@@ -81,11 +119,33 @@ export function NewsSection({ limit, showHeader = true }: { limit?: number; show
       status: raw.status as NewsDoc["status"],
       slug: typeof raw.slug === "string" ? raw.slug : undefined,
       isFeatured: Boolean(raw.isFeatured),
+      category: typeof raw.category === "string" ? raw.category : undefined,
+      tags: Array.isArray(raw.tags)
+        ? (raw.tags as unknown[]).filter((t) => typeof t === "string" && t.trim()) as string[]
+        : undefined,
     } satisfies NewsDoc
   }
 
-  const displayItems = limit ? items.slice(0, limit) : items
+  // Filtragem por categoria e tag
+  const filteredItems = items.filter((n) => {
+    const categoryOk = category ? n.category === category : true
+    const tagOk = tag ? (Array.isArray(n.tags) ? n.tags.includes(tag) : false) : true
+    return categoryOk && tagOk
+  })
+
+  // Paginação e limite
+  const effectiveLimit = !enablePagination && typeof limit === "number" ? limit : Number.POSITIVE_INFINITY
+  const sliceCount = enablePagination ? visibleCount : effectiveLimit
+  const displayItems = filteredItems.slice(0, sliceCount)
+  const hasMore = enablePagination && displayItems.length < filteredItems.length
   const gridTopMargin = showHeader ? "mt-12" : "mt-6"
+
+  // Resetar paginação quando filtros mudarem
+  React.useEffect(() => {
+    if (enablePagination) {
+      setVisibleCount(pageSize)
+    }
+  }, [category, tag, enablePagination, pageSize])
 
   return (
     <section className="pt-6 pb-16 lg:pt-10 lg:pb-24">
@@ -135,7 +195,7 @@ export function NewsSection({ limit, showHeader = true }: { limit?: number; show
             </div>
           ))}
 
-          {items.length === 0 && (
+          {filteredItems.length === 0 && (
             <div className="text-muted-foreground">
               {missingConfig
                 ? "Firebase não configurado. Defina as variáveis .env e adicione documentos em /news."
@@ -145,6 +205,12 @@ export function NewsSection({ limit, showHeader = true }: { limit?: number; show
             </div>
           )}
         </div>
+
+        {hasMore && (
+          <div className="mt-10 flex justify-center">
+            <Button onClick={() => setVisibleCount((c) => c + pageSize)}>Carregar mais</Button>
+          </div>
+        )}
       </div>
     </section>
   )
