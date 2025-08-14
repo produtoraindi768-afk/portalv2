@@ -438,19 +438,23 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
     prevIsDraggingRef.current = state.isDragging
   }, [state.isDragging, state.position, state.dockedCorner, findNearestCorner, snapToCorner])
 
-  // Ajustar posição no mobile
+  // Ajustar posição inicial no mobile para ser mais acessível
   useEffect(() => {
-    if (isMobile && state.isVisible) {
-      // No mobile, fixar na base da tela
+    if (isMobile && state.isVisible && !state.isMinimized) {
+      // No mobile, posicionar inicialmente no canto inferior direito
+      const margin = CONFIG.margin
       const mobilePosition: Position = {
-        x: 0,
-        y: window.innerHeight - (state.size.height || CONFIG.defaultSize.height)
+        x: window.innerWidth - state.size.width - margin,
+        y: window.innerHeight - (state.size.height + 40) - margin // 40px para o header
       }
-      if (state.position.x !== mobilePosition.x || state.position.y !== mobilePosition.y) {
+      // Só ajustar se a posição atual estiver muito fora da tela
+      if (state.position.x < 0 || state.position.y < 0 || 
+          state.position.x > window.innerWidth || 
+          state.position.y > window.innerHeight) {
         setPosition(mobilePosition)
       }
     }
-  }, [isMobile, state.isVisible, state.size, state.position, setPosition])
+  }, [isMobile, state.isVisible, state.isMinimized, state.size, state.position, setPosition])
 
   return {
     state,

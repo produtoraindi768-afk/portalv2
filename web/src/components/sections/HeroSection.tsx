@@ -104,7 +104,7 @@ export default function HeroSection() {
     <div className="pt-24 pb-8 lg:pt-32 lg:pb-16">
       <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
         <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div className="lg:order-2">
+          <div className="order-2 lg:order-2">
             <div className="ml-auto text-center lg:max-w-lg lg:text-left">
               {featured.category ? (
                 <div className="mb-3 flex justify-center lg:justify-start">
@@ -128,7 +128,7 @@ export default function HeroSection() {
               </div>
             </div>
           </div>
-          <div>
+          <div className="order-1 lg:order-1">
             {featured.featuredImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img

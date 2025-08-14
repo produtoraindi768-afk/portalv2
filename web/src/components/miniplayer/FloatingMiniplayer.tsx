@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Minimize2, Maximize2, ExternalLink } from 'lucide-react'
+import { Minimize2, Maximize2, ExternalLink, Move } from 'lucide-react'
 
 export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedStreamer }: MiniplPlayerProps) {
   // Variáveis de estilo do topo por estado
@@ -119,9 +119,6 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
       return
     }
 
-    // Bloquear drag no mobile
-    if (isMobile) return
-
     e.preventDefault()
     
     const rect = containerRef.current?.getBoundingClientRect()
@@ -139,10 +136,10 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
     setDragging(true)
     document.body.style.userSelect = 'none'
     document.body.style.cursor = 'grabbing'
-  }, [isMobile, setDragging])
+  }, [setDragging])
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!dragRef.current.isDragging || isMobile) return
+    if (!dragRef.current.isDragging) return
 
     e.preventDefault()
 
@@ -161,7 +158,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
     newPosition.y = Math.max(margin, Math.min(maxY, newPosition.y))
 
     setPosition(newPosition)
-  }, [isMobile, state.size, setPosition])
+  }, [state.size, setPosition])
 
   const handleMouseUp = useCallback(() => {
     if (!dragRef.current.isDragging) return
@@ -172,18 +169,82 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
     document.body.style.cursor = ''
   }, [setDragging])
 
+  // Handlers para touch events (mobile)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // Não permitir arrastar quando minimizado
+    if (state.isMinimized) return
+    // Só permitir drag pelo header, não pelos botões
+    const target = e.target as HTMLElement
+    if (target.closest('button') || target.closest('iframe') || target.closest('svg')) {
+      return
+    }
+
+    e.preventDefault()
+    
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+
+    const touch = e.touches[0]
+    dragRef.current = {
+      isDragging: true,
+      startPos: { x: touch.clientX, y: touch.clientY },
+      offset: {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      }
+    }
+
+    setDragging(true)
+    document.body.style.userSelect = 'none'
+  }, [setDragging])
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!dragRef.current.isDragging) return
+
+    e.preventDefault()
+
+    const touch = e.touches[0]
+    const newPosition: Position = {
+      x: touch.clientX - dragRef.current.offset.x,
+      y: touch.clientY - dragRef.current.offset.y
+    }
+
+    // Aplicar limites da tela
+    const margin = 16
+    const maxX = window.innerWidth - state.size.width - margin
+    const visibleBodyHeight = (state.isMinimized ? 0 : state.size.height)
+    const maxY = window.innerHeight - (visibleBodyHeight + headerHeight) - margin
+
+    newPosition.x = Math.max(margin, Math.min(maxX, newPosition.x))
+    newPosition.y = Math.max(margin, Math.min(maxY, newPosition.y))
+
+    setPosition(newPosition)
+  }, [state.size, setPosition])
+
+  const handleTouchEnd = useCallback(() => {
+    if (!dragRef.current.isDragging) return
+
+    dragRef.current.isDragging = false
+    setDragging(false)
+    document.body.style.userSelect = ''
+  }, [setDragging])
+
   // Adicionar/remover event listeners para drag
   useEffect(() => {
     if (state.isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener('touchmove', handleTouchMove, { passive: false })
+      document.addEventListener('touchend', handleTouchEnd)
       
       return () => {
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseUp)
+        document.removeEventListener('touchmove', handleTouchMove)
+        document.removeEventListener('touchend', handleTouchEnd)
       }
     }
-  }, [state.isDragging, handleMouseMove, handleMouseUp])
+  }, [state.isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd])
 
   // Handlers de controle
   const handleClose = useCallback(() => {
@@ -272,33 +333,27 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
   const playerContent = (
     <div
       ref={containerRef}
-      className={cn(
-        "fixed z-50 transition-all duration-200",
-        {
-          "transition-none": state.isDragging,
-          // Mobile: fixar na base da tela
-          "!bottom-0 !left-0 !right-0 !transform-none": isMobile,
-          // Desktop: posição livre
-          "shadow-2xl": !isMobile
-        },
-        className
-      )}
+              className={cn(
+          "fixed z-50 transition-all duration-200 shadow-2xl",
+          {
+            "transition-none": state.isDragging
+          },
+          className
+        )}
       style={
-        isMobile
-          ? undefined
-          : state.isMinimized
-            ? {
-                right: GLOBAL_MINIPLAYER_CONFIG.margin,
-                bottom: GLOBAL_MINIPLAYER_CONFIG.margin,
-                width: state.size.width,
-                pointerEvents: 'auto'
-              }
-            : {
-                left: state.position.x,
-                top: state.position.y,
-                width: state.size.width,
-                pointerEvents: 'auto'
-              }
+        state.isMinimized
+          ? {
+              right: GLOBAL_MINIPLAYER_CONFIG.margin,
+              bottom: GLOBAL_MINIPLAYER_CONFIG.margin,
+              width: state.size.width,
+              pointerEvents: 'auto'
+            }
+          : {
+              left: state.position.x,
+              top: state.position.y,
+              width: state.size.width,
+              pointerEvents: 'auto'
+            }
       }
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -317,7 +372,8 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
         <CardHeader
           className={cn(
             // Header sempre visível (sem esconder em hover)
-            "p-2 pr-12 pl-3 pb-0 cursor-grab active:cursor-grabbing",
+            "p-2 pr-12 pl-3 pb-0",
+            isMobile ? "cursor-move" : "cursor-grab active:cursor-grabbing",
             state.isMinimized
               ? (MINIMIZED_HEADER_HAS_BORDER ? "border-b" : "border-b-0")
               : (OPEN_HEADER_HAS_BORDER ? "border-b" : "border-b-0"),
@@ -326,6 +382,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
           style={{ height: headerHeight }}
           ref={headerRef}
           onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
         >
           {/* Stream switcher - só mostrar se houver múltiplos streamers */}
           {streamers.length > 1 && (
@@ -364,6 +421,19 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
               "absolute top-2 right-2 z-10 flex items-center gap-1"
             )}
           >
+            {/* Indicador de drag no mobile */}
+            {isMobile && !state.isMinimized && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center justify-center h-6 w-6 text-muted-foreground">
+                    <Move className="h-3 w-3" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Arraste para mover</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
