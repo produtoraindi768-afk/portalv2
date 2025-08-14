@@ -32,7 +32,7 @@ export function StreamSwitcher({
     <div className={cn("flex items-center min-w-0", className)}>
       {/* Barra compacta de avatares quando há múltiplos streamers */}
       {streamers.length > 1 && (
-        <div className="flex items-center gap-1 mr-2">
+        <div className="flex items-center gap-3 mr-2">
           {/* Exibir no máximo 3 avatares no topo */}
           {streamers.slice(0, 3).map((streamer, index) => {
             const isActive = index === currentIndex
@@ -192,17 +192,6 @@ export function StreamSwitcher({
       {/* Informações do streamer atual */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          {!isMinimized && (
-            <Avatar className="h-6 w-6">
-              <AvatarImage
-                src={currentStreamer.avatarUrl}
-                alt={currentStreamer.name}
-              />
-              <AvatarFallback className="text-xs">
-                {currentStreamer.name.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          )}
           {!isMinimized && (
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">

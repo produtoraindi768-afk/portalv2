@@ -78,12 +78,18 @@ export function StreamersSection() {
   }, [items])
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Streamers Online</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <section className="pt-6 pb-16 lg:pt-10 lg:pb-24">
+      <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
+        <div className="mx-auto max-w-xl text-center">
+          <h2 className="text-3xl/tight font-semibold tracking-tight sm:text-4xl/tight">
+            Streamers Online
+          </h2>
+          {/* <p className="text-muted-foreground mt-4 text-base/7 sm:text-lg/8">
+            Acompanhe as transmissões ao vivo da comunidade.
+          </p> */}
+        </div>
+
+        <div className="mt-12 grid gap-8 lg:grid-cols-3 lg:gap-12">
           {items.map((s) => (
             <StreamerCard key={s.id} streamer={s} />
           ))}
@@ -93,8 +99,8 @@ export function StreamersSection() {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
 
@@ -130,7 +136,7 @@ function StreamerCard({ streamer }: { streamer: StreamerDoc }) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col space-y-3">
       {streamer.isOnline && streamer.platform?.toLowerCase() === "twitch" && streamer.streamUrl ? (
         <div className="group relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
           {/* Preview do iframe para streams online */}
@@ -145,15 +151,7 @@ function StreamerCard({ streamer }: { streamer: StreamerDoc }) {
           
           {/* Overlay com controles */}
           <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
-              <Button
-                onClick={handlePlayInMiniplayer}
-                size="sm"
-                className="bg-primary/90 hover:bg-primary text-primary-foreground"
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Miniplayer
-              </Button>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 onClick={handleOpenTwitch}
                 variant="secondary"
@@ -210,24 +208,17 @@ function StreamerCard({ streamer }: { streamer: StreamerDoc }) {
           </p>
         )}
         
-        {/* Botão para abrir miniplayer quando offline */}
+        {/* Botão para abrir Twitch quando offline */}
         {!streamer.isOnline && streamer.streamUrl && (
           <div className="flex gap-2 pt-2">
             <Button
-              onClick={handlePlayInMiniplayer}
+              onClick={handleOpenTwitch}
               variant="outline"
               size="sm"
               className="flex-1"
             >
-              <Play className="h-3 w-3 mr-2" />
-              Ver no Miniplayer
-            </Button>
-            <Button
-              onClick={handleOpenTwitch}
-              variant="ghost"
-              size="sm"
-            >
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-3 w-3 mr-2" />
+              Acessar Twitch
             </Button>
           </div>
         )}
