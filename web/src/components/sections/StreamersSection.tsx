@@ -26,6 +26,7 @@ type StreamerDoc = {
 
 export function StreamersSection() {
   const [items, setItems] = useState<StreamerDoc[]>([])
+  const { selectedStreamer } = useMiniplPlayerControl()
 
   useEffect(() => {
     const db = getClientFirestore()
@@ -77,6 +78,17 @@ export function StreamersSection() {
     return () => controller.abort()
   }, [items])
 
+  // Filtrar apenas o streamer atualmente selecionado no miniplayer
+  // Esta filtragem evita duplicação: o streamer que está sendo exibido no player flutuante
+  // não aparece na lista de "Streamers Online" para evitar redundância na interface
+  const filteredItems = items.filter(streamer => {
+    // Se não há streamer selecionado no miniplayer, mostrar todos
+    if (!selectedStreamer) return true
+    
+    // Se o streamer atual está selecionado no miniplayer, não mostrar na lista
+    return streamer.id !== selectedStreamer.id
+  })
+
   return (
     <section className="pt-6 pb-16 lg:pt-10 lg:pb-24">
       <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
@@ -90,12 +102,15 @@ export function StreamersSection() {
         </div>
 
         <div className="mt-12 grid gap-8 lg:grid-cols-3 lg:gap-12">
-          {items.map((s) => (
+          {filteredItems.map((s) => (
             <StreamerCard key={s.id} streamer={s} />
           ))}
-          {items.length === 0 && (
+          {filteredItems.length === 0 && (
             <div className="text-muted-foreground col-span-full text-center py-8">
-              Nenhum streamer online no momento.
+              {selectedStreamer 
+                ? "Todos os streamers online estão sendo exibidos no player flutuante."
+                : "Nenhum streamer online no momento."
+              }
             </div>
           )}
         </div>
