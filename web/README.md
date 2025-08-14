@@ -22,7 +22,10 @@ npm run dev
 Abra http://localhost:3000. Página de login em /login.
 
 ### Observações
-- Autenticação: Google pronto; Discord via `OAuthProvider("oidc.discord")` (configure no Firebase Console um provedor OIDC para Discord e ajuste `.env.local`).
+- Autenticação: 
+  - Google pronto
+  - Discord via `OAuthProvider("oidc.discord")` (configure no Firebase Console um provedor OIDC para Discord)
+  - Epic Games via `OAuthProvider("oidc.epic")` (veja [EPIC_GAMES_AUTH.md](./EPIC_GAMES_AUTH.md) para configuração)
 - Firestore: as seções usam coleções `news` (status: "published"), `streamers` (isFeatured: true) e `tournaments` (ordenado por `startDate`).
 
 ## Learn More

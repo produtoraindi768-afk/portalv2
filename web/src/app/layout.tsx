@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader"
 import HeaderFeaturedMatchesTab from "@/components/layout/HeaderFeaturedMatchesTab"
 import FooterSection from "@/components/layout/FooterSection"
 import { MiniplPlayerProvider } from "@/components/miniplayer/MiniplPlayerProvider"
+import { Toaster } from "@/components/ui/toaster"
 import { Inter } from "next/font/google"
 
 const inter = Inter({
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1">{children}</main>
           <FooterSection />
         </MiniplPlayerProvider>
+        <Toaster />
       </body>
     </html>
   )
