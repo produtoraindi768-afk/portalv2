@@ -14,6 +14,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
     try {
       toast.loading("Conectando com Epic Games...")
       
+      // Debug: Log do domínio atual
+      console.log("🌐 Domínio atual:", window.location.hostname)
+      console.log("🔗 URL completa:", window.location.href)
+      
       const app = getFirebaseApp()
       const auth = getAuth(app)
       const provider = new OAuthProvider("oidc.epic")
@@ -22,6 +26,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
       provider.addScope('basic_profile')
       provider.addScope('openid')
       provider.addScope('email')
+      
+      // Debug: Log da configuração
+      console.log("🔥 Firebase config:", {
+        projectId: app.options.projectId,
+        authDomain: app.options.authDomain,
+        apiKey: app.options.apiKey ? "Configurada" : "Não configurada"
+      })
       
       const result: UserCredential = await signInWithPopup(auth, provider)
       
@@ -44,7 +55,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
       
     } catch (error: any) {
       toast.dismiss()
-      console.error('Erro no login Epic Games:', error)
+      console.error('❌ Erro no login Epic Games:', error)
+      console.error('📋 Detalhes do erro:', {
+        code: error.code,
+        message: error.message,
+        email: error.email,
+        credential: error.credential
+      })
       
       // Tratamento específico de erros conforme documentação
       if (error.code === 'auth/popup-closed-by-user') {
@@ -53,10 +70,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
         toast.error("Popup bloqueado. Permita popups para este site")
       } else if (error.code === 'auth/unauthorized-domain') {
         toast.error("Domínio não autorizado. Configure no Firebase Console")
+        console.error("🔧 Solução: Adicione o domínio em Firebase Console > Authentication > Settings > Authorized domains")
       } else if (error.code === 'auth/operation-not-allowed') {
         toast.error("Login Epic Games não está habilitado. Configure no Firebase Console")
+        console.error("🔧 Solução: Habilite o provedor OIDC no Firebase Console")
+      } else if (error.code === 'auth/invalid-redirect-uri') {
+        toast.error("URL de redirecionamento inválida. Configure no Epic Games Developer Portal")
+        console.error("🔧 Solução: Adicione as URLs de redirecionamento no Epic Games Developer Portal")
       } else {
         toast.error("Erro ao fazer login com Epic Games. Tente novamente.")
+        console.error("🔧 Verifique o console para mais detalhes")
       }
     }
   }
