@@ -36,15 +36,15 @@ export default function FooterSection() {
               <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 Help center
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
-                Terms of service
-              </a>
+              <Link href="/terms-of-service" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
+                Termos de Serviço
+              </Link>
               <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 Legal
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
-                Privacy policy
-              </a>
+              <Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
+                Política de Privacidade
+              </Link>
             </div>
           </div>
           <div>
