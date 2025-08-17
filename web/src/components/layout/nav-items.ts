@@ -8,7 +8,7 @@ export const navItems: NavItem[] = [
   { title: "Notícias", href: "/noticias" },
   { title: "Partidas", href: "/#matches" },
   { title: "Lives", href: "/#streamers" },
-  { title: "Campeonatos", href: "/#tournaments" },
+  { title: "Campeonatos", href: "/torneios" },
 ]
 
 

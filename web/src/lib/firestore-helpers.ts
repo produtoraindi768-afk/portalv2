@@ -292,6 +292,39 @@ export class FirestoreHelpers {
     }
   }
 
+  async getAllTournaments(): Promise<QuerySnapshot<DocumentData> | null> {
+    if (!this.db) return null
+
+    try {
+      const tournamentsQuery = query(
+        collection(this.db, 'tournaments'),
+        where('isActive', '==', true),
+        orderBy('startDate', 'desc')
+      )
+      return await getDocs(tournamentsQuery)
+    } catch (error) {
+      console.error('Error fetching all tournaments:', error)
+      return null
+    }
+  }
+
+  async getTournamentsByStatus(status: 'upcoming' | 'ongoing' | 'finished'): Promise<QuerySnapshot<DocumentData> | null> {
+    if (!this.db) return null
+
+    try {
+      const statusQuery = query(
+        collection(this.db, 'tournaments'),
+        where('isActive', '==', true),
+        where('status', '==', status),
+        orderBy('startDate', 'asc')
+      )
+      return await getDocs(statusQuery)
+    } catch (error) {
+      console.error(`Error fetching ${status} tournaments:`, error)
+      return null
+    }
+  }
+
   // Matches operations
   async createMatch(matchData: MatchData): Promise<DocumentReference | null> {
     if (!this.db) return null

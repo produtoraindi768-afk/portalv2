@@ -23,7 +23,7 @@ const CONFIG: typeof MINIPLAYER_CONFIG = {
   // Dimensões do player ABERTO
   defaultSize: { width: 480, height: 270 },
   // Dimensões do player MINIMIZADO (altere para controlar a largura da barra)
-  minimizedSize: { width: 220, height: 180 },
+  minimizedSize: { width: 300, height: 40 }, // Ajustado para formato de pílula perfeito
   aspectRatio: 16 / 9,
   snapToCorners: true,
   margin: 16,
@@ -32,29 +32,41 @@ const CONFIG: typeof MINIPLAYER_CONFIG = {
   twitchParentDomains: ['localhost']
 }
 
+// Configurações específicas para mobile
+const MOBILE_CONFIG = {
+  defaultSize: { width: 320, height: 180 }, // Menor no mobile
+  minimizedSize: { width: 240, height: 40 }, // Tamanho ajustado para pílula mobile
+  margin: 12 // Margem menor no mobile
+}
+
 const KEYS: typeof STORAGE_KEYS = {
   MINIPLAYER_STATE: 'miniplayer-state',
   MINIPLAYER_VERSION: '1.0.0'
 }
 
 // Estado inicial - usando função para evitar problemas no servidor
-const getInitialState = (): MiniplPlayerState => ({
-  position: {
-    x: typeof window !== 'undefined' ? window.innerWidth - CONFIG.defaultSize.width - CONFIG.margin : 100,
-    y: typeof window !== 'undefined' ? Math.max(CONFIG.margin, window.innerHeight - (CONFIG.defaultSize.height + 40) - CONFIG.margin) : CONFIG.margin
-  },
-  size: CONFIG.defaultSize,
-  isDragging: false,
-  isMinimized: false,
-  isHovering: false,
-  currentStreamIndex: 0,
-  isMuted: true, // Começar mutado por padrão
-  volume: 50,
-  isVisible: false
-})
+const getInitialState = (isMobile: boolean = false): MiniplPlayerState => {
+  const config = isMobile ? MOBILE_CONFIG : CONFIG
+  return {
+    position: {
+      x: typeof window !== 'undefined' ? window.innerWidth - config.defaultSize.width - config.margin : 100,
+      y: typeof window !== 'undefined' ? Math.max(config.margin, window.innerHeight - (config.defaultSize.height + 40) - config.margin) : config.margin
+    },
+    size: config.defaultSize,
+    isDragging: false,
+    isMinimized: false,
+    isHovering: false,
+    currentStreamIndex: 0,
+    isMuted: true, // Começar mutado por padrão
+    volume: 50,
+    isVisible: false
+  }
+}
 
 // Reducer para gerenciar estado
-function miniplPlayerReducer(state: MiniplPlayerState, action: MiniplPlayerAction): MiniplPlayerState {
+function miniplPlayerReducer(state: MiniplPlayerState, action: MiniplPlayerAction, isMobile: boolean = false): MiniplPlayerState {
+  const config = isMobile ? MOBILE_CONFIG : CONFIG
+  
   switch (action.type) {
     case 'SET_POSITION':
       return { ...state, position: action.payload }
@@ -66,7 +78,10 @@ function miniplPlayerReducer(state: MiniplPlayerState, action: MiniplPlayerActio
       return { 
         ...state, 
         isMinimized: action.payload,
-        size: action.payload ? CONFIG.minimizedSize : CONFIG.defaultSize
+        size: action.payload ? {
+          ...config.minimizedSize,
+          height: config.minimizedSize.height + 40 // Adicionar altura do header minimizado (ajustado para 40px)
+        } : config.defaultSize
       }
     
     case 'SET_HOVERING':
@@ -92,7 +107,7 @@ function miniplPlayerReducer(state: MiniplPlayerState, action: MiniplPlayerActio
       return { ...state, dockedCorner: action.payload }
     
     case 'RESET_STATE':
-      return { ...getInitialState(), isVisible: false }
+      return { ...getInitialState(isMobile), isVisible: false }
     
     case 'LOAD_FROM_STORAGE':
       return { ...state, ...action.payload }
@@ -122,11 +137,14 @@ function getTwitchParentDomains(): string[] {
 }
 
 export function useMiniplayer(): UseMiniplPlayerReturn {
-  const [state, dispatch] = useReducer(miniplPlayerReducer, getInitialState())
+  const isMobile = useIsMobile()
+  const [state, dispatch] = useReducer(
+    (state: MiniplPlayerState, action: MiniplPlayerAction) => miniplPlayerReducer(state, action, isMobile),
+    getInitialState(isMobile)
+  )
   const [streamers, setStreamers] = useState<StreamerForMiniplayer[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const isMobile = useIsMobile()
   
   // Throttle para mousemove durante drag
   const throttleTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -174,18 +192,31 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
         }
       })
 
-      setStreamers(fetchedStreamers)
+      // Ordenar streamers: primeiro os em destaque, depois os demais
+      const sortedStreamers = fetchedStreamers.sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1
+        if (!a.isFeatured && b.isFeatured) return 1
+        return 0
+      })
 
-      // Se há streamers e nenhum está selecionado, selecionar o primeiro (todos já online)
-      if (fetchedStreamers.length > 0 && !state.currentStreamId) {
-        const firstOnline = fetchedStreamers[0]
-        dispatch({ 
-          type: 'SET_STREAM', 
-          payload: { 
-            index: fetchedStreamers.indexOf(firstOnline), 
-            streamId: firstOnline.id 
-          }
-        })
+      setStreamers(sortedStreamers)
+
+      // Sempre selecionar o streamer marcado como isFeatured: true quando disponível
+      if (sortedStreamers.length > 0) {
+        // Priorizar streamer em destaque
+        const featuredStreamer = sortedStreamers.find(s => s.isFeatured)
+        const streamerToSelect = featuredStreamer || sortedStreamers[0]
+        
+        // Só atualizar se não houver streamer selecionado ou se for diferente
+        if (!state.currentStreamId || state.currentStreamId !== streamerToSelect.id) {
+          dispatch({ 
+            type: 'SET_STREAM', 
+            payload: { 
+              index: sortedStreamers.indexOf(streamerToSelect), 
+              streamId: streamerToSelect.id 
+            }
+          })
+        }
       }
 
     } catch (err) {
@@ -203,17 +234,19 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
       if (saved) {
         const parsed: MiniplPlayerLocalStorage = JSON.parse(saved)
         
+        const config = isMobile ? MOBILE_CONFIG : CONFIG
+        
         // Validar posição para não sair da tela
         const validPosition = {
-          x: Math.max(0, Math.min(window.innerWidth - CONFIG.defaultSize.width, parsed.position?.x || 0)),
-          y: Math.max(0, Math.min(window.innerHeight - CONFIG.defaultSize.height, parsed.position?.y || 0))
+          x: Math.max(0, Math.min(window.innerWidth - config.defaultSize.width, parsed.position?.x || 0)),
+          y: Math.max(0, Math.min(window.innerHeight - config.defaultSize.height, parsed.position?.y || 0))
         }
 
         // Forçar iniciar ABERTO e ancorado no canto inferior direito visível
-        const margin = CONFIG.margin
+        const margin = config.margin
         const headerH = 40
-        const openWidth = CONFIG.defaultSize.width
-        const openHeight = CONFIG.defaultSize.height
+        const openWidth = config.defaultSize.width
+        const openHeight = config.defaultSize.height
         const x = Math.max(margin, window.innerWidth - openWidth - margin)
         const y = Math.max(margin, window.innerHeight - (openHeight + headerH) - margin)
 
@@ -232,7 +265,7 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
     } catch (err) {
       console.warn('Erro ao carregar estado persistido:', err)
     }
-  }, [])
+  }, [isMobile])
 
   // Persistir estado no localStorage
   const persistState = useCallback(() => {
@@ -258,7 +291,8 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
 
     const { innerWidth, innerHeight } = window
     const { width } = state.size
-    const margin = CONFIG.margin
+    const config = isMobile ? MOBILE_CONFIG : CONFIG
+    const margin = config.margin
     const header = 40
     const visibleBodyHeight = state.isMinimized ? 0 : state.size.height
     const effectiveHeight = visibleBodyHeight + header
@@ -281,7 +315,7 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
         bounds: { top: innerHeight - effectiveHeight - margin, left: innerWidth - width - margin, right: innerWidth - margin, bottom: innerHeight - margin }
       }
     ]
-  }, [state.size, state.isMinimized])
+  }, [state.size, state.isMinimized, isMobile])
 
   // Encontrar corner mais próximo para snap
   const findNearestCorner = useCallback((position: Position): DockedCorner => {
@@ -347,7 +381,8 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
 
     const { innerWidth, innerHeight } = window
     const { width } = state.size
-    const margin = CONFIG.margin
+    const config = isMobile ? MOBILE_CONFIG : CONFIG
+    const margin = config.margin
 
     // Altura efetiva do contêiner visível: header sempre presente
     // Quando minimizado, o corpo fica colapsado, então usamos apenas a altura do header (~40px)
@@ -375,7 +410,7 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
 
     dispatch({ type: 'SET_POSITION', payload: newPosition })
     dispatch({ type: 'SET_DOCKED_CORNER', payload: corner })
-  }, [state.size, state.isMinimized])
+  }, [state.size, state.isMinimized, isMobile])
 
   const resetToDefaults = useCallback(() => {
     dispatch({ type: 'RESET_STATE' })
@@ -442,7 +477,7 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
   useEffect(() => {
     if (isMobile && state.isVisible && !state.isMinimized) {
       // No mobile, posicionar inicialmente no canto inferior direito
-      const margin = CONFIG.margin
+      const margin = MOBILE_CONFIG.margin
       const mobilePosition: Position = {
         x: window.innerWidth - state.size.width - margin,
         y: window.innerHeight - (state.size.height + 40) - margin // 40px para o header

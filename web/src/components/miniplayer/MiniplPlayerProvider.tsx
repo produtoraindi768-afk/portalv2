@@ -14,6 +14,8 @@ interface MiniplPlayerContextValue {
   showMiniplayer: (streamer?: StreamerForMiniplayer) => void
   hideMiniplayer: () => void
   toggleMiniplayer: () => void
+  setMinimized: (minimized: boolean) => void
+  isMinimized: boolean
   streamers: StreamerForMiniplayer[]
   selectedStreamer: StreamerForMiniplayer | null
   switchStreamer: (streamer: StreamerForMiniplayer) => void
@@ -35,14 +37,14 @@ interface MiniplPlayerProviderProps {
 }
 
 export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {}) {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(false) // Iniciar OCULTO
   const [selectedStreamer, setSelectedStreamer] = useState<StreamerForMiniplayer | null>(null)
-  const [hasAutoShown, setHasAutoShown] = useState(false)
+  const [hasAutoShown, setHasAutoShown] = useState(true) // Desabilitar auto-show permanentemente
   const [streamers, setStreamers] = useState<StreamerForMiniplayer[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false) // Não precisa loading se não vai auto-mostrar
+  const [isMinimizedState, setIsMinimizedState] = useState(false) // Controlar a minimização
 
   const showMiniplayer = useCallback((streamer?: StreamerForMiniplayer) => {
-    console.log('MiniplPlayerProvider: showMiniplayer called', streamer ? `with ${streamer.name}` : 'without specific streamer')
     if (streamer) {
       setSelectedStreamer(streamer)
     }
@@ -50,18 +52,20 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   }, [])
 
   const hideMiniplayer = useCallback(() => {
-    console.log('MiniplPlayerProvider: hideMiniplayer called')
     setIsVisible(false)
-    setSelectedStreamer(null) // Limpar streamer selecionado
+    // Não limpar o streamer selecionado para manter a seleção quando reativar
+    // setSelectedStreamer(null) // Comentado para manter a seleção
   }, [])
 
   const toggleMiniplayer = useCallback(() => {
-    console.log('MiniplPlayerProvider: toggleMiniplayer called')
     setIsVisible(prev => !prev)
   }, [])
 
+  const setMinimized = useCallback((minimized: boolean) => {
+    setIsMinimizedState(minimized)
+  }, [])
+
   const switchStreamer = useCallback((streamer: StreamerForMiniplayer) => {
-    console.log('MiniplPlayerProvider: switching to streamer', streamer.name)
     setSelectedStreamer(streamer)
   }, [])
 
@@ -70,137 +74,82 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   }, [hideMiniplayer])
 
   const handleOpenTwitch = useCallback((streamUrl: string) => {
-    console.log('Opening Twitch stream:', streamUrl)
     if (streamUrl) {
       window.open(streamUrl, '_blank', 'noopener,noreferrer')
     }
   }, [])
 
-  // Garantir visibilidade ao montar (auto-open no refresh)
+  // Buscar streamers desabilitado - miniplayer controlado apenas pela StreamersSection
   useEffect(() => {
-    setIsVisible(true)
-  }, [])
-
-  // Buscar streamers e exibir automaticamente o primeiro ao iniciar
-  useEffect(() => {
-    if (hasAutoShown) return // Evitar múltiplas execuções
-
-    const showFallbackMiniplayer = () => {
-      // Requisito: não exibir nada se não houver destaque no banco.
-      console.log('MiniplPlayerProvider: Fallback desativado — miniplayer oculto por ausência de destaques')
-      setStreamers([])
-      setSelectedStreamer(null)
-      setIsVisible(false)
-      setLoading(false)
-      setHasAutoShown(true)
-    }
-
-    const parseBoolean = (value: unknown): boolean => {
-      if (typeof value === 'boolean') return value
-      if (typeof value === 'string') return value.toLowerCase() === 'true' || value === '1' || value.toLowerCase() === 'yes' || value.toLowerCase() === 'on'
-      if (typeof value === 'number') return value === 1
-      return false
-    }
-
-    const fetchAndAutoShow = async () => {
+    // Auto-show desabilitado - player flutuante apenas sob demanda
+    setLoading(false)
+    setHasAutoShown(true)
+    
+    // Buscar streamers em destaque para seleção inicial
+    const fetchFeaturedStreamers = async () => {
       try {
-        console.log('MiniplPlayerProvider: Iniciando busca automática de streamers em destaque...')
-        
         const db = getClientFirestore()
-        if (!db) {
-          console.warn('MiniplPlayerProvider: Firebase não configurado — miniplayer permanecerá oculto')
-          // Não exibir fallback; manter oculto
-          setStreamers([])
-          setSelectedStreamer(null)
-          setIsVisible(false)
-          setLoading(false)
-          setHasAutoShown(true)
-          return
-        }
-
-        // Query para streamers em destaque
-        // O filtro de "online" será aplicado no cliente para tolerar dados gravados como string/number
+        if (!db) return
+        
         const streamersQuery = query(
           collection(db, 'streamers'),
           where('isFeatured', '==', true)
         )
-
-        const snapshot = await getDocs(streamersQuery)
-        console.log('MiniplPlayerProvider: Query resultado:', snapshot.size, 'streamers encontrados')
         
-        if (snapshot.empty) {
-          console.warn('MiniplPlayerProvider: Nenhum streamer em destaque encontrado — manter miniplayer aberto com placeholder')
-          setStreamers([])
-          setSelectedStreamer(null)
-          setLoading(false)
-          setHasAutoShown(true)
-          return
-        }
-
-        // Buscar o primeiro streamer online ou o primeiro disponível
-        const streamers: StreamerForMiniplayer[] = []
+        const snapshot = await getDocs(streamersQuery)
+        const featuredStreamers: StreamerForMiniplayer[] = []
+        
         snapshot.forEach((doc) => {
           const data = doc.data()
           const streamer: StreamerForMiniplayer = {
             id: doc.id,
             name: data.name || '',
-            platform: typeof data.platform === 'string' ? data.platform.toLowerCase() : '',
+            platform: data.platform || '',
             streamUrl: data.streamUrl || '',
             avatarUrl: data.avatarUrl || '',
             category: data.category || '',
-            isOnline: parseBoolean(data.isOnline),
-            isFeatured: parseBoolean(data.isFeatured),
-            twitchChannel: (typeof data.platform === 'string' ? data.platform.toLowerCase() : '') === 'twitch' && typeof data.streamUrl === 'string'
-              ? (twitchStatusService.extractUsernameFromTwitchUrl(data.streamUrl) || undefined)
-              : undefined,
+            isOnline: typeof data.isOnline === 'boolean' ? data.isOnline : String(data.isOnline).toLowerCase() === 'true' || data.isOnline === 1,
+            isFeatured: typeof data.isFeatured === 'boolean' ? data.isFeatured : String(data.isFeatured).toLowerCase() === 'true' || data.isFeatured === 1,
+            twitchChannel: data.platform === 'twitch' ? (twitchStatusService.extractUsernameFromTwitchUrl(data.streamUrl) || undefined) : undefined,
             createdAt: data.createdAt || '',
             lastStatusUpdate: data.lastStatusUpdate || ''
           }
-          // Apenas online
-          if (streamer.isOnline) {
-            streamers.push(streamer)
-          }
-          console.log('MiniplPlayerProvider: Streamer carregado:', streamer.name, 'online:', streamer.isOnline)
-        })
-
-        // Armazenar lista de streamers (já filtrados como online)
-        setStreamers(streamers)
-        setLoading(false)
-
-        if (streamers.length > 0) {
-          // Todos já são online; escolher o primeiro
-          const firstOnline = streamers[0]
           
-          console.log('MiniplPlayerProvider: Auto-showing miniplayer with', firstOnline.name)
-          setSelectedStreamer(firstOnline)
-          setIsVisible(true)
-          setHasAutoShown(true)
-        } else {
-          console.warn('MiniplPlayerProvider: Lista de streamers vazia após processamento — manter miniplayer aberto com placeholder')
-          setStreamers([])
-          setSelectedStreamer(null)
-          setHasAutoShown(true)
+          if (streamer.name && streamer.streamUrl && streamer.isOnline) {
+            featuredStreamers.push(streamer)
+          }
+        })
+        
+        setStreamers(featuredStreamers)
+        
+        // Ordenar streamers: primeiro os em destaque, depois os demais
+        const sortedStreamers = featuredStreamers.sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1
+          if (!a.isFeatured && b.isFeatured) return 1
+          return 0
+        })
+        
+        setStreamers(sortedStreamers)
+        
+        // Selecionar o primeiro streamer em destaque disponível
+        if (sortedStreamers.length > 0 && !selectedStreamer) {
+          setSelectedStreamer(sortedStreamers[0])
         }
-      } catch (error) {
-        console.error('Error fetching streamers for auto-show:', error)
-        console.log('MiniplPlayerProvider: Manter miniplayer aberto com placeholder (erro no fetch)')
-        setStreamers([])
-        setSelectedStreamer(null)
-        setLoading(false)
-        setHasAutoShown(true)
+      } catch (err) {
+        console.warn('Erro ao buscar streamers em destaque:', err)
       }
     }
-
-    // Pequeno delay para garantir que a página carregou
-    const timer = setTimeout(fetchAndAutoShow, 1000)
-    return () => clearTimeout(timer)
-  }, [hasAutoShown])
+    
+    fetchFeaturedStreamers()
+  }, [selectedStreamer])
 
   const contextValue: MiniplPlayerContextValue = {
     isVisible,
     showMiniplayer,
     hideMiniplayer,
     toggleMiniplayer,
+    setMinimized,
+    isMinimized: isMinimizedState,
     streamers,
     selectedStreamer,
     switchStreamer,
@@ -214,7 +163,6 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
         <FloatingMiniplayer
           onClose={handleClose}
           onOpenTwitch={handleOpenTwitch}
-          selectedStreamer={selectedStreamer}
         />
       </TooltipProvider>
     </MiniplPlayerContext.Provider>

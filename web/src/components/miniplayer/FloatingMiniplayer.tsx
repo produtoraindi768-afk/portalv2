@@ -10,6 +10,13 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import type { MiniplPlayerProps, Position } from '@/lib/miniplayer-types'
 import { MINIPLAYER_CONFIG as GLOBAL_MINIPLAYER_CONFIG } from '@/lib/miniplayer-types'
+
+// Configurações específicas para mobile (deve corresponder ao hook)
+const MOBILE_CONFIG = {
+  margin: 12,
+  defaultSize: { width: 320, height: 180 },
+  minimizedSize: { width: 240, height: 40 } // Ajustado para formato de pílula mobile
+}
 import { StreamSwitcher } from '@/components/miniplayer/StreamSwitcher'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,12 +24,12 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Minimize2, Maximize2, ExternalLink, Move } from 'lucide-react'
 
-export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedStreamer }: MiniplPlayerProps) {
+export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<MiniplPlayerProps, 'selectedStreamer'>) {
   // Variáveis de estilo do topo por estado
   const OPEN_HEADER_HEIGHT_PX = 48
-  const MINIMIZED_HEADER_HEIGHT_PX = 38
+  const MINIMIZED_HEADER_HEIGHT_PX = 40 // Ajustado para formato de pílula
   const OPEN_HEADER_HAS_BORDER = true
-  const MINIMIZED_HEADER_HAS_BORDER = true
+  const MINIMIZED_HEADER_HAS_BORDER = false // Sem borda no modo minimizado para pílula
   const OPEN_CARD_HAS_BORDER = true
   const MINIMIZED_CARD_HAS_BORDER = false
   const {
@@ -31,7 +38,9 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
     streamers: contextStreamers,
     selectedStreamer: contextSelectedStreamer,
     switchStreamer,
-    loading: contextLoading
+    loading: contextLoading,
+    isMinimized: contextIsMinimized,
+    setMinimized: contextSetMinimized
   } = useMiniplPlayerContext()
   
   const {
@@ -63,6 +72,10 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
   const [mounted, setMounted] = useState(false)
   const hasForcedOpenRef = useRef(false)
 
+  // Usar dados do contexto
+  const streamers = contextStreamers
+  const loading = contextLoading
+
   // Garantir que o portal só renderize no cliente
   useEffect(() => {
     setMounted(true)
@@ -73,14 +86,22 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
     if (mounted && isVisible && !hasForcedOpenRef.current) {
       hasForcedOpenRef.current = true
       setMinimized(false)
+      
+      // Garantir que sempre comece com o streamer em destaque
+      if (streamers.length > 0 && !contextSelectedStreamer) {
+        const featuredStreamer = streamers.find(s => s.isFeatured)
+        if (featuredStreamer) {
+          switchStreamer(featuredStreamer)
+        }
+      }
     }
-  }, [mounted, isVisible, setMinimized])
+  }, [mounted, isVisible, setMinimized, streamers, contextSelectedStreamer, switchStreamer])
 
-  // Usar dados do contexto
-  const streamers = contextStreamers
-  const loading = contextLoading
-  const activeStreamer = selectedStreamer || contextSelectedStreamer || (streamers.length > 0 ? streamers[0] : null)
-  
+  // Priorizar o streamer selecionado do contexto (vindo da StreamersSection) sobre streamers do hook
+  // Se não houver streamer selecionado, buscar o primeiro streamer em destaque
+  const activeStreamer = contextSelectedStreamer || 
+    (streamers.length > 0 ? streamers.find(s => s.isFeatured) || streamers[0] : null)
+
   const embedUrl = React.useMemo(() => {
     if (!activeStreamer || activeStreamer.platform !== 'twitch' || !activeStreamer.twitchChannel) {
       return null
@@ -99,15 +120,34 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
     }
     parents.add('localhost')
     parents.forEach((p) => params.append('parent', p))
-    return `https://player.twitch.tv/?${params.toString()}`
+    const finalUrl = `https://player.twitch.tv/?${params.toString()}`
+    return finalUrl
   }, [activeStreamer, state.isMuted])
 
   const canPlay = Boolean(activeStreamer && activeStreamer.platform === 'twitch' && activeStreamer.isOnline && activeStreamer.twitchChannel)
-
+  
   // Atualiza a altura conforme estado (aberto/minimizado)
   useEffect(() => {
-    setHeaderHeight(state.isMinimized ? MINIMIZED_HEADER_HEIGHT_PX : OPEN_HEADER_HEIGHT_PX)
-  }, [state.isMinimized])
+    setHeaderHeight(contextIsMinimized ? MINIMIZED_HEADER_HEIGHT_PX : OPEN_HEADER_HEIGHT_PX)
+  }, [contextIsMinimized])
+
+  // Calcular tamanho baseado no estado de minimização
+  const getCurrentSize = useCallback(() => {
+    const config = isMobile ? MOBILE_CONFIG : GLOBAL_MINIPLAYER_CONFIG
+    const baseSize = contextIsMinimized ? config.minimizedSize : config.defaultSize
+    
+    // Para o modo minimizado, garantir que a altura inclua o header
+    if (contextIsMinimized) {
+      return {
+        width: baseSize.width,
+        height: baseSize.height + MINIMIZED_HEADER_HEIGHT_PX
+      }
+    }
+    
+    return baseSize
+  }, [contextIsMinimized, isMobile])
+
+  const currentSize = getCurrentSize()
 
   // Handlers para arrastar
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -149,16 +189,16 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
     }
 
     // Aplicar limites da tela
-    const margin = 16 // CONFIG.margin
-    const maxX = window.innerWidth - state.size.width - margin
-    const visibleBodyHeight = (state.isMinimized ? 0 : state.size.height)
+    const margin = isMobile ? MOBILE_CONFIG.margin : 16
+    const maxX = window.innerWidth - currentSize.width - margin
+    const visibleBodyHeight = (contextIsMinimized ? 0 : currentSize.height)
     const maxY = window.innerHeight - (visibleBodyHeight + headerHeight) - margin
 
     newPosition.x = Math.max(margin, Math.min(maxX, newPosition.x))
     newPosition.y = Math.max(margin, Math.min(maxY, newPosition.y))
 
     setPosition(newPosition)
-  }, [state.size, setPosition])
+  }, [state.size, setPosition, isMobile, currentSize, contextIsMinimized, headerHeight])
 
   const handleMouseUp = useCallback(() => {
     if (!dragRef.current.isDragging) return
@@ -210,16 +250,16 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
     }
 
     // Aplicar limites da tela
-    const margin = 16
-    const maxX = window.innerWidth - state.size.width - margin
-    const visibleBodyHeight = (state.isMinimized ? 0 : state.size.height)
+    const margin = isMobile ? MOBILE_CONFIG.margin : 16
+    const maxX = window.innerWidth - currentSize.width - margin
+    const visibleBodyHeight = (contextIsMinimized ? 0 : currentSize.height)
     const maxY = window.innerHeight - (visibleBodyHeight + headerHeight) - margin
 
     newPosition.x = Math.max(margin, Math.min(maxX, newPosition.x))
     newPosition.y = Math.max(margin, Math.min(maxY, newPosition.y))
 
     setPosition(newPosition)
-  }, [state.size, setPosition])
+  }, [state.size, setPosition, isMobile, currentSize, contextIsMinimized, headerHeight])
 
   const handleTouchEnd = useCallback(() => {
     if (!dragRef.current.isDragging) return
@@ -277,14 +317,20 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
   }, [activeStreamer, onOpenTwitch, setMinimized])
 
   const handleMinimizeToggle = useCallback(() => {
-    const next = !state.isMinimized
-    setMinimized(next)
-    // Ao restaurar, posicionar ancorado ao canto inferior direito respeitando o tamanho aberto
+    
+    // Permitir toggle manual apenas quando não está minimizado pelo contexto
+    const next = !contextIsMinimized
+    
+    // Usar a função do contexto para minimizar
+    contextSetMinimized(next)
+    
+    // Se estiver expandindo (next = false), posicionar no canto
     if (!next) {
       setTimeout(() => {
-        const margin = GLOBAL_MINIPLAYER_CONFIG.margin
-        const openWidth = GLOBAL_MINIPLAYER_CONFIG.defaultSize.width
-        const openHeight = GLOBAL_MINIPLAYER_CONFIG.defaultSize.height
+        const config = isMobile ? MOBILE_CONFIG : GLOBAL_MINIPLAYER_CONFIG
+        const margin = config.margin
+        const openWidth = config.defaultSize.width
+        const openHeight = config.defaultSize.height
         const headerH = OPEN_HEADER_HEIGHT_PX
         const xCandidate = window.innerWidth - openWidth - margin
         const yCandidate = window.innerHeight - (openHeight + headerH) - margin
@@ -293,12 +339,13 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
         setPosition({ x, y })
       }, 0)
     }
-    // Re-medida assíncrona após transição de estado para ajustar altura do header corretamente
+    
+    // Re-medida assíncrona após transição de estado
     setTimeout(() => {
       const h = headerRef.current?.offsetHeight
       if (h) setHeaderHeight(h)
     }, 0)
-  }, [state.isMinimized, setMinimized])
+  }, [contextIsMinimized, contextSetMinimized, isMobile, setPosition])
 
   // Handlers de hover para controles
   const handleMouseEnter = useCallback(() => {
@@ -318,40 +365,36 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
 
   // Não renderizar se não montado ou não visível (permitir loading)
   if (!mounted || !isVisible) {
-    console.log('FloatingMiniplayer not rendering:', { mounted, isVisible, loading })
     return null
   }
   // Permitir renderização sem streamer ativo; placeholder será exibido abaixo
-
-  console.log('FloatingMiniplayer rendering with:', {
-    streamersCount: streamers.length,
-    activeStreamer: activeStreamer?.name,
-    selectedStreamer: selectedStreamer?.name,
-    contextSelectedStreamer: contextSelectedStreamer?.name
-  })
 
   const playerContent = (
     <div
       ref={containerRef}
               className={cn(
-          "fixed z-50 transition-all duration-200 shadow-2xl",
+          "fixed z-50 transition-all duration-100 shadow-2xl", // Transição mais rápida: 100ms
           {
             "transition-none": state.isDragging
           },
           className
         )}
       style={
-        state.isMinimized
+        contextIsMinimized
           ? {
-              right: GLOBAL_MINIPLAYER_CONFIG.margin,
-              bottom: GLOBAL_MINIPLAYER_CONFIG.margin,
-              width: state.size.width,
-              pointerEvents: 'auto'
+              right: Math.max(MOBILE_CONFIG.margin, isMobile ? MOBILE_CONFIG.margin : GLOBAL_MINIPLAYER_CONFIG.margin),
+              bottom: Math.max(MOBILE_CONFIG.margin, isMobile ? MOBILE_CONFIG.margin : GLOBAL_MINIPLAYER_CONFIG.margin),
+              width: Math.min(currentSize.width, window.innerWidth - (isMobile ? MOBILE_CONFIG.margin : GLOBAL_MINIPLAYER_CONFIG.margin) * 2),
+              height: 40, // Altura fixa para formato de pílula perfeito
+              pointerEvents: 'auto',
+              maxWidth: `calc(100vw - ${(isMobile ? MOBILE_CONFIG.margin : GLOBAL_MINIPLAYER_CONFIG.margin) * 2}px)`,
+              maxHeight: `calc(100vh - ${(isMobile ? MOBILE_CONFIG.margin : GLOBAL_MINIPLAYER_CONFIG.margin) * 2}px)`
             }
           : {
               left: state.position.x,
               top: state.position.y,
-              width: state.size.width,
+              width: currentSize.width,
+              height: currentSize.height + headerHeight, // Adicionar altura do header
               pointerEvents: 'auto'
             }
       }
@@ -364,28 +407,29 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
       aria-modal="false"
     >
       <Card className={cn(
-        "group relative bg-card border-border h-full w-full overflow-hidden py-0 gap-0",
-        state.isMinimized ? (MINIMIZED_CARD_HAS_BORDER ? "border" : "border-0") : (OPEN_CARD_HAS_BORDER ? "border" : "border-0"),
-        state.isMinimized && "rounded-full"
+        "group relative bg-card border-border h-full w-full overflow-hidden py-0 gap-0 transition-all duration-100", // Transição mais rápida
+        contextIsMinimized ? (MINIMIZED_CARD_HAS_BORDER ? "border" : "border-0") : (OPEN_CARD_HAS_BORDER ? "border" : "border-b-0"),
+        contextIsMinimized && "rounded-full shadow-lg border-0"
       )}> 
         {/* Header arrastável */}
         <CardHeader
           className={cn(
             // Header sempre visível (sem esconder em hover)
-            "p-2 pr-12 pl-3 pb-0",
+            contextIsMinimized ? "p-2 pr-14 pl-3 pb-0" : "p-2 pr-12 pl-3 pb-0",
             isMobile ? "cursor-move" : "cursor-grab active:cursor-grabbing",
-            state.isMinimized
+            contextIsMinimized
               ? (MINIMIZED_HEADER_HAS_BORDER ? "border-b" : "border-b-0")
               : (OPEN_HEADER_HAS_BORDER ? "border-b" : "border-b-0"),
-            "flex-row items-center justify-between space-y-0"
+            "flex-row items-center justify-between space-y-0 transition-all duration-100", // Transição mais rápida
+            contextIsMinimized && "bg-card/95 backdrop-blur-sm h-10" // Altura fixa de 40px
           )}
-          style={{ height: headerHeight }}
+          style={{ height: contextIsMinimized ? 40 : headerHeight }}
           ref={headerRef}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          {/* Stream switcher - só mostrar se houver múltiplos streamers */}
-          {streamers.length > 1 && (
+          {/* Stream switcher - só mostrar se houver múltiplos streamers E não houver selectedStreamer específico */}
+          {streamers.length > 1 && !contextSelectedStreamer && (
             <StreamSwitcher
               streamers={streamers}
               currentIndex={streamers.findIndex(s => s.id === activeStreamer?.id)}
@@ -394,22 +438,53 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
                   switchStreamer(streamers[index])
                 }
               }}
-              className="flex-1"
+              className="flex-1 transition-all duration-100" // Transição mais rápida
               isMinimized={state.isMinimized}
             />
           )}
 
           {/* Título do streamer quando não minimizado */}
-          {!state.isMinimized && streamers.length === 1 && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-card-foreground truncate">
-                {activeStreamer?.name}
-              </p>
-              {activeStreamer?.category && (
-                <p className="text-xs text-muted-foreground truncate">
-                  {activeStreamer.category}
-                </p>
+          {!contextIsMinimized && (streamers.length === 1 || contextSelectedStreamer) && (
+            <div className="flex-1 min-w-0 flex items-center gap-2 transition-all duration-100"> {/* Transição mais rápida */}
+              {/* Avatar do streamer */}
+              {activeStreamer?.avatarUrl && (
+                <img
+                  src={activeStreamer.avatarUrl}
+                  alt={activeStreamer.name}
+                  className="w-6 h-6 rounded-full object-cover border border-border flex-shrink-0 transition-all duration-100" // Transição mais rápida
+                />
               )}
+              {/* Informações do streamer */}
+              <div className="flex-1 min-w-0 transition-all duration-100"> {/* Transição mais rápida */}
+                <p className="text-sm font-medium text-card-foreground truncate">
+                  {activeStreamer?.name}
+                </p>
+                {activeStreamer?.category && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {activeStreamer.category}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Conteúdo do streamer quando minimizado */}
+          {contextIsMinimized && activeStreamer && (
+            <div className="flex-1 min-w-0 flex items-center gap-2 transition-all duration-100"> {/* Transição mais rápida */}
+              {/* Avatar do streamer no modo minimizado */}
+              {activeStreamer.avatarUrl && (
+                <img
+                  src={activeStreamer.avatarUrl}
+                  alt={activeStreamer.name}
+                  className="w-6 h-6 rounded-full object-cover border border-border flex-shrink-0 transition-all duration-100" // Transição mais rápida
+                />
+              )}
+              {/* Nome do streamer no modo minimizado */}
+              <div className="flex-1 min-w-0 transition-all duration-100"> {/* Transição mais rápida */}
+                <p className="text-sm font-medium text-card-foreground truncate">
+                  {activeStreamer.name}
+                </p>
+              </div>
             </div>
           )}
 
@@ -418,18 +493,19 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
           {/* Ações rápidas no topo direito: Minimizar e Abrir no Twitch */}
           <div
             className={cn(
-              "absolute top-2 right-2 z-10 flex items-center gap-1"
+              "absolute z-10 flex items-center gap-1",
+              contextIsMinimized ? "top-2 right-3" : "top-2 right-2"
             )}
           >
             {/* Indicador de drag no mobile */}
             {isMobile && !state.isMinimized && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex items-center justify-center h-6 w-6 text-muted-foreground">
+                  <div className="flex items-center justify-center h-6 w-6 text-muted-foreground transition-all duration-100"> {/* Transição mais rápida */}
                     <Move className="h-3 w-3" />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
+                <TooltipContent side="bottom" className="transition-all duration-100"> {/* Transição mais rápida */}
                   <p>Arraste para mover</p>
                 </TooltipContent>
               </Tooltip>
@@ -439,19 +515,23 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0"
-                  aria-label={state.isMinimized ? 'Restaurar miniplayer' : 'Minimizar e rodar em segundo plano'}
+                  className={cn(
+                    contextIsMinimized ? "h-6 w-6 p-0" : "h-6 w-6 p-0",
+                    contextIsMinimized && "hover:bg-accent/50",
+                    "transition-all duration-100" // Transição mais rápida
+                  )}
+                  aria-label={contextIsMinimized ? 'Restaurar miniplayer' : 'Minimizar e rodar em segundo plano'}
                   onClick={handleMinimizeToggle}
                 >
-                  {state.isMinimized ? (
-                    <Maximize2 className="h-3 w-3" />
+                  {contextIsMinimized ? (
+                    <Maximize2 className={cn(contextIsMinimized ? "h-3 w-3" : "h-3 w-3")} />
                   ) : (
-                    <Minimize2 className="h-3 w-3" />
+                    <Minimize2 className={cn(contextIsMinimized ? "h-3 w-3" : "h-3 w-3")} />
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>{state.isMinimized ? 'Restaurar' : 'Minimizar (executar em segundo plano)'}</p>
+              <TooltipContent side="bottom" className="transition-all duration-100"> {/* Transição mais rápida */}
+                <p>{contextIsMinimized ? 'Expandir player' : 'Minimizar player'}</p>
               </TooltipContent>
             </Tooltip>
 
@@ -460,14 +540,18 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0"
+                  className={cn(
+                    contextIsMinimized ? "h-6 w-6 p-0" : "h-6 w-6 p-0",
+                    contextIsMinimized && "hover:bg-accent/50",
+                    "transition-all duration-100" // Transição mais rápida
+                  )}
                   aria-label="Abrir stream em nova aba"
                   onClick={handleOpenTwitch}
                 >
-                  <ExternalLink className="h-3 w-3" />
+                  <ExternalLink className={cn(contextIsMinimized ? "h-3 w-3" : "h-3 w-3")} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">
+              <TooltipContent side="bottom" className="transition-all duration-100"> {/* Transição mais rápida */}
                 <p>Abrir no Twitch</p>
               </TooltipContent>
             </Tooltip>
@@ -475,14 +559,32 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
         </CardHeader>
 
         {/* Conteúdo do player (permanece montado mesmo minimizado) */}
-        <CardContent className={cn('p-0 flex-1', state.isMinimized && 'h-0 overflow-hidden')}> 
-          <div className={cn('relative', state.isMinimized && 'h-0 overflow-hidden')} style={!state.isMinimized ? { height: state.size.height } : undefined}> 
-            <AspectRatio ratio={16 / 9}>
+        <CardContent className={cn(
+          'p-0 flex-1 transition-all duration-100', // Transição mais rápida
+          contextIsMinimized ? 'h-0 overflow-hidden opacity-0' : 'opacity-100'
+        )}> 
+          <div className={cn(
+            'relative transition-all duration-100', // Transição mais rápida
+            contextIsMinimized ? 'h-0 overflow-hidden' : 'h-full'
+          )} style={
+            !contextIsMinimized 
+              ? { height: currentSize.height } 
+              : { height: 0, overflow: 'hidden' }
+          }>
+            <AspectRatio ratio={16 / 9} className={cn(
+              "transition-all duration-100", // Transição mais rápida
+              contextIsMinimized && "h-0 overflow-hidden"
+            )}>
               {canPlay && embedUrl ? (
                 <iframe
-                  key={activeStreamer?.id}
+                  key={`${activeStreamer?.id}-${activeStreamer?.twitchChannel}`}
                   src={embedUrl}
-                  className={cn('w-full h-full block', state.isMinimized && 'absolute -left-[10000px] top-auto w-[1px] h-[1px] opacity-0 pointer-events-none')}
+                  className={cn(
+                    'w-full h-full block transition-all duration-100', // Transição mais rápida
+                    contextIsMinimized 
+                      ? 'absolute -left-[10000px] top-auto w-[1px] h-[1px] opacity-0 pointer-events-none' 
+                      : 'relative opacity-100'
+                  )}
                   frameBorder="0"
                   allowFullScreen
                   scrolling="no"
@@ -491,7 +593,10 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch, selectedS
                 />
               ) : (
                 // Placeholder quando stream está offline ou não há streamers
-                <div className="flex items-center justify-center h-full bg-muted/50 text-muted-foreground">
+                <div className={cn(
+                  "flex items-center justify-center h-full bg-muted/50 text-muted-foreground transition-all duration-100", // Transição mais rápida
+                  contextIsMinimized && "opacity-0"
+                )}>
                   <div className="text-center space-y-2">
                     {activeStreamer?.avatarUrl ? (
                       <img

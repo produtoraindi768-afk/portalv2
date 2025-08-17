@@ -92,7 +92,7 @@ export interface SnapZone {
 // Constantes para configuração
 export const MINIPLAYER_CONFIG: MiniplPlayerConfig = {
   defaultSize: { width: 480, height: 270 }, // 16:9
-  minimizedSize: { width: 320, height: 180 }, // 16:9 menor
+  minimizedSize: { width: 300, height: 40 }, // Ajustado para formato de pílula perfeito
   aspectRatio: 16 / 9,
   snapToCorners: true,
   margin: 16,

@@ -7,6 +7,9 @@ import { FeaturedMatchesSection } from "@/components/sections/FeaturedMatchesSec
 export default function Home() {
   return (
     <>
+      <section id="streamers">
+        <StreamersSection />
+      </section>
       <section id="hero">
         <HeroSection />
       </section>
@@ -16,9 +19,6 @@ export default function Home() {
 {/*       <section id="matches">
         <FeaturedMatchesSection />
       </section> */}
-      <section id="streamers">
-        <StreamersSection />
-      </section>
 {/*       <section id="tournaments">
         <TournamentsSection />
       </section> */}
