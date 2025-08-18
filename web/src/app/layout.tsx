@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader"
 import HeaderFeaturedMatchesTab from "@/components/layout/HeaderFeaturedMatchesTab"
 import FooterSection from "@/components/layout/FooterSection"
 import { MiniplPlayerProvider } from "@/components/miniplayer/MiniplPlayerProvider"
+import { HeaderHeightProvider } from "@/contexts/HeaderHeightContext"
 import { Toaster } from "@/components/ui/toaster"
 import { Inter } from "next/font/google"
 
@@ -17,12 +18,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={`dark ${inter.variable}`}>
       <body className="min-h-svh flex flex-col">
-        <MiniplPlayerProvider>
-          <SiteHeader />
-          <HeaderFeaturedMatchesTab />
-          <main className="flex-1">{children}</main>
-          <FooterSection />
-        </MiniplPlayerProvider>
+        <HeaderHeightProvider>
+          <MiniplPlayerProvider>
+            <SiteHeader />
+            <HeaderFeaturedMatchesTab />
+            <main className="flex-1">{children}</main>
+            <FooterSection />
+          </MiniplPlayerProvider>
+        </HeaderHeightProvider>
         <Toaster />
       </body>
     </html>

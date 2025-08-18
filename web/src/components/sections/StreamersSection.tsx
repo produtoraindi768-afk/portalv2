@@ -7,6 +7,7 @@ import { getClientFirestore } from "@/lib/safeFirestore"
 import { Badge } from "@/components/ui/badge"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { useMiniplPlayerContext } from '@/components/miniplayer/MiniplPlayerProvider'
+import { useHeaderHeight } from '@/contexts/HeaderHeightContext'
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { twitchStatusService } from "@/lib/twitch-status"
 import { cn } from "@/lib/utils"
@@ -249,8 +250,9 @@ export function StreamersSection() {
   const [sectionRect, setSectionRect] = useState<DOMRect | null>(null)
   const [mounted, setMounted] = useState(false)
   const sectionRef = useRef<HTMLDivElement>(null)
-  
+
   const { showMiniplayer, hideMiniplayer, isVisible: isMiniplaying, setMinimized, isMinimized, setActivePlayer, activePlayer, isMainPlayerActive } = useMiniplPlayerContext()
+  const { featuredMatchesHeight, isCollapsed } = useHeaderHeight()
 
   // Garantir montagem
   useEffect(() => {
@@ -479,6 +481,9 @@ export function StreamersSection() {
 
   // Calcular streams visíveis e suas posições (memoizado para evitar recriações)
   const visibleStreams = React.useMemo(() => {
+    // Calcular offset dinâmico: só adicionar altura quando expandido
+    const dynamicOffset = isCollapsed ? 0 : featuredMatchesHeight
+
     if (streamers.length === 0) {
       return []
     }
@@ -561,7 +566,7 @@ export function StreamersSection() {
         isSelected: true,
         containerStyle: {
           left: sectionRect.left + sectionRect.width / 2 - 360,
-          top: sectionRect.top + sectionRect.height / 2 - 202.5,
+          top: sectionRect.top + sectionRect.height / 2 - 202.5 + dynamicOffset,
           width: 720,
           height: 405
         }
@@ -570,7 +575,7 @@ export function StreamersSection() {
     
     if (streamers.length === 2) {
       const centerX = sectionRect.left + sectionRect.width / 2
-      const centerY = sectionRect.top + sectionRect.height / 2
+      const centerY = sectionRect.top + sectionRect.height / 2 + dynamicOffset
       
       return [
         {
@@ -612,7 +617,7 @@ export function StreamersSection() {
 
     // Para 3+ streams
     const centerX = sectionRect.left + sectionRect.width / 2
-    const centerY = sectionRect.top + sectionRect.height / 2
+    const centerY = sectionRect.top + sectionRect.height / 2 + dynamicOffset
     const leftIndex = (selectedIndex - 1 + streamers.length) % streamers.length
     const rightIndex = (selectedIndex + 1) % streamers.length
 
@@ -653,7 +658,7 @@ export function StreamersSection() {
         }
       }
     ]
-  }, [streamers, selectedIndex, sectionRect])
+  }, [streamers, selectedIndex, sectionRect, featuredMatchesHeight, isCollapsed])
 
   const nextStream = () => {
     setSelectedIndex((prev) => (prev + 1) % streamers.length)

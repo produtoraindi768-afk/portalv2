@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { ChevronsUpDown, Play, Calendar, Trophy } from "lucide-react"
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore"
 
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { useHeaderHeight } from "@/contexts/HeaderHeightContext"
 
 type TeamInfo = {
   id?: string
@@ -55,12 +56,18 @@ export function HeaderFeaturedMatchesTab() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { setFeaturedMatchesHeight, setIsCollapsed: setContextIsCollapsed } = useHeaderHeight()
 
   useEffect(() => {
     // restaurar estado recolhido
     try {
       const raw = localStorage.getItem("sz.headerFeatured.collapsed")
-      if (raw != null) setIsCollapsed(raw === "1")
+      const collapsed = raw === "1"
+      if (raw != null) {
+        setIsCollapsed(collapsed)
+        setContextIsCollapsed(collapsed)
+      }
     } catch {}
 
     const db = getClientFirestore()
@@ -124,9 +131,35 @@ export function HeaderFeaturedMatchesTab() {
       try {
         localStorage.setItem("sz.headerFeatured.collapsed", next ? "1" : "0")
       } catch {}
+      // Reportar estado para o contexto
+      setContextIsCollapsed(next)
       return next
     })
   }
+
+  // Monitorar altura do componente e reportar mudanças
+  useEffect(() => {
+    if (isLoading || items.length === 0) {
+      // Reportar altura 0 quando não renderizado
+      setFeaturedMatchesHeight(0)
+      return
+    }
+
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.offsetHeight
+        setFeaturedMatchesHeight(height)
+      }
+    }
+
+    // Atualizar altura imediatamente
+    updateHeight()
+
+    // Atualizar altura após mudanças de estado
+    const timeoutId = setTimeout(updateHeight, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [isCollapsed, items.length, setFeaturedMatchesHeight, isLoading])
 
   // Não renderizar nada se não há partidas ou ainda está carregando
   if (isLoading || items.length === 0) {
@@ -135,9 +168,12 @@ export function HeaderFeaturedMatchesTab() {
 
   return (
     <div
+      ref={containerRef}
       className={cn(
         // Fundo unificado: usar o background do tema, sem gradiente, para manter o preto consistente
-        "border-b bg-background text-card-foreground",
+        // z-[60] para ficar acima dos players da stream (que usam z-40) e miniplayer (z-50)
+        // Usar relative para ocupar espaço no layout e empurrar o conteúdo
+        "border-b bg-background text-card-foreground relative z-[60]",
         isCollapsed ? "py-2" : "py-3"
       )}
     >

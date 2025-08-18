@@ -16,7 +16,7 @@ import { navItems } from "./nav-items"
 
 export function SiteHeader() {
   return (
-    <header className="glass">
+    <header className="glass sticky top-0 z-[70]">
       <nav className="mx-auto flex h-20 w-full items-center gap-6 px-6 lg:max-w-7xl">
         <Link href="/" className="mr-auto inline-flex items-center gap-2" aria-label="Página inicial">
           <Image src="/logo sz.svg" alt="SZ" width={85} height={32} priority />
