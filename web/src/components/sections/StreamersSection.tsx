@@ -38,11 +38,57 @@ function PersistentTwitchPlayer({
   containerStyle: React.CSSProperties
 }) {
   const [mounted, setMounted] = useState(false)
+  const [iframeKey, setIframeKey] = useState(0)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Forçar remontagem do iframe quando canal muda para garantir autoplay
+  useEffect(() => {
+    if (channel && mounted) {
+      setIframeKey(prev => prev + 1)
+
+      // Trigger de autoplay após mudança de canal - versão melhorada
+      const triggerAutoplaySequence = () => {
+        const triggerAutoplay = () => {
+          const events = [
+            new MouseEvent('click', { bubbles: true, cancelable: true }),
+            new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+            new MouseEvent('mouseup', { bubbles: true, cancelable: true })
+          ]
+
+          events.forEach(event => {
+            try {
+              document.dispatchEvent(event)
+              if (iframeRef.current) {
+                iframeRef.current.dispatchEvent(event)
+              }
+              // Também tentar no document body
+              document.body.dispatchEvent(event)
+            } catch (e) {
+              // Ignore errors
+            }
+          })
+        }
+
+        // Múltiplas tentativas com delays crescentes para maximizar chances de sucesso
+        triggerAutoplay()
+        setTimeout(triggerAutoplay, 50)
+        setTimeout(triggerAutoplay, 150)
+        setTimeout(triggerAutoplay, 300)
+        setTimeout(triggerAutoplay, 500)
+        setTimeout(triggerAutoplay, 1000)
+      }
+
+      // Trigger após pequeno delay para garantir que o iframe foi montado
+      setTimeout(triggerAutoplaySequence, 100)
+      
+      // Trigger adicional após iframe estar mais estável
+      setTimeout(triggerAutoplaySequence, 500)
+    }
+  }, [channel, mounted])
 
   // URL do embed - sempre gerar se tiver canal e estiver montado
   const embedUrl = React.useMemo(() => {
@@ -69,8 +115,6 @@ function PersistentTwitchPlayer({
   // Sempre montar se tiver canal
   const shouldMount = Boolean(channel && mounted)
 
-
-
   if (!shouldMount) return null
 
   const playerContent = (
@@ -85,7 +129,7 @@ function PersistentTwitchPlayer({
         {embedUrl ? (
           <iframe
             ref={iframeRef}
-            key={`persistent-${channel}`} // Key estável para evitar remontagem
+            key={`persistent-${channel}-${iframeKey}`} // Key que força remontagem quando canal muda
             src={embedUrl}
             className={cn(
               "w-full h-full block relative transition-opacity duration-300",
@@ -197,15 +241,20 @@ function TwitchPlayerPortal({
 }
 
 // Componente de Preview para streams não selecionadas
-function StreamPreview({ 
-  streamer, 
-  containerStyle 
-}: { 
+function StreamPreview({
+  streamer,
+  containerStyle,
+  isVisible = true,
+  onClick
+}: {
   streamer: StreamerDoc
-  containerStyle: React.CSSProperties 
+  containerStyle: React.CSSProperties
+  isVisible?: boolean
+  onClick?: () => void
 }) {
   const [mounted, setMounted] = useState(false)
-  
+  const [isHovered, setIsHovered] = useState(false)
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -214,27 +263,44 @@ function StreamPreview({
 
   const previewContent = (
     <div
-      className="fixed z-30 pointer-events-none"
+      className={cn(
+        "fixed z-30 transition-all duration-300 cursor-pointer group",
+        isVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+        isHovered ? "scale-105" : "scale-100"
+      )}
       style={containerStyle}
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="w-full h-full bg-gradient-to-br from-muted/80 via-muted/60 to-background/90 flex items-center justify-center rounded-lg">
+      <div className="w-full h-full bg-gradient-to-br from-muted/80 via-muted/60 to-background/90 flex items-center justify-center rounded-lg border-2 border-transparent group-hover:border-primary/60 transition-all duration-300 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/20">
         <div className="relative w-full h-full flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-background/50 rounded-lg" />
-          
+
           <div className="absolute inset-0 flex items-center justify-center z-20">
-            <svg 
-              width="60" 
-              height="60" 
-              viewBox="0 0 60 60" 
-              className="text-white drop-shadow-lg"
+            <svg
+              width="60"
+              height="60"
+              viewBox="0 0 60 60"
+              className={cn(
+                "text-white drop-shadow-lg transition-all duration-300",
+                isHovered ? "scale-110 text-primary" : "scale-100"
+              )}
             >
-              <polygon 
-                points="20,15 20,45 45,30" 
+              <polygon
+                points="20,15 20,45 45,30"
                 fill="currentColor"
                 className="opacity-90"
               />
             </svg>
           </div>
+          
+          {/* Overlay de hover */}
+          <div className={cn(
+            "absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 transition-opacity duration-300 rounded-lg",
+            isHovered ? "opacity-100" : "opacity-0"
+          )} />
+          
         </div>
       </div>
     </div>
@@ -479,6 +545,38 @@ export function StreamersSection() {
     }
   }, [selectedIndex, streamers, showMiniplayer, isMiniplaying])
 
+  // Simular interação do usuário sempre que selectedIndex mudar para garantir autoplay
+  useEffect(() => {
+    if (streamers.length > 0 && mounted) {
+      console.log('Stream selection changed - triggering autoplay interaction for selectedIndex:', selectedIndex)
+      
+      // Simular interação do usuário para autoplay
+      const triggerAutoplay = () => {
+        const events = [
+          new MouseEvent('click', { bubbles: true, cancelable: true }),
+          new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+          new TouchEvent('touchstart', { bubbles: true, cancelable: true })
+        ]
+        
+        events.forEach(event => {
+          try {
+            document.dispatchEvent(event)
+            if (sectionRef.current) {
+              sectionRef.current.dispatchEvent(event)
+            }
+          } catch (e) {
+            // Ignore errors for TouchEvent in environments that don't support it
+          }
+        })
+      }
+
+      // Trigger imediato e alguns delays para garantir
+      triggerAutoplay()
+      setTimeout(triggerAutoplay, 100)
+      setTimeout(triggerAutoplay, 300)
+    }
+  }, [selectedIndex, streamers, mounted])
+
   // Calcular streams visíveis e suas posições (memoizado para evitar recriações)
   const visibleStreams = React.useMemo(() => {
     // Calcular offset dinâmico: só adicionar altura quando expandido
@@ -662,10 +760,84 @@ export function StreamersSection() {
 
   const nextStream = () => {
     setSelectedIndex((prev) => (prev + 1) % streamers.length)
+    
+    // Simular interação imediata para garantir autoplay na mudança
+    setTimeout(() => {
+      const triggerAutoplay = () => {
+        const events = [
+          new MouseEvent('click', { bubbles: true, cancelable: true }),
+          new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+        ]
+        
+        events.forEach(event => {
+          try {
+            document.dispatchEvent(event)
+            if (sectionRef.current) {
+              sectionRef.current.dispatchEvent(event)
+            }
+          } catch (e) {
+            // Ignore errors
+          }
+        })
+      }
+      triggerAutoplay()
+    }, 10)
   }
 
   const prevStream = () => {
     setSelectedIndex((prev) => (prev - 1 + streamers.length) % streamers.length)
+    
+    // Simular interação imediata para garantir autoplay na mudança
+    setTimeout(() => {
+      const triggerAutoplay = () => {
+        const events = [
+          new MouseEvent('click', { bubbles: true, cancelable: true }),
+          new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+        ]
+        
+        events.forEach(event => {
+          try {
+            document.dispatchEvent(event)
+            if (sectionRef.current) {
+              sectionRef.current.dispatchEvent(event)
+            }
+          } catch (e) {
+            // Ignore errors
+          }
+        })
+      }
+      triggerAutoplay()
+    }, 10)
+  }
+
+  const goToStream = (streamerId: string) => {
+    const targetIndex = streamers.findIndex(s => s.id === streamerId)
+    if (targetIndex !== -1 && targetIndex !== selectedIndex) {
+      console.log('Going to stream:', streamerId, 'index:', targetIndex)
+      setSelectedIndex(targetIndex)
+      
+      // Simular interação imediata para garantir autoplay na mudança
+      setTimeout(() => {
+        const triggerAutoplay = () => {
+          const events = [
+            new MouseEvent('click', { bubbles: true, cancelable: true }),
+            new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+          ]
+          
+          events.forEach(event => {
+            try {
+              document.dispatchEvent(event)
+              if (sectionRef.current) {
+                sectionRef.current.dispatchEvent(event)
+              }
+            } catch (e) {
+              // Ignore errors
+            }
+          })
+        }
+        triggerAutoplay()
+      }, 10)
+    }
   }
 
   if (streamers.length === 0) {
@@ -734,6 +906,8 @@ export function StreamersSection() {
             <StreamPreview
               streamer={streamer}
               containerStyle={containerStyle}
+              isVisible={isMainPlayerVisible}
+              onClick={() => goToStream(streamer.id)}
             />
           )}
         </React.Fragment>
