@@ -53,13 +53,11 @@ Já implementei uma solução temporária que:
 1. **Acesse** `/torneios`
 2. **Verifique** se os dados aparecem
 3. **Confirme** que o badge "Gratuito" aparece
-4. **Teste** o componente de debug
 
 ## 📱 **O que Você Deve Ver:**
 
 - ✅ **Dados do Firebase** (se houver torneios na coleção)
 - ✅ **Badge "Gratuito"** para torneios com `entryFee: 0`
-- ✅ **Componente de debug** funcionando
 - ✅ **Sem erros** no console
 
 ## 🔍 **Se Ainda Não Funcionar:**

@@ -3,8 +3,6 @@ import { Metadata } from 'next'
 import { firestoreHelpers } from '@/lib/firestore-helpers'
 import { TournamentCard } from '@/components/tournaments/TournamentCard'
 import { TournamentFilters } from '@/components/tournaments/TournamentFilters'
-import { TournamentStats } from '@/components/tournaments/TournamentStats'
-import { FirebaseDebugInfo } from '@/components/tournaments/FirebaseDebugInfo'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export const metadata: Metadata = {
@@ -81,16 +79,13 @@ async function TournamentsContent() {
 
   try {
     // Tentar buscar dados do Firebase
-    console.log('🔍 Tentando conectar com Firebase...')
     const tournamentsSnapshot = await firestoreHelpers.getAllTournaments()
-    
+
     if (tournamentsSnapshot && !tournamentsSnapshot.empty) {
-      console.log('✅ Firebase conectado com dados!')
       isFirebaseConnected = true
       tournaments = tournamentsSnapshot.docs.map(doc => {
         const data = doc.data()
-        console.log('📊 Dados do documento:', data)
-        
+
         // Mapear dados do Firebase para a estrutura esperada
         const tournament: Tournament = {
           id: doc.id,
@@ -110,32 +105,27 @@ async function TournamentsContent() {
           avatar: data.avatar || data.bannerUrl || undefined,
           tournamentUrl: data.tournamentUrl || data.rules || undefined
         }
-        
-        console.log('🔄 Torneio mapeado:', tournament)
+
         return tournament
       })
-      
+
       // Ordenar por data de início (mais recente primeiro)
       tournaments.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
     } else if (tournamentsSnapshot) {
       // Firebase conectado mas sem dados
-      console.log('✅ Firebase conectado, mas sem dados')
       isFirebaseConnected = true
       tournaments = []
     } else {
-      console.log('❌ Firebase retornou null - problema de conexão')
       firebaseError = 'Firebase retornou null - verifique a configuração'
       isFirebaseConnected = false
     }
   } catch (error) {
-    console.error('❌ Erro ao buscar torneios do Firebase:', error)
     firebaseError = error instanceof Error ? error.message : 'Erro desconhecido ao conectar com o banco de dados'
     isFirebaseConnected = false
   }
 
   // Se não há dados do Firebase, usar dados de exemplo
   if (!isFirebaseConnected || tournaments.length === 0) {
-    console.log('📝 Usando dados de exemplo...')
     const mockTournaments: Tournament[] = [
       {
         id: "1",
@@ -296,8 +286,6 @@ async function TournamentsContent() {
   const freeTournaments = tournaments.filter(t => t.entryFee === 0).length
   const totalPrizePool = tournaments.reduce((sum, t) => sum + t.prizePool, 0)
 
-  console.log(`📊 Status final: Firebase=${isFirebaseConnected}, Torneios=${totalTournaments}, Erro=${firebaseError}`)
-
   return (
     <div className="pt-24 pb-8 lg:pt-32 lg:pb-16">
       <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
@@ -310,51 +298,8 @@ async function TournamentsContent() {
             <p className="text-muted-foreground mt-4 text-base/7 text-balance sm:text-lg/8">
               Confira todos os campeonatos e torneios disponíveis
             </p>
-            
-            {/* Status da conexão */}
-            {firebaseError && (
-              <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
-                <p className="text-destructive text-sm">
-                  ⚠️ <strong>Erro de Conexão:</strong> {firebaseError}
-                </p>
-              </div>
-            )}
-            
-            {!isFirebaseConnected && !firebaseError && (
-              <div className="mt-6 p-4 bg-accent/50 border border-accent rounded-xl">
-                <p className="text-accent-foreground text-sm">
-                  💡 <strong>Modo Demonstração:</strong> Exibindo dados de exemplo. 
-                  Para dados reais, configure o Firebase corretamente.
-                </p>
-              </div>
-            )}
-
-            {isFirebaseConnected && tournaments.length === 0 && (
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-                <p className="text-blue-800 dark:text-blue-200 text-sm">
-                  ℹ️ <strong>Banco de Dados:</strong> Conectado ao Firebase, mas nenhum torneio encontrado.
-                  Adicione torneios através do Firebase Console.
-                </p>
-              </div>
-            )}
-
-            {isFirebaseConnected && tournaments.length > 0 && (
-              <div className="mt-6 p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-xl">
-                <p className="text-green-800 dark:text-green-200 text-sm">
-                  ✅ <strong>Banco de Dados:</strong> Conectado ao Firebase com {totalTournaments} torneios carregados.
-                </p>
-              </div>
-            )}
-
-            {/* Componente de Debug Firebase */}
-            <div className="mt-6">
-              <FirebaseDebugInfo />
-            </div>
           </div>
         </div>
-
-        {/* Estatísticas dos Torneios */}
-        <TournamentStats tournaments={tournaments} />
 
         {/* Filtros */}
         <TournamentFilters />

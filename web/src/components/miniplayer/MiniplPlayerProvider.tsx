@@ -99,7 +99,7 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     } else if (isVisible) {
       setActivePlayerState('miniplayer')
     }
-  }, [isVisible])
+  }, [isVisible, isMinimizedState])
 
   const switchStreamer = useCallback((streamer: StreamerForMiniplayer) => {
     setSelectedStreamer(streamer)

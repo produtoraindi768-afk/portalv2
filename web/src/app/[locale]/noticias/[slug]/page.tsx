@@ -22,6 +22,7 @@ type NewsDoc = {
 interface PageProps {
   params: Promise<{
     slug: string
+    locale: string
   }>
 }
 

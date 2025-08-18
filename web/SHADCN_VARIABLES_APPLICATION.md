@@ -94,25 +94,7 @@ bg-chart-4/10           /* Estado secundário */
 <Skeleton className="h-12 w-64 mb-4 bg-muted" />
 ```
 
-### **2. Estatísticas (`TournamentStats.tsx`)**
 
-#### **Cards de Estatísticas**
-```tsx
-// Antes
-<Card className="group hover:shadow-lg transition-all duration-300 border-border bg-card hover:bg-accent/5">
-
-// Depois
-<Card className="border-border bg-card hover:bg-accent/5 transition-colors">
-```
-
-#### **Títulos e Textos**
-```tsx
-// Antes
-<h2 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight mb-2">
-
-// Depois
-<h2 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight text-foreground mb-4">
-```
 
 #### **Badges e Estados**
 ```tsx
@@ -161,30 +143,7 @@ className="border-border text-muted-foreground hover:bg-accent hover:text-accent
 <SelectTrigger className="border-border bg-background text-foreground">
 ```
 
-### **4. Debug Firebase (`FirebaseDebugInfo.tsx`)**
 
-#### **Card Principal**
-```tsx
-// Antes
-<Card className="border-orange-200 bg-orange-50">
-
-// Depois
-<Card className="border-border bg-card">
-```
-
-#### **Títulos e Textos**
-```tsx
-// Antes
-<CardTitle className="text-orange-800 text-lg">
-
-// Depois
-<CardTitle className="text-foreground text-lg">
-```
-
-#### **Botões e Estados**
-```tsx
-// Antes
-className="text-orange-700 border-orange-300"
 
 // Depois
 className="border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -351,9 +310,7 @@ border-border            /* Bordas visíveis mas sutis */
 ## 📋 **Checklist de Implementação**
 
 - [x] **Página principal**: Títulos, mensagens e status
-- [x] **Estatísticas**: Cards, badges e progress bars
 - [x] **Filtros**: Botões, inputs e select
-- [x] **Debug Firebase**: Card e elementos interativos
 - [x] **Cards de Torneios**: Badges, separadores e elementos visuais
 - [x] **Loading Skeleton**: Fallback de carregamento
 - [x] **Tema escuro**: Fallbacks para cores específicas
@@ -377,20 +334,10 @@ A página de torneios agora está **completamente integrada** com o sistema de v
 - Mensagens de status com fallbacks para tema escuro
 - Loading skeleton com `bg-muted`
 
-#### **✅ Estatísticas (`TournamentStats.tsx`)**
-- Cards com `border-border` e `bg-card`
-- Badges com variáveis semânticas
-- Torneios gratuitos com `chart-2` em vez de verde hardcoded
-
 #### **✅ Filtros (`TournamentFilters.tsx`)**
 - Botões com `border-border` e `text-muted-foreground`
 - Inputs com `bg-background` e `text-foreground`
 - Select com `bg-popover` e `text-popover-foreground`
-
-#### **✅ Debug Firebase (`FirebaseDebugInfo.tsx`)**
-- Card com `border-border` e `bg-card`
-- Badges de status com `chart-2` em vez de verde hardcoded
-- Botões com variáveis consistentes
 
 #### **✅ Cards de Torneios (`TournamentCard.tsx`)**
 - Separador com `bg-border`

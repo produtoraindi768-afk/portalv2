@@ -158,7 +158,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
   // Handlers para arrastar
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     // Não permitir arrastar quando minimizado (posição fixa no rodapé)
-    if (state.isMinimized) return
+    if (contextIsMinimized) return
     // Só permitir drag pelo header, não pelos botões
     const target = e.target as HTMLElement
     if (target.closest('button') || target.closest('iframe') || target.closest('svg')) {
@@ -182,7 +182,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
     setDragging(true)
     document.body.style.userSelect = 'none'
     document.body.style.cursor = 'grabbing'
-  }, [setDragging])
+  }, [setDragging, contextIsMinimized])
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!dragRef.current.isDragging) return
@@ -218,7 +218,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
   // Handlers para touch events (mobile)
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     // Não permitir arrastar quando minimizado
-    if (state.isMinimized) return
+    if (contextIsMinimized) return
     // Só permitir drag pelo header, não pelos botões
     const target = e.target as HTMLElement
     if (target.closest('button') || target.closest('iframe') || target.closest('svg')) {
@@ -242,7 +242,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
 
     setDragging(true)
     document.body.style.userSelect = 'none'
-  }, [setDragging])
+  }, [setDragging, contextIsMinimized])
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
     if (!dragRef.current.isDragging) return
@@ -323,10 +323,9 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
   }, [activeStreamer, onOpenTwitch, setMinimized])
 
   const handleMinimizeToggle = useCallback(() => {
-    
     // Permitir toggle manual apenas quando não está minimizado pelo contexto
     const next = !contextIsMinimized
-    
+
     // Usar a função do contexto para minimizar
     contextSetMinimized(next)
     
@@ -445,7 +444,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
                 }
               }}
               className="flex-1 transition-all duration-100" // Transição mais rápida
-              isMinimized={state.isMinimized}
+              isMinimized={contextIsMinimized}
             />
           )}
 
@@ -502,7 +501,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
             )}
           >
             {/* Indicador de drag no mobile */}
-            {isMobile && !state.isMinimized && (
+            {isMobile && !contextIsMinimized && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center justify-center h-6 w-6 text-muted-foreground transition-all duration-100"> {/* Transição mais rápida */}
@@ -525,7 +524,10 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
                     "transition-all duration-100" // Transição mais rápida
                   )}
                   aria-label={contextIsMinimized ? 'Restaurar miniplayer' : 'Minimizar e rodar em segundo plano'}
-                  onClick={handleMinimizeToggle}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleMinimizeToggle()
+                  }}
                 >
                   {contextIsMinimized ? (
                     <Maximize2 className={cn(contextIsMinimized ? "h-3 w-3" : "h-3 w-3")} />
