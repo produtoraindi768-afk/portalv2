@@ -40,7 +40,8 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
     switchStreamer,
     loading: contextLoading,
     isMinimized: contextIsMinimized,
-    setMinimized: contextSetMinimized
+    setMinimized: contextSetMinimized,
+    activePlayer
   } = useMiniplPlayerContext()
   
   const {
@@ -58,6 +59,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
   const [headerHeight, setHeaderHeight] = useState<number>(OPEN_HEADER_HEIGHT_PX)
   const dragRef = useRef<{
     isDragging: boolean
@@ -106,13 +108,17 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
     if (!activeStreamer || activeStreamer.platform !== 'twitch' || !activeStreamer.twitchChannel) {
       return null
     }
+    
+    // Usar URL estável - sempre com autoplay
+    // Começar mutado para garantir autoplay, mas permitir controle via interface
     const params = new URLSearchParams({
       channel: activeStreamer.twitchChannel,
       autoplay: 'true',
-      muted: state.isMuted.toString(),
+      muted: 'true', // Sempre começar mutado para garantir autoplay
       // Deixe os controles padrão do player Twitch (evita bloqueios de autoplay em alguns navegadores)
       // e melhora UX para pausar/mutar rápido
-      controls: 'true'
+      controls: 'true',
+      playsinline: 'true'
     })
     const parents = new Set<string>()
     if (typeof window !== 'undefined' && window.location.hostname) {
@@ -122,7 +128,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
     parents.forEach((p) => params.append('parent', p))
     const finalUrl = `https://player.twitch.tv/?${params.toString()}`
     return finalUrl
-  }, [activeStreamer, state.isMuted])
+  }, [activeStreamer])
 
   const canPlay = Boolean(activeStreamer && activeStreamer.platform === 'twitch' && activeStreamer.isOnline && activeStreamer.twitchChannel)
   
@@ -488,8 +494,6 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
             </div>
           )}
 
-          {/* Indicador compacto removido: em modo minimizado usamos apenas o StreamSwitcher (3 avatares +N) */}
-
           {/* Ações rápidas no topo direito: Minimizar e Abrir no Twitch */}
           <div
             className={cn(
@@ -582,14 +586,15 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
                   className={cn(
                     'w-full h-full block transition-all duration-100', // Transição mais rápida
                     contextIsMinimized 
-                      ? 'absolute -left-[10000px] top-auto w-[1px] h-[1px] opacity-0 pointer-events-none' 
+                      ? 'absolute -left-[10000px] top-auto w-[320px] h-[180px] opacity-0 pointer-events-none' // Mantém tamanho real mas fora da tela
                       : 'relative opacity-100'
                   )}
                   frameBorder="0"
                   allowFullScreen
                   scrolling="no"
                   title={`${activeStreamer?.name} - Twitch Stream`}
-                  allow="autoplay; fullscreen"
+                  allow="autoplay; fullscreen; encrypted-media"
+                  ref={iframeRef}
                 />
               ) : (
                 // Placeholder quando stream está offline ou não há streamers

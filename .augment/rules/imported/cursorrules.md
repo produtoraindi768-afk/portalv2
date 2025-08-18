@@ -1,0 +1,20 @@
+---
+type: "manual"
+---
+
+{
+  "mcpServers": {
+    "shadcn-ui": {
+      "command": "C:\\projetosia\\node_modules\\.bin\\shadcn-mcp.cmd",
+      "args": [
+        "--github-api-key",
+        "${GITHUB_API_KEY}"
+      ],
+      "env": {
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
+
+

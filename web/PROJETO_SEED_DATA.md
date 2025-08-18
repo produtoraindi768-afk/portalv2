@@ -156,6 +156,15 @@ Coleções sugeridas p/ testes:
   - rules: string — Regras do torneio
   - status: string — Status do torneio (ex.: "upcoming", "ongoing", "finished")
   - isActive: boolean — Torneio ativo/inativo
+  - avatar: string — URL do avatar/imagem do torneio
+  - tournamentUrl: string — URL oficial do torneio para redirecionamento
+  - organizer: string — Nome da organização
+  - region: string — Região do torneio
+  - contactEmail: string — Email de contato
+  - discordServer: string — URL do servidor Discord
+  - bannerUrl: string — URL da imagem de banner
+  - createdAt: Date/Timestamp — Data de criação
+  - updatedAt: Date/Timestamp — Data de atualização
 
   Exemplo (JSONC):
   ```jsonc
@@ -172,7 +181,16 @@ Coleções sugeridas p/ testes:
     "entryFee": 0,
     "rules": "Sem trapaças, seguir fair play.",
     "status": "upcoming",
-    "isActive": true
+    "isActive": true,
+    "avatar": "https://example.com/avatar.jpg",
+    "tournamentUrl": "https://ballistic.epicgames.com/tournament",
+    "organizer": "Epic Games",
+    "region": "BR",
+    "contactEmail": "contato@ballistic.com",
+    "discordServer": "https://discord.gg/ballistic",
+    "bannerUrl": "https://example.com/banner.jpg",
+    "createdAt": "2025-08-10T10:00:00.000Z",
+    "updatedAt": "2025-08-10T10:00:00.000Z"
   }
   ```
 

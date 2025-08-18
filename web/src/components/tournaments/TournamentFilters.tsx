@@ -33,25 +33,25 @@ const statusOptions = [
   { 
     value: 'all', 
     label: 'Todos os Status', 
-    color: 'bg-muted/50 text-muted-foreground',
+    color: 'bg-muted/50 text-muted-foreground border-muted',
     icon: '📋'
   },
   { 
     value: 'upcoming', 
     label: 'Próximos', 
-    color: 'bg-chart-2/10 text-chart-2',
+    color: 'bg-chart-2/10 text-chart-2 border-chart-2/20',
     icon: '📅'
   },
   { 
     value: 'ongoing', 
     label: 'Em Andamento', 
-    color: 'bg-destructive/10 text-destructive',
+    color: 'bg-destructive/10 text-destructive border-destructive/20',
     icon: '🔴'
   },
   { 
     value: 'finished', 
     label: 'Finalizados', 
-    color: 'bg-muted text-muted-foreground',
+    color: 'bg-muted text-muted-foreground border-muted',
     icon: '🏁'
   }
 ]
@@ -96,206 +96,187 @@ export function TournamentFilters({ onFilterChange }: TournamentFiltersProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-semibold">Filtros</h3>
+          <h3 className="text-lg font-semibold text-foreground">Filtros</h3>
           {hasActiveFilters && (
-            <Badge variant="secondary" className="ml-2">
-              {[filters.status !== 'all', filters.game !== 'all', filters.format !== 'all', filters.search].filter(Boolean).length} ativo(s)
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+              {Object.values(filters).filter(v => v !== 'all' && v !== '').length} ativo{Object.values(filters).filter(v => v !== 'all' && v !== '').length !== 1 ? 's' : ''}
             </Badge>
           )}
         </div>
         
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-muted-foreground"
-        >
-          <Filter className="w-4 h-4 mr-2" />
-          {isExpanded ? 'Ocultar' : 'Mostrar'} Filtros
-        </Button>
+        <div className="flex items-center gap-2">
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              className="border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Limpar
+            </Button>
+          )}
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            {isExpanded ? 'Ocultar' : 'Mostrar'}
+          </Button>
+        </div>
       </div>
 
-      <Card className={`transition-all duration-300 ${isExpanded ? 'shadow-md' : 'shadow-sm'}`}>
-        <CardContent className="p-6 space-y-6">
-          {/* Barra de pesquisa principal */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="Buscar por nome do torneio, descrição..."
-              className="pl-12 h-12 text-base border-2 focus:border-primary transition-colors"
-              value={filters.search}
-              onChange={(e) => handleFilterChange({ search: e.target.value })}
-            />
-            {filters.search && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                onClick={() => handleFilterChange({ search: '' })}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-
-          {/* Filtros rápidos de status */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Status:</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {statusOptions.map((option) => (
-                <Button
-                  key={option.value}
-                  variant={filters.status === option.value ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleFilterChange({ status: option.value as any })}
-                  className="h-9 rounded-full transition-all duration-200 hover:scale-105"
-                >
-                  <span className="mr-1">{option.icon}</span>
-                  {option.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Divisor */}
-          {isExpanded && <Separator />}
-
-          {/* Filtros avançados (mostrar quando expandido) */}
-          {isExpanded && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Filtro por jogo */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Jogo:</span>
-                </div>
-                <Select
-                  value={filters.game}
-                  onValueChange={(value) => handleFilterChange({ game: value })}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Selecione um jogo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {gameOptions.map((game) => (
-                      <SelectItem key={game.value} value={game.value}>
-                        {game.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      {/* Filtros expandidos */}
+      {isExpanded && (
+        <Card className="border-border bg-card">
+          <CardContent className="p-6 space-y-6">
+            {/* Barra de pesquisa */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Buscar torneios</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Digite o nome do torneio, jogo ou descrição..."
+                  value={filters.search}
+                  onChange={(e) => handleFilterChange({ search: e.target.value })}
+                  className="pl-10 border-border bg-background text-foreground placeholder:text-muted-foreground"
+                />
               </div>
+            </div>
 
-              {/* Filtro por formato */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Formato:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formatOptions.map((option) => (
-                    <Button
-                      key={option.value}
-                      variant={filters.format === option.value ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleFilterChange({ format: option.value as any })}
-                      className="h-9 rounded-full"
-                    >
-                      <span className="mr-1">{option.icon}</span>
+            {/* Filtros de status */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground">Status do torneio</label>
+              <div className="flex flex-wrap gap-2">
+                {statusOptions.map((option) => (
+                  <Button
+                    key={option.value}
+                    variant={filters.status === option.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleFilterChange({ status: option.value as any })}
+                    className={`${
+                      filters.status === option.value 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                        : 'border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    }`}
+                  >
+                    <span className="mr-2">{option.icon}</span>
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Filtros de jogo */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground">Jogo</label>
+              <Select value={filters.game} onValueChange={(value) => handleFilterChange({ game: value })}>
+                <SelectTrigger className="border-border bg-background text-foreground">
+                  <SelectValue placeholder="Selecione um jogo" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover text-popover-foreground border-border">
+                  {gameOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="text-foreground">
                       {option.label}
-                    </Button>
+                    </SelectItem>
                   ))}
-                </div>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtros de formato */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground">Formato</label>
+              <div className="flex flex-wrap gap-2">
+                {formatOptions.map((option) => (
+                  <Button
+                    key={option.value}
+                    variant={filters.format === option.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleFilterChange({ format: option.value as any })}
+                    className={`${
+                      filters.format === option.value 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                        : 'border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    }`}
+                  >
+                    <span className="mr-2">{option.icon}</span>
+                    {option.label}
+                  </Button>
+                ))}
               </div>
             </div>
-          )}
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Filtros ativos e ações */}
-          {hasActiveFilters && (
-            <>
-              <Separator />
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Filtros ativos:</span>
-                  </div>
-                  
-                  {filters.status !== 'all' && (
-                    <Badge variant="secondary" className="text-xs rounded-full">
-                      {statusOptions.find(s => s.value === filters.status)?.icon} {statusOptions.find(s => s.value === filters.status)?.label}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
-                        onClick={() => handleFilterChange({ status: 'all' })}
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                  
-                  {filters.game !== 'all' && (
-                    <Badge variant="secondary" className="text-xs rounded-full">
-                      🎮 {gameOptions.find(g => g.value === filters.game)?.label}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
-                        onClick={() => handleFilterChange({ game: 'all' })}
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                  
-                  {filters.format !== 'all' && (
-                    <Badge variant="secondary" className="text-xs rounded-full">
-                      {formatOptions.find(f => f.value === filters.format)?.icon} {formatOptions.find(f => f.value === filters.format)?.label}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
-                        onClick={() => handleFilterChange({ format: 'all' })}
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                  
-                  {filters.search && (
-                    <Badge variant="secondary" className="text-xs rounded-full">
-                      🔍 "{filters.search}"
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
-                        onClick={() => handleFilterChange({ search: '' })}
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="h-9 rounded-full"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Limpar Todos
-                </Button>
-              </div>
-            </>
+      {/* Filtros ativos (chips) */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap gap-2">
+          {filters.status !== 'all' && (
+            <Badge 
+              variant="outline" 
+              className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+            >
+              Status: {statusOptions.find(s => s.value === filters.status)?.label}
+              <button
+                onClick={() => handleFilterChange({ status: 'all' })}
+                className="ml-2 hover:text-primary/80"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
           )}
-        </CardContent>
-      </Card>
+          
+          {filters.game !== 'all' && (
+            <Badge 
+              variant="outline" 
+              className="bg-chart-2/10 text-chart-2 border-chart-2/20 hover:bg-chart-2/20"
+            >
+              Jogo: {gameOptions.find(g => g.value === filters.game)?.label}
+              <button
+                onClick={() => handleFilterChange({ game: 'all' })}
+                className="ml-2 hover:text-chart-2/80"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          )}
+          
+          {filters.format !== 'all' && (
+            <Badge 
+              variant="outline" 
+              className="bg-chart-3/10 text-chart-3 border-chart-3/20 hover:bg-chart-3/20"
+            >
+              Formato: {formatOptions.find(f => f.value === filters.format)?.label}
+              <button
+                onClick={() => handleFilterChange({ format: 'all' })}
+                className="ml-2 hover:text-chart-3/80"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          )}
+          
+          {filters.search && (
+            <Badge 
+              variant="outline" 
+              className="bg-chart-4/10 text-chart-4 border-chart-4/20 hover:bg-chart-4/20"
+            >
+              Busca: "{filters.search}"
+              <button
+                onClick={() => handleFilterChange({ search: '' })}
+                className="ml-2 hover:text-chart-4/80"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          )}
+        </div>
+      )}
     </div>
   )
 }

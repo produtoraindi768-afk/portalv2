@@ -293,17 +293,70 @@ export class FirestoreHelpers {
   }
 
   async getAllTournaments(): Promise<QuerySnapshot<DocumentData> | null> {
-    if (!this.db) return null
+    console.log('🔍 getAllTournaments: Iniciando...')
+    
+    if (!this.db) {
+      console.error('❌ getAllTournaments: this.db é null - Firebase não configurado')
+      return null
+    }
 
     try {
+      console.log('🔍 getAllTournaments: Criando query...')
+      
+      // Query simplificada para não precisar de índice composto
       const tournamentsQuery = query(
         collection(this.db, 'tournaments'),
-        where('isActive', '==', true),
-        orderBy('startDate', 'desc')
+        where('isActive', '==', true)
+        // Removido orderBy temporariamente para evitar erro de índice
+        // orderBy('startDate', 'desc')
       )
-      return await getDocs(tournamentsQuery)
+      
+      console.log('🔍 getAllTournaments: Executando query...')
+      const result = await getDocs(tournamentsQuery)
+      console.log(`✅ getAllTournaments: Query executada com sucesso. Resultado: ${result ? 'sucesso' : 'null'}, Empty: ${result?.empty}, Size: ${result?.size}`)
+      
+      return result
     } catch (error) {
-      console.error('Error fetching all tournaments:', error)
+      console.error('❌ getAllTournaments: Erro ao buscar torneios:', error)
+      console.error('❌ getAllTournaments: Detalhes do erro:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown',
+        stack: error instanceof Error ? error.stack : 'Unknown'
+      })
+      return null
+    }
+  }
+
+  // Método alternativo que ordena no cliente (para quando não há índice)
+  async getAllTournamentsOrdered(): Promise<QuerySnapshot<DocumentData> | null> {
+    console.log('🔍 getAllTournamentsOrdered: Iniciando...')
+    
+    if (!this.db) {
+      console.error('❌ getAllTournamentsOrdered: this.db é null - Firebase não configurado')
+      return null
+    }
+
+    try {
+      console.log('🔍 getAllTournamentsOrdered: Criando query...')
+      
+      // Query simples sem orderBy para evitar erro de índice
+      const tournamentsQuery = query(
+        collection(this.db, 'tournaments'),
+        where('isActive', '==', true)
+      )
+      
+      console.log('🔍 getAllTournamentsOrdered: Executando query...')
+      const result = await getDocs(tournamentsQuery)
+      console.log(`✅ getAllTournamentsOrdered: Query executada com sucesso. Resultado: ${result ? 'sucesso' : 'null'}, Empty: ${result?.empty}, Size: ${result?.size}`)
+      
+      return result
+    } catch (error) {
+      console.error('❌ getAllTournamentsOrdered: Erro ao buscar torneios:', error)
+      console.error('❌ getAllTournamentsOrdered: Detalhes do erro:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown',
+        stack: error instanceof Error ? error.stack : 'Unknown'
+      })
       return null
     }
   }

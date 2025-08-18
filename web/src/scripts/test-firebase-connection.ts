@@ -1,59 +1,72 @@
 import { config } from 'dotenv'
 import { resolve } from 'path'
-import { getClientFirestore } from '../lib/safeFirestore'
-import { collection, getDocs } from 'firebase/firestore'
 
 // Carregar variáveis de ambiente do arquivo .env.local
-const envPath = resolve(process.cwd(), '.env.local')
-console.log('📁 Tentando carregar arquivo:', envPath)
-config({ path: envPath })
+config({ path: resolve(process.cwd(), '.env.local') })
 
 async function testFirebaseConnection() {
-  console.log('🔍 Testando conexão com Firebase...')
-  
-  // Verificar se as variáveis estão carregadas
-  console.log('📋 Variáveis de ambiente:')
-  console.log('API_KEY:', process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? '✅ Configurada' : '❌ Não configurada')
-  console.log('PROJECT_ID:', process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? '✅ Configurada' : '❌ Não configurada')
+  console.log('🧪 Teste de Conexão Firebase - Básico\n')
+
+  // Verificar variáveis de ambiente
+  console.log('📋 Variáveis de Ambiente:')
+  const envVars = {
+    'NEXT_PUBLIC_FIREBASE_API_KEY': process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN': process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    'NEXT_PUBLIC_FIREBASE_PROJECT_ID': process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET': process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID': process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    'NEXT_PUBLIC_FIREBASE_APP_ID': process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  }
+
+  Object.entries(envVars).forEach(([key, value]) => {
+    if (value) {
+      console.log(`✅ ${key}: ${value.substring(0, 20)}...`)
+    } else {
+      console.log(`❌ ${key}: Não configurado`)
+    }
+  })
+
+  // Verificar se todas as variáveis estão configuradas
+  const allConfigured = Object.values(envVars).every(Boolean)
+  console.log(`\n📊 Status: ${allConfigured ? '✅ Todas configuradas' : '❌ Faltando variáveis'}`)
+
+  if (!allConfigured) {
+    console.log('\n💡 Soluções:')
+    console.log('1. Verifique se o arquivo .env.local existe na raiz do projeto web/')
+    console.log('2. Confirme se todas as variáveis estão configuradas')
+    console.log('3. Reinicie o servidor após alterar as variáveis')
+    return
+  }
+
+  console.log('\n🚀 Testando importação do Firebase...')
   
   try {
+    // Testar importação do Firebase
+    const { getFirebaseApp } = await import('../lib/firebase')
+    console.log('✅ Importação do Firebase: OK')
+    
+    // Testar inicialização do app
+    const app = getFirebaseApp()
+    console.log('✅ Firebase App inicializado:', app.name)
+    
+    // Testar importação do Firestore
+    const { getClientFirestore } = await import('../lib/safeFirestore')
+    console.log('✅ Importação do Firestore: OK')
+    
+    // Testar obtenção do Firestore
     const db = getClientFirestore()
-    
-    if (!db) {
-      console.log('❌ Firestore não está disponível')
-      console.log('Verifique se as variáveis de ambiente estão configuradas:')
-      console.log('- NEXT_PUBLIC_FIREBASE_API_KEY')
-      console.log('- NEXT_PUBLIC_FIREBASE_PROJECT_ID')
-      return
-    }
-    
-    console.log('✅ Firestore conectado com sucesso!')
-    
-    // Testar uma consulta simples
-    console.log('🔍 Testando consulta na coleção "tournaments"...')
-    const tournamentsCollection = collection(db, 'tournaments')
-    const snapshot = await getDocs(tournamentsCollection)
-    
-    console.log(`✅ Consulta bem-sucedida! Encontrados ${snapshot.size} documentos`)
-    
-    if (snapshot.size > 0) {
-      console.log('📋 Documentos encontrados:')
-      snapshot.docs.forEach((doc, index) => {
-        const data = doc.data()
-        console.log(`${index + 1}. ${data.name || 'Sem nome'} (ID: ${doc.id})`)
-      })
+    if (db) {
+      console.log('✅ Firestore obtido com sucesso')
     } else {
-      console.log('📭 Nenhum documento encontrado na coleção "tournaments"')
+      console.log('❌ Firestore retornou null')
     }
     
   } catch (error) {
-    console.error('❌ Erro ao testar conexão:', error)
+    console.error('❌ Erro ao testar Firebase:', error)
   }
+
+  console.log('\n🔍 Teste concluído!')
 }
 
-// Executar se chamado diretamente
-if (require.main === module) {
-  testFirebaseConnection()
-}
-
-export { testFirebaseConnection }
+// Executar teste
+testFirebaseConnection().catch(console.error)

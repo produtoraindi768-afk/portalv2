@@ -1,13 +1,27 @@
 "use client"
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
 import { getClientFirestore } from '@/lib/safeFirestore'
-import { twitchStatusService } from '@/lib/twitch-status'
-import { FloatingMiniplayer } from './FloatingMiniplayer'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { FloatingMiniplayer } from './FloatingMiniplayer'
 
-import type { StreamerForMiniplayer } from '@/lib/miniplayer-types'
+export interface StreamerForMiniplayer {
+  id: string
+  name: string
+  platform: string
+  streamUrl: string
+  avatarUrl: string
+  category: string
+  isOnline: boolean
+  isFeatured: boolean
+  twitchChannel?: string
+  createdAt: string
+  lastStatusUpdate: string
+}
+
+// Tipo para controlar qual player está ativo
+export type ActivePlayerType = 'main' | 'miniplayer' | 'none'
 
 interface MiniplPlayerContextValue {
   isVisible: boolean
@@ -20,13 +34,17 @@ interface MiniplPlayerContextValue {
   selectedStreamer: StreamerForMiniplayer | null
   switchStreamer: (streamer: StreamerForMiniplayer) => void
   loading: boolean
+  // Novos campos para coordenação de players
+  activePlayer: ActivePlayerType
+  setActivePlayer: (player: ActivePlayerType) => void
+  isMainPlayerActive: boolean
 }
 
 const MiniplPlayerContext = createContext<MiniplPlayerContextValue | undefined>(undefined)
 
 export function useMiniplPlayerContext() {
   const context = useContext(MiniplPlayerContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useMiniplPlayerContext must be used within a MiniplPlayerProvider')
   }
   return context
@@ -43,30 +61,56 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   const [streamers, setStreamers] = useState<StreamerForMiniplayer[]>([])
   const [loading, setLoading] = useState(false) // Não precisa loading se não vai auto-mostrar
   const [isMinimizedState, setIsMinimizedState] = useState(false) // Controlar a minimização
+  
+  // Novo estado para coordenação de players
+  const [activePlayer, setActivePlayerState] = useState<ActivePlayerType>('main')
 
   const showMiniplayer = useCallback((streamer?: StreamerForMiniplayer) => {
     if (streamer) {
       setSelectedStreamer(streamer)
     }
     setIsVisible(true)
+    // Quando miniplayer é mostrado, ele se torna o player ativo
+    setActivePlayerState('miniplayer')
   }, [])
 
   const hideMiniplayer = useCallback(() => {
     setIsVisible(false)
+    // Quando miniplayer é escondido, o player principal volta a ser ativo
+    setActivePlayerState('main')
     // Não limpar o streamer selecionado para manter a seleção quando reativar
     // setSelectedStreamer(null) // Comentado para manter a seleção
   }, [])
 
   const toggleMiniplayer = useCallback(() => {
-    setIsVisible(prev => !prev)
-  }, [])
+    if (isVisible) {
+      hideMiniplayer()
+    } else {
+      showMiniplayer()
+    }
+  }, [isVisible, hideMiniplayer, showMiniplayer])
 
   const setMinimized = useCallback((minimized: boolean) => {
     setIsMinimizedState(minimized)
-  }, [])
+    // Quando miniplayer é minimizado, o player principal volta a ser ativo
+    // Quando miniplayer é expandido, ele se torna ativo
+    if (minimized) {
+      setActivePlayerState('main')
+    } else if (isVisible) {
+      setActivePlayerState('miniplayer')
+    }
+  }, [isVisible])
 
   const switchStreamer = useCallback((streamer: StreamerForMiniplayer) => {
     setSelectedStreamer(streamer)
+    // Quando mudamos de streamer no miniplayer, ele se torna ativo
+    if (isVisible) {
+      setActivePlayerState('miniplayer')
+    }
+  }, [isVisible])
+
+  const setActivePlayer = useCallback((player: ActivePlayerType) => {
+    setActivePlayerState(player)
   }, [])
 
   const handleClose = useCallback(() => {
@@ -83,42 +127,42 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   useEffect(() => {
     // Auto-show desabilitado - player flutuante apenas sob demanda
     setLoading(false)
-    setHasAutoShown(true)
+  }, [])
     
-    // Buscar streamers em destaque para seleção inicial
+  useEffect(() => {
     const fetchFeaturedStreamers = async () => {
       try {
         const db = getClientFirestore()
         if (!db) return
         
-        const streamersQuery = query(
+        // Query para streamers em destaque e online
+        const q = query(
           collection(db, 'streamers'),
-          where('isFeatured', '==', true)
+          where('isFeatured', '==', true),
+          where('isOnline', '==', true)
         )
         
-        const snapshot = await getDocs(streamersQuery)
-        const featuredStreamers: StreamerForMiniplayer[] = []
+        const querySnapshot = await getDocs(q)
         
-        snapshot.forEach((doc) => {
+        const featuredStreamers: StreamerForMiniplayer[] = querySnapshot.docs.map(doc => {
           const data = doc.data()
-          const streamer: StreamerForMiniplayer = {
+          return {
             id: doc.id,
             name: data.name || '',
             platform: data.platform || '',
             streamUrl: data.streamUrl || '',
             avatarUrl: data.avatarUrl || '',
             category: data.category || '',
-            isOnline: typeof data.isOnline === 'boolean' ? data.isOnline : String(data.isOnline).toLowerCase() === 'true' || data.isOnline === 1,
-            isFeatured: typeof data.isFeatured === 'boolean' ? data.isFeatured : String(data.isFeatured).toLowerCase() === 'true' || data.isFeatured === 1,
-            twitchChannel: data.platform === 'twitch' ? (twitchStatusService.extractUsernameFromTwitchUrl(data.streamUrl) || undefined) : undefined,
+            isOnline: Boolean(data.isOnline),
+            isFeatured: Boolean(data.isFeatured),
+            twitchChannel: data.platform === 'twitch' && data.streamUrl 
+              ? data.streamUrl.split('/').pop() || undefined 
+              : undefined,
             createdAt: data.createdAt || '',
             lastStatusUpdate: data.lastStatusUpdate || ''
           }
-          
-          if (streamer.name && streamer.streamUrl && streamer.isOnline) {
-            featuredStreamers.push(streamer)
-          }
         })
+
         
         setStreamers(featuredStreamers)
         
@@ -153,7 +197,11 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     streamers,
     selectedStreamer,
     switchStreamer,
-    loading
+    loading,
+    // Novos valores para coordenação
+    activePlayer,
+    setActivePlayer,
+    isMainPlayerActive: activePlayer === 'main'
   }
 
   return (
@@ -169,10 +217,7 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   )
 }
 
-// Hook para componentes que querem controlar o miniplayer externalmente
+// Hook para componentes que querem controlar o miniplayer externamente
 export function useMiniplPlayerControl() {
   return useMiniplPlayerContext()
 }
-
-// Export default para facilitar importação
-export default MiniplPlayerProvider
