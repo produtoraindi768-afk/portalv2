@@ -114,7 +114,12 @@ export default function HeroSection() {
                 </div>
               ) : null}
               <h1 className="text-3xl/tight font-bold tracking-tight text-balance sm:text-4xl/tight lg:text-5xl/tight">
-                {featured.title}
+                <Link
+                  href={featured.slug ? `/noticias/${featured.slug}` : `#`}
+                  className="hover:text-primary transition-colors duration-200"
+                >
+                  {featured.title}
+                </Link>
               </h1>
               <p className="text-muted-foreground mt-4 text-base/7 text-balance sm:text-lg/8">
                 {featured.excerpt}
