@@ -121,7 +121,7 @@ export default function HeroSection() {
               </p>
               <div className="mt-8 grid gap-3 sm:flex sm:justify-center lg:justify-start">
                 <Button size="lg" asChild>
-                  <Link href={featured.slug ? `/news/${featured.slug}` : `#`}>
+                  <Link href={featured.slug ? `/noticias/${featured.slug}` : `#`}>
                     Ler notícia
                   </Link>
                 </Button>

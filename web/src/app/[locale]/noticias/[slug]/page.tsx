@@ -49,10 +49,10 @@ async function getNewsItem(slug: string): Promise<NewsDoc | null> {
     return {
       id: doc.id,
       title: data.title || '',
-      content: data.content || '',
-      summary: data.summary || '',
+      content: data.contentHtml || data.content || '',
+      summary: data.summary || data.excerpt || '',
       slug: data.slug || '',
-      coverImage: data.coverImage || '',
+      coverImage: data.coverImage || data.featuredImage || '',
       publishDate: data.publishDate || '',
       publishedAt: data.publishedAt,
       tags: Array.isArray(data.tags) ? data.tags : [],
