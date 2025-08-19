@@ -165,16 +165,22 @@ export function NewsSection({
         <div className={`${gridTopMargin} grid gap-8 lg:grid-cols-3 lg:gap-12`}>
           {displayItems.map((n) => (
             <div key={n.id} className="flex flex-col items-start">
-              {n.featuredImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={n.featuredImage}
-                  alt={n.title || "Capa"}
-                  className="aspect-[16/9] w-full rounded-xl object-cover object-center"
-                />
-              ) : (
-                <div className="aspect-[16/9] w-full rounded-xl border bg-card" />
-              )}
+              <Link
+                href={n.slug ? `/noticias/${n.slug}` : `#`}
+                aria-label={n.title}
+                className="block w-full transition-transform hover:scale-[1.02] duration-200"
+              >
+                {n.featuredImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={n.featuredImage}
+                    alt={n.title || "Capa"}
+                    className="aspect-[16/9] w-full rounded-xl object-cover object-center"
+                  />
+                ) : (
+                  <div className="aspect-[16/9] w-full rounded-xl border bg-card" />
+                )}
+              </Link>
               <div className="mt-6 flex-1">
                 <div className="text-muted-foreground text-xs font-medium flex items-center gap-2">
                   <span>{n.publishDate ?? ""}</span>
@@ -184,9 +190,14 @@ export function NewsSection({
                     </Badge>
                   ) : null}
                 </div>
-                <h3 className="mt-2 text-lg font-semibold tracking-tight line-clamp-2">
-                  {n.title}
-                </h3>
+                <Link
+                  href={n.slug ? `/noticias/${n.slug}` : `#`}
+                  className="block"
+                >
+                  <h3 className="mt-2 text-lg font-semibold tracking-tight line-clamp-2 hover:text-primary transition-colors">
+                    {n.title}
+                  </h3>
+                </Link>
                 <p className="text-muted-foreground mt-2 line-clamp-2 text-sm/6">
                   {n.excerpt}
                 </p>

@@ -129,16 +129,22 @@ export default function HeroSection() {
             </div>
           </div>
           <div className="order-1 lg:order-1">
-            {featured.featuredImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                className="aspect-[16/9] rounded-xl object-cover object-center shadow-sm lg:aspect-[4/3]"
-                src={featured.featuredImage}
-                alt={featured.title || "Capa"}
-              />
-            ) : (
-              <div className="aspect-[16/9] rounded-xl border bg-card lg:aspect-[4/3]" />
-            )}
+            <Link
+              href={featured.slug ? `/noticias/${featured.slug}` : `#`}
+              aria-label={featured.title}
+              className="block transition-transform hover:scale-[1.02] duration-200"
+            >
+              {featured.featuredImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  className="aspect-[16/9] rounded-xl object-cover object-center shadow-sm lg:aspect-[4/3]"
+                  src={featured.featuredImage}
+                  alt={featured.title || "Capa"}
+                />
+              ) : (
+                <div className="aspect-[16/9] rounded-xl border bg-card lg:aspect-[4/3]" />
+              )}
+            </Link>
           </div>
         </div>
       </div>

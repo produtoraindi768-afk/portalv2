@@ -28,7 +28,8 @@ interface MiniplPlayerContextValue {
   showMiniplayer: (streamer?: StreamerForMiniplayer) => void
   hideMiniplayer: () => void
   toggleMiniplayer: () => void
-  setMinimized: (minimized: boolean) => void
+  setMinimized: (minimized: boolean, isManual?: boolean) => void
+  forceMinimized: (minimized: boolean) => void // Nova função para forçar estado
   isMinimized: boolean
   streamers: StreamerForMiniplayer[]
   selectedStreamer: StreamerForMiniplayer | null
@@ -38,6 +39,9 @@ interface MiniplPlayerContextValue {
   activePlayer: ActivePlayerType
   setActivePlayer: (player: ActivePlayerType) => void
   isMainPlayerActive: boolean
+  // Controle de preferência manual do usuário
+  hasManualMinimizePreference: boolean
+  clearManualPreference: () => void
 }
 
 const MiniplPlayerContext = createContext<MiniplPlayerContextValue | undefined>(undefined)
@@ -61,9 +65,18 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   const [streamers, setStreamers] = useState<StreamerForMiniplayer[]>([])
   const [loading, setLoading] = useState(false) // Não precisa loading se não vai auto-mostrar
   const [isMinimizedState, setIsMinimizedState] = useState(false) // Controlar a minimização
-  
+
   // Novo estado para coordenação de players
   const [activePlayer, setActivePlayerState] = useState<ActivePlayerType>('main')
+
+  // Estado para rastrear se o usuário fez uma ação manual de minimizar/expandir
+  const [hasManualMinimizePreference, setHasManualMinimizePreference] = useState(false)
+  const [manualMinimizedState, setManualMinimizedState] = useState(false)
+
+  const clearManualPreference = useCallback(() => {
+    setHasManualMinimizePreference(false)
+    setManualMinimizedState(false)
+  }, [])
 
   const showMiniplayer = useCallback((streamer?: StreamerForMiniplayer) => {
     if (streamer) {
@@ -72,7 +85,9 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     setIsVisible(true)
     // Quando miniplayer é mostrado, ele se torna o player ativo
     setActivePlayerState('miniplayer')
-  }, [])
+    // Limpar preferência manual quando um novo miniplayer é mostrado
+    clearManualPreference()
+  }, [clearManualPreference])
 
   const hideMiniplayer = useCallback(() => {
     setIsVisible(false)
@@ -90,16 +105,32 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     }
   }, [isVisible, hideMiniplayer, showMiniplayer])
 
-  const setMinimized = useCallback((minimized: boolean) => {
-    setIsMinimizedState(minimized)
+  const setMinimized = useCallback((minimized: boolean, isManual: boolean = false) => {
+    if (isManual) {
+      // Ação manual do usuário - sempre aplicar e salvar preferência
+      setHasManualMinimizePreference(true)
+      setManualMinimizedState(minimized)
+      setIsMinimizedState(minimized)
+    } else {
+      // Ação automática (scroll trigger)
+      if (hasManualMinimizePreference) {
+        // Se há preferência manual, usar ela ao invés da automática
+        setIsMinimizedState(manualMinimizedState)
+      } else {
+        // Se não há preferência manual, aplicar ação automática
+        setIsMinimizedState(minimized)
+      }
+    }
+
     // Quando miniplayer é minimizado, o player principal volta a ser ativo
     // Quando miniplayer é expandido, ele se torna ativo
-    if (minimized) {
+    const finalState = isManual ? minimized : (hasManualMinimizePreference ? manualMinimizedState : minimized)
+    if (finalState) {
       setActivePlayerState('main')
     } else if (isVisible) {
       setActivePlayerState('miniplayer')
     }
-  }, [isVisible, isMinimizedState])
+  }, [isVisible, hasManualMinimizePreference, manualMinimizedState])
 
   const switchStreamer = useCallback((streamer: StreamerForMiniplayer) => {
     setSelectedStreamer(streamer)
@@ -112,6 +143,20 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   const setActivePlayer = useCallback((player: ActivePlayerType) => {
     setActivePlayerState(player)
   }, [])
+
+  // Função para forçar estado minimizado, sempre respeitando ação do usuário
+  const forceMinimized = useCallback((minimized: boolean) => {
+    setIsMinimizedState(minimized)
+    setHasManualMinimizePreference(true)
+    setManualMinimizedState(minimized)
+
+    // Atualizar player ativo
+    if (minimized) {
+      setActivePlayerState('main')
+    } else if (isVisible) {
+      setActivePlayerState('miniplayer')
+    }
+  }, [isVisible])
 
   const handleClose = useCallback(() => {
     hideMiniplayer()
@@ -193,6 +238,7 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     hideMiniplayer,
     toggleMiniplayer,
     setMinimized,
+    forceMinimized,
     isMinimized: isMinimizedState,
     streamers,
     selectedStreamer,
@@ -201,7 +247,10 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     // Novos valores para coordenação
     activePlayer,
     setActivePlayer,
-    isMainPlayerActive: activePlayer === 'main'
+    isMainPlayerActive: activePlayer === 'main',
+    // Controle de preferência manual
+    hasManualMinimizePreference,
+    clearManualPreference
   }
 
   return (

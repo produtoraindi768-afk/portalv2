@@ -41,6 +41,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
     loading: contextLoading,
     isMinimized: contextIsMinimized,
     setMinimized: contextSetMinimized,
+    forceMinimized: contextForceMinimized,
     activePlayer
   } = useMiniplPlayerContext()
   
@@ -87,8 +88,8 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
   useEffect(() => {
     if (mounted && isVisible && !hasForcedOpenRef.current) {
       hasForcedOpenRef.current = true
-      setMinimized(false)
-      
+      contextSetMinimized(false, false) // false = automático (não é ação manual)
+
       // Garantir que sempre comece com o streamer em destaque
       if (streamers.length > 0 && !contextSelectedStreamer) {
         const featuredStreamer = streamers.find(s => s.isFeatured)
@@ -97,7 +98,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
         }
       }
     }
-  }, [mounted, isVisible, setMinimized, streamers, contextSelectedStreamer, switchStreamer])
+  }, [mounted, isVisible, contextSetMinimized, streamers, contextSelectedStreamer, switchStreamer])
 
   // Priorizar o streamer selecionado do contexto (vindo da StreamersSection) sobre streamers do hook
   // Se não houver streamer selecionado, buscar o primeiro streamer em destaque
@@ -314,7 +315,7 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
     }
     onOpenTwitch?.(callbackUrl || '')
     // Minimizar imediatamente após abrir (o estilo cuidará de posicionar no rodapé direito)
-    setMinimized(true)
+    contextForceMinimized(true) // Forçar minimização após abrir Twitch
     // Re-medida do header após minimizar
     setTimeout(() => {
       const h = headerRef.current?.offsetHeight
@@ -323,12 +324,12 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
   }, [activeStreamer, onOpenTwitch, setMinimized])
 
   const handleMinimizeToggle = useCallback(() => {
-    // Permitir toggle manual apenas quando não está minimizado pelo contexto
+    // Permitir toggle manual sempre - usuário tem controle total
     const next = !contextIsMinimized
 
-    // Usar a função do contexto para minimizar
-    contextSetMinimized(next)
-    
+    // Usar forceMinimized para garantir que a ação manual sempre funcione
+    contextForceMinimized(next)
+
     // Se estiver expandindo (next = false), posicionar no canto
     if (!next) {
       setTimeout(() => {
@@ -344,13 +345,13 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
         setPosition({ x, y })
       }, 0)
     }
-    
+
     // Re-medida assíncrona após transição de estado
     setTimeout(() => {
       const h = headerRef.current?.offsetHeight
       if (h) setHeaderHeight(h)
     }, 0)
-  }, [contextIsMinimized, contextSetMinimized, isMobile, setPosition])
+  }, [contextIsMinimized, contextForceMinimized, isMobile, setPosition])
 
   // Handlers de hover para controles
   const handleMouseEnter = useCallback(() => {

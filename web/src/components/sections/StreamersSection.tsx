@@ -756,11 +756,11 @@ export function StreamersSection() {
           }
 
           showMiniplayer(streamerForMiniplayer)
-          setMinimized(false) // Mostrar o miniplayer expandido no canto inferior direito
+          setMinimized(false, false) // Mostrar o miniplayer expandido no canto inferior direito (false = automático)
         } else if (isInStreamersSection && isMiniplaying) {
           // Usuário voltou para a seção de streams (scroll up) - minimizar miniplayer e reativar player principal
           console.log('User scrolled up to streams section - minimizing miniplayer and activating main player')
-          setMinimized(true) // Minimizar miniplayer quando volta para a seção
+          setMinimized(true, false) // Minimizar miniplayer quando volta para a seção (false = automático)
           setActivePlayer('main') // Garantir que player principal seja ativo
         }
       },
@@ -1146,7 +1146,7 @@ export function StreamersSection() {
       
       // Se miniplayer estiver ativo, minimizá-lo para dar foco ao player principal
       if (isMiniplaying) {
-        setMinimized(true)
+        setMinimized(true, false) // false = automático (não é ação manual)
       }
       
       // Adicionar pequeno delay para feedback visual
