@@ -51,6 +51,12 @@ function PersistentTwitchPlayer({
 
   useEffect(() => {
     setMounted(true)
+
+    // Garantir que o scroll não seja bloqueado durante o carregamento
+    if (typeof window !== 'undefined') {
+      document.body.style.overflowY = 'auto'
+      document.documentElement.style.overflowY = 'auto'
+    }
   }, [])
 
   // Preload system para próximo stream
@@ -128,24 +134,24 @@ function PersistentTwitchPlayer({
             }
           })
           
-          // Estratégia 2: Tentar focar e clicar no iframe
+          // Estratégia 2: Tentar clicar no iframe (sem focus para evitar scroll)
           if (iframeRef.current) {
             try {
-              iframeRef.current.focus()
+              // Remover focus() para evitar scroll automático
               iframeRef.current.click()
-              
+
               // Estratégia 3: Simular clique no centro do iframe
               const rect = iframeRef.current.getBoundingClientRect()
               const centerX = rect.left + rect.width / 2
               const centerY = rect.top + rect.height / 2
-              
+
               const centerClickEvent = new MouseEvent('click', {
                 bubbles: true,
                 cancelable: true,
                 clientX: centerX,
                 clientY: centerY
               })
-              
+
               iframeRef.current.dispatchEvent(centerClickEvent)
             } catch (e) {
               // Ignore errors
@@ -256,7 +262,7 @@ function PersistentTwitchPlayer({
                   try {
                     if (iframeRef.current) {
                       iframeRef.current.dispatchEvent(event)
-                      iframeRef.current.focus()
+                      // Remover focus() para evitar scroll automático
                       iframeRef.current.click()
 
                       // Tentar postMessage para Twitch
@@ -266,7 +272,7 @@ function PersistentTwitchPlayer({
                         // Ignore cross-origin errors
                       }
                     }
-                    document.dispatchEvent(event)
+                    // Não disparar eventos globais para evitar interferência com scroll
                   } catch (e) {
                     // Ignore errors
                   }
@@ -361,7 +367,12 @@ function TwitchPlayerPortal({
   const playerContent = (
     <div
       className="fixed z-40 pointer-events-auto"
-      style={containerStyle}
+      style={{
+        ...containerStyle,
+        // Garantir que o player não interfira com o scroll da página
+        pointerEvents: 'auto',
+        touchAction: 'none' // Evitar interferência com gestos de scroll
+      }}
     >
       <AspectRatio ratio={16 / 9} className="w-full h-full">
         <iframe
@@ -374,6 +385,11 @@ function TwitchPlayerPortal({
           scrolling="no"
           title={`${channel} - Twitch Stream`}
           allow="autoplay; fullscreen; encrypted-media"
+          style={{
+            // Garantir que o iframe não cause scroll indesejado
+            pointerEvents: 'auto',
+            touchAction: 'none'
+          }}
         />
       </AspectRatio>
     </div>
@@ -519,7 +535,7 @@ export function StreamersSection() {
             // Disparar na seção de streams
             if (sectionRef.current) {
               sectionRef.current.dispatchEvent(event)
-              sectionRef.current.focus()
+              // Remover focus() para evitar scroll automático
               sectionRef.current.click()
             }
             
@@ -527,15 +543,15 @@ export function StreamersSection() {
             document.querySelectorAll('iframe').forEach(iframe => {
               try {
                 iframe.dispatchEvent(event)
-                iframe.focus()
+                // Remover focus() para evitar scroll automático
                 iframe.click()
-                
+
                 // Estratégias específicas para Twitch
                 if (iframe.src.includes('twitch.tv')) {
                   // PostMessage para comandos Twitch
                   iframe.contentWindow?.postMessage('{"event":"command","func":"play","args":""}', '*')
                   iframe.contentWindow?.postMessage('{"event":"command","func":"setMuted","args":[false]}', '*')
-                  
+
                   // Simular clique no centro do player
                   const rect = iframe.getBoundingClientRect()
                   const centerClickEvent = new MouseEvent('click', {
@@ -578,7 +594,7 @@ export function StreamersSection() {
   // Atualizar posição da seção
   useEffect(() => {
     if (!mounted) return
-    
+
     const updateSectionRect = () => {
       if (sectionRef.current) {
         const rect = sectionRef.current.getBoundingClientRect()
@@ -589,18 +605,19 @@ export function StreamersSection() {
 
     // Calcular imediatamente quando monta
     updateSectionRect()
-    
+
     // Usar RAF para garantir que o layout está pronto
     const rafId = requestAnimationFrame(() => {
       updateSectionRect()
     })
-    
+
     // Também tentar após um pequeno delay
     const timeoutId = setTimeout(updateSectionRect, 100)
 
     window.addEventListener('resize', updateSectionRect)
-    window.addEventListener('scroll', updateSectionRect)
-    
+    // Usar scroll passivo para não bloquear o scroll
+    window.addEventListener('scroll', updateSectionRect, { passive: true })
+
     return () => {
       cancelAnimationFrame(rafId)
       clearTimeout(timeoutId)
@@ -641,19 +658,19 @@ export function StreamersSection() {
         
         setIsInView(isVisible)
         
-        if (isVisible) {
-          console.log('StreamersSection in view - triggering autoplay interaction')
-          
-          // Simular interação do usuário para autoplay
+        if (isVisible && isMainPlayerReady) {
+          console.log('StreamersSection in view and player ready - triggering autoplay interaction')
+
+          // Simular interação do usuário para autoplay apenas quando player estiver pronto
           const triggerAutoplay = () => {
             const events = [
               new MouseEvent('click', { bubbles: true, cancelable: true }),
               new MouseEvent('mousedown', { bubbles: true, cancelable: true })
             ]
-            
+
             events.forEach(event => {
               try {
-                document.dispatchEvent(event)
+                // Apenas disparar na seção, não globalmente para evitar interferência com scroll
                 section.dispatchEvent(event)
               } catch (e) {
                 // Ignore errors
@@ -1020,17 +1037,17 @@ export function StreamersSection() {
           
           events.forEach(event => {
             try {
-              document.dispatchEvent(event)
+              // Não disparar eventos globais para evitar interferência com scroll
               if (sectionRef.current) {
                 sectionRef.current.dispatchEvent(event)
-                sectionRef.current.focus()
+                // Remover focus() para evitar scroll automático
                 sectionRef.current.click()
               }
               // Tentar em todos os iframes da página
               document.querySelectorAll('iframe').forEach(iframe => {
                 try {
                   iframe.dispatchEvent(event)
-                  iframe.focus()
+                  // Remover focus() para evitar scroll automático
                   iframe.click()
                   // Tentar postMessage para Twitch
                   iframe.contentWindow?.postMessage('{"event":"command","func":"play","args":""}', '*')
@@ -1087,17 +1104,17 @@ export function StreamersSection() {
           
           events.forEach(event => {
             try {
-              document.dispatchEvent(event)
+              // Não disparar eventos globais para evitar interferência com scroll
               if (sectionRef.current) {
                 sectionRef.current.dispatchEvent(event)
-                sectionRef.current.focus()
+                // Remover focus() para evitar scroll automático
                 sectionRef.current.click()
               }
               // Tentar em todos os iframes da página
               document.querySelectorAll('iframe').forEach(iframe => {
                 try {
                   iframe.dispatchEvent(event)
-                  iframe.focus()
+                  // Remover focus() para evitar scroll automático
                   iframe.click()
                   // Tentar postMessage para Twitch
                   iframe.contentWindow?.postMessage('{"event":"command","func":"play","args":""}', '*')
@@ -1175,14 +1192,10 @@ export function StreamersSection() {
           
           events.forEach(event => {
             try {
-              // Disparar em múltiplos elementos
-              document.dispatchEvent(event)
-              document.body.dispatchEvent(event)
-              window.dispatchEvent(event)
-              
+              // Não disparar eventos globais para evitar interferência com scroll
               if (sectionRef.current) {
                 sectionRef.current.dispatchEvent(event)
-                sectionRef.current.focus()
+                // Remover focus() para evitar scroll automático
                 sectionRef.current.click()
               }
             } catch (e) {
@@ -1190,11 +1203,11 @@ export function StreamersSection() {
             }
           })
           
-          // Estratégia 2: Focar e interagir com todos os iframes Twitch
+          // Estratégia 2: Interagir com todos os iframes Twitch (sem focus)
           document.querySelectorAll('iframe').forEach(iframe => {
             try {
               if (iframe.src.includes('twitch.tv')) {
-                iframe.focus()
+                // Remover focus() para evitar scroll automático
                 iframe.click()
                 
                 // Múltiplos comandos Twitch
@@ -1357,7 +1370,7 @@ export function StreamersSection() {
       </div>
 
       {/* Player principal persistente para o streamer selecionado */}
-      {streamers[selectedIndex] && (
+      {streamers[selectedIndex] && mounted && (
         <PersistentTwitchPlayer
           channel={twitchStatusService.extractUsernameFromTwitchUrl(streamers[selectedIndex].streamUrl || '')}
           isVisible={isMainPlayerVisible} // Visível quando é o player ativo OU quando miniplayer está minimizado
@@ -1376,7 +1389,9 @@ export function StreamersSection() {
                   ? 'translateX(20px)'
                   : 'translateX(-20px)'
                 : ''
-            }`.trim()
+            }`.trim(),
+            // Garantir que não interfira com o scroll da página
+            pointerEvents: isMainPlayerVisible ? 'auto' : 'none'
           }}
         />
       )}

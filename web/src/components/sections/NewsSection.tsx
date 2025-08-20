@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react"
 import { collection, getDocs, query, where, Timestamp } from "firebase/firestore"
 import { getClientFirestore } from "@/lib/safeFirestore"
+import { formatDateToBrazilian } from "@/lib/date-utils"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -183,7 +184,7 @@ export function NewsSection({
               </Link>
               <div className="mt-6 flex-1">
                 <div className="text-muted-foreground text-xs font-medium flex items-center gap-2">
-                  <span>{n.publishDate ?? ""}</span>
+                  <span>{formatDateToBrazilian(n.publishDate)}</span>
                   {n.category ? (
                     <Badge variant="secondary" className="rounded-full">
                       {n.category}
