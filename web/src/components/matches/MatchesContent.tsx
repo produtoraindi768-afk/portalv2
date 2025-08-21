@@ -266,7 +266,7 @@ export function MatchesContent() {
                     : 'Não há partidas disponíveis com os filtros selecionados'
                   }
                 </p>
-                {(searchTerm || statusFilter !== 'all' || gameFilter !== 'all') && (
+                {(searchTerm || (statusFilter as FilterStatus) !== 'all' || gameFilter !== 'all') && (
                   <Button 
                     variant="outline" 
                     className="mt-4"
