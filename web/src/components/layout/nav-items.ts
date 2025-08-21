@@ -6,7 +6,7 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { title: "Home", href: "/#hero" },
   { title: "Notícias", href: "/noticias" },
-  { title: "Partidas", href: "/#matches" },
+  { title: "Partidas", href: "/partidas" },
   { title: "Lives", href: "/#streamers" },
   { title: "Campeonatos", href: "/torneios" },
 ]
