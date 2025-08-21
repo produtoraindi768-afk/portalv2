@@ -35,7 +35,7 @@ export function MatchesContent() {
 
     // Filtro por status
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(match => match.status === statusFilter)
+      filtered = filtered.filter(match => match.status === statusFilter as 'scheduled' | 'ongoing' | 'finished')
     }
 
     // Filtro por jogo
