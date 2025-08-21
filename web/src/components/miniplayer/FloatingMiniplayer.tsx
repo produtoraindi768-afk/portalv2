@@ -327,7 +327,11 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
     // Permitir toggle manual sempre - usuário tem controle total
     const next = !contextIsMinimized
 
+    // Log para debug
+    console.log(`[FloatingMiniplayer] handleMinimizeToggle: ${next ? 'minimizando' : 'expandindo'}`)
+
     // Usar forceMinimized para garantir que a ação manual sempre funcione
+    // Esta função define hasManualMinimizePreference como true
     contextForceMinimized(next)
 
     // Se estiver expandindo (next = false), posicionar no canto

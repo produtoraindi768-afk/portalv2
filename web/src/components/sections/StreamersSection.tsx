@@ -268,6 +268,7 @@ function PersistentTwitchPlayer({
                       // Tentar postMessage para Twitch
                       try {
                         iframeRef.current.contentWindow?.postMessage('{"event":"command","func":"play","args":""}', '*')
+                        iframeRef.current.contentWindow?.postMessage('{"event":"command","func":"setMuted","args":[false]}', '*')
                       } catch (e) {
                         // Ignore cross-origin errors
                       }
@@ -279,11 +280,13 @@ function PersistentTwitchPlayer({
                 })
               }
 
-              // Executar imediatamente e com delays
+              // Executar imediatamente e com delays (mais tentativas)
               immediateAutoplay()
               setTimeout(immediateAutoplay, 50)
               setTimeout(immediateAutoplay, 200)
               setTimeout(immediateAutoplay, 500)
+              setTimeout(immediateAutoplay, 1000) // Tentativa adicional após 1 segundo
+              setTimeout(immediateAutoplay, 2000) // Tentativa adicional após 2 segundos
             }}
           />
         ) : (
@@ -654,14 +657,14 @@ export function StreamersSection() {
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries
-        const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.5
-        
-        setIsInView(isVisible)
-        
-        if (isVisible && isMainPlayerReady) {
-          console.log('StreamersSection in view and player ready - triggering autoplay interaction')
+        const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.3 // Threshold mais baixo
 
-          // Simular interação do usuário para autoplay apenas quando player estiver pronto
+        setIsInView(isVisible)
+
+        if (isVisible) {
+          console.log('StreamersSection in view - triggering autoplay interaction')
+
+          // Simular interação do usuário para autoplay
           const triggerAutoplay = () => {
             const events = [
               new MouseEvent('click', { bubbles: true, cancelable: true }),
@@ -682,16 +685,84 @@ export function StreamersSection() {
           setTimeout(triggerAutoplay, 300)
         }
       },
-      { 
-        threshold: 0.5,
-        rootMargin: '0px 0px -100px 0px'
+      {
+        threshold: 0.3, // Threshold mais baixo para detectar visibilidade mais cedo
+        rootMargin: '0px 0px -50px 0px' // Margem menor para ativar mais cedo
       }
     )
 
     observer.observe(section)
-    
+
     return () => observer.disconnect()
-  }, [])
+  }, [mounted]) // Adicionar mounted como dependência
+
+  // Efeito adicional: disparar autoplay quando player fica pronto e seção já está visível
+  useEffect(() => {
+    if (isMainPlayerReady && isInView && sectionRef.current) {
+      console.log('Player ready and section in view - triggering delayed autoplay')
+
+      const triggerDelayedAutoplay = () => {
+        const events = [
+          new MouseEvent('click', { bubbles: true, cancelable: true }),
+          new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+        ]
+
+        events.forEach(event => {
+          try {
+            sectionRef.current?.dispatchEvent(event)
+          } catch (e) {
+            // Ignore errors
+          }
+        })
+      }
+
+      // Disparar com delay para garantir que o player está totalmente carregado
+      setTimeout(triggerDelayedAutoplay, 500)
+      setTimeout(triggerDelayedAutoplay, 1000)
+    }
+  }, [isMainPlayerReady, isInView]) // Disparar quando player fica pronto OU seção fica visível
+
+  // Sistema de autoplay global - ativa com qualquer interação do usuário
+  useEffect(() => {
+    if (!mounted || !isMainPlayerReady) return
+
+    const handleUserInteraction = () => {
+      console.log('User interaction detected - triggering global autoplay')
+
+      const triggerGlobalAutoplay = () => {
+        // Tentar em todos os iframes Twitch da página
+        document.querySelectorAll('iframe').forEach(iframe => {
+          try {
+            if (iframe.src.includes('twitch.tv')) {
+              iframe.click()
+              iframe.contentWindow?.postMessage('{"event":"command","func":"play","args":""}', '*')
+              iframe.contentWindow?.postMessage('{"event":"command","func":"setMuted","args":[false]}', '*')
+            }
+          } catch (e) {
+            // Ignore cross-origin errors
+          }
+        })
+      }
+
+      triggerGlobalAutoplay()
+
+      // Remover listeners após primeira interação
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+      document.removeEventListener('touchstart', handleUserInteraction)
+    }
+
+    // Adicionar listeners para qualquer interação do usuário
+    document.addEventListener('click', handleUserInteraction, { once: true, passive: true })
+    document.addEventListener('keydown', handleUserInteraction, { once: true, passive: true })
+    document.addEventListener('touchstart', handleUserInteraction, { once: true, passive: true })
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+      document.removeEventListener('touchstart', handleUserInteraction)
+    }
+  }, [mounted, isMainPlayerReady])
 
   // Carregar streamers
   useEffect(() => {
@@ -773,12 +844,52 @@ export function StreamersSection() {
           }
 
           showMiniplayer(streamerForMiniplayer)
-          setMinimized(false, false) // Mostrar o miniplayer expandido no canto inferior direito (false = automático)
+          // Mostrar o miniplayer expandido no canto inferior direito (false = automático)
+          // Só expandir automaticamente se não houver preferência manual do usuário
+          setMinimized(false, false)
         } else if (isInStreamersSection && isMiniplaying) {
           // Usuário voltou para a seção de streams (scroll up) - minimizar miniplayer e reativar player principal
           console.log('User scrolled up to streams section - minimizing miniplayer and activating main player')
-          setMinimized(true, false) // Minimizar miniplayer quando volta para a seção (false = automático)
+          // Minimizar miniplayer quando volta para a seção (false = automático)
+          // Só minimizar automaticamente se não houver preferência manual do usuário
+          setMinimized(true, false)
           setActivePlayer('main') // Garantir que player principal seja ativo
+
+          // Trigger autoplay quando usuário volta para a seção
+          setTimeout(() => {
+            const triggerReturnAutoplay = () => {
+              const events = [
+                new MouseEvent('click', { bubbles: true, cancelable: true }),
+                new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+              ]
+
+              events.forEach(event => {
+                try {
+                  if (sectionRef.current) {
+                    sectionRef.current.dispatchEvent(event)
+                  }
+                  // Tentar em todos os iframes da página
+                  document.querySelectorAll('iframe').forEach(iframe => {
+                    try {
+                      if (iframe.src.includes('twitch.tv')) {
+                        iframe.dispatchEvent(event)
+                        iframe.click()
+                        iframe.contentWindow?.postMessage('{"event":"command","func":"play","args":""}', '*')
+                        iframe.contentWindow?.postMessage('{"event":"command","func":"setMuted","args":[false]}', '*')
+                      }
+                    } catch (e) {
+                      // Ignore cross-origin errors
+                    }
+                  })
+                } catch (e) {
+                  // Ignore errors
+                }
+              })
+            }
+
+            triggerReturnAutoplay()
+            setTimeout(triggerReturnAutoplay, 500)
+          }, 300)
         }
       },
       { threshold: 0.3, rootMargin: '-100px 0px' }

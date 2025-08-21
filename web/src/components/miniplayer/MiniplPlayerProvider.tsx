@@ -85,9 +85,13 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     setIsVisible(true)
     // Quando miniplayer é mostrado, ele se torna o player ativo
     setActivePlayerState('miniplayer')
-    // Limpar preferência manual quando um novo miniplayer é mostrado
-    clearManualPreference()
-  }, [clearManualPreference])
+    
+    // NÃO limpar preferência manual quando um novo miniplayer é mostrado
+    // Isso permite que o usuário mantenha sua preferência de minimizado/expandido
+    // clearManualPreference() - Comentado para manter a preferência do usuário
+    
+    console.log(`[MiniplPlayerProvider] showMiniplayer: mantendo preferência manual: ${hasManualMinimizePreference ? 'sim' : 'não'}`)
+  }, [hasManualMinimizePreference])
 
   const hideMiniplayer = useCallback(() => {
     setIsVisible(false)
@@ -106,19 +110,28 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   }, [isVisible, hideMiniplayer, showMiniplayer])
 
   const setMinimized = useCallback((minimized: boolean, isManual: boolean = false) => {
+    // Log para debug
+    console.log(`[MiniplPlayerProvider] setMinimized: ${minimized}, isManual: ${isManual}, hasManualPref: ${hasManualMinimizePreference}`)
+    
     if (isManual) {
       // Ação manual do usuário - sempre aplicar e salvar preferência
       setHasManualMinimizePreference(true)
       setManualMinimizedState(minimized)
       setIsMinimizedState(minimized)
+      
+      // Log para debug
+      console.log(`[MiniplPlayerProvider] Aplicando preferência manual: ${minimized}`)
     } else {
       // Ação automática (scroll trigger)
       if (hasManualMinimizePreference) {
-        // Se há preferência manual, usar ela ao invés da automática
-        setIsMinimizedState(manualMinimizedState)
+        // Se há preferência manual, SEMPRE usar ela ao invés da automática
+        // Não fazer nada - manter o estado atual definido pelo usuário
+        console.log(`[MiniplPlayerProvider] Ignorando ação automática, mantendo preferência manual: ${manualMinimizedState}`)
+        return; // Importante: sair da função para não alterar o estado
       } else {
         // Se não há preferência manual, aplicar ação automática
         setIsMinimizedState(minimized)
+        console.log(`[MiniplPlayerProvider] Aplicando ação automática: ${minimized}`)
       }
     }
 
@@ -146,9 +159,12 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
 
   // Função para forçar estado minimizado, sempre respeitando ação do usuário
   const forceMinimized = useCallback((minimized: boolean) => {
-    setIsMinimizedState(minimized)
+    // Definir que existe uma preferência manual do usuário
     setHasManualMinimizePreference(true)
+    // Salvar a preferência manual do usuário
     setManualMinimizedState(minimized)
+    // Aplicar o estado minimizado
+    setIsMinimizedState(minimized)
 
     // Atualizar player ativo
     if (minimized) {
@@ -156,6 +172,9 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     } else if (isVisible) {
       setActivePlayerState('miniplayer')
     }
+
+    // Log para debug
+    console.log(`[MiniplPlayerProvider] forceMinimized: ${minimized}, hasManualPref: true`)
   }, [isVisible])
 
   const handleClose = useCallback(() => {

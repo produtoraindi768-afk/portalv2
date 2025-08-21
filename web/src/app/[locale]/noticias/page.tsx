@@ -30,9 +30,10 @@ export default function NoticiasPage() {
           <NewsSection 
             limit={undefined} // Mostrar todas as notícias
             showHeader={false} // Header já está na hero section
+            excludeFeaturedFromList={false} // Incluir notícia em destaque na lista
           />
         </div>
       </section>
     </div>
   )
-} 
+}
