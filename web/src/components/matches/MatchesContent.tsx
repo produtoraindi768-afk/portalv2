@@ -69,11 +69,11 @@ export function MatchesContent() {
     return Array.from(new Set(games))
   }, [matches])
 
-  const statusOptions = [
-    { value: 'all' as const, label: 'Todas', icon: Calendar, color: 'bg-muted text-muted-foreground' },
-    { value: 'ongoing' as const, label: 'Ao Vivo', icon: Clock, color: 'bg-red-500 text-white' },
-    { value: 'scheduled' as const, label: 'Agendadas', icon: Calendar, color: 'bg-blue-500 text-white' },
-    { value: 'finished' as const, label: 'Finalizadas', icon: Trophy, color: 'bg-green-500 text-white' },
+  const statusOptions: Array<{ value: FilterStatus; label: string; icon: any; color: string }> = [
+    { value: 'all', label: 'Todas', icon: Calendar, color: 'bg-muted text-muted-foreground' },
+    { value: 'ongoing', label: 'Ao Vivo', icon: Clock, color: 'bg-red-500 text-white' },
+    { value: 'scheduled', label: 'Agendadas', icon: Calendar, color: 'bg-blue-500 text-white' },
+    { value: 'finished', label: 'Finalizadas', icon: Trophy, color: 'bg-green-500 text-white' },
   ]
 
   if (error) {
