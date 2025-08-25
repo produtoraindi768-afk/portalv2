@@ -14,6 +14,7 @@ type TeamInfo = {
 
 type MatchData = {
   id: string
+  source: 'seed' | 'battlefy' // Identificar a origem dos dados
   tournamentName?: string
   scheduledDate?: string
   format?: string
@@ -37,6 +38,14 @@ type MatchData = {
     team2Score: number
     winner: string | null
   }
+  // Campos específicos do Battlefy
+  battlefyId?: string
+  round?: number
+  matchNumber?: number
+  duration?: string
+  finalScore?: string
+  isBye?: boolean // Indica se é uma partida bye (sem oponente)
+  matchType?: 'winner' | 'loser' // Indica se é Winner Bracket ou Loser Bracket
 }
 
 interface MatchCardProps {
@@ -138,7 +147,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
 
   const { date, time } = formatDate(match.scheduledDate)
   const team1Name = match.team1?.name || 'Time 1'
-  const team2Name = match.team2?.name || 'Time 2'
+  const team2Name = match.isBye ? 'Sem oponente' : (match.team2?.name || 'Time 2')
   const team1Logo = match.team1?.logo || match.team1?.avatar
   const team2Logo = match.team2?.logo || match.team2?.avatar
   const scores = getScores()
@@ -154,7 +163,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
       <CardContent className="p-0">
         {/* Header com torneio */}
         <div className="bg-gradient-to-r from-muted/20 via-muted/30 to-muted/20 px-4 py-4 border-b border-border/50">
-          <div className="flex justify-center">
+          <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <span className="text-base font-bold text-center bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent drop-shadow-sm">
                 {match.tournamentName || 'Torneio'}
@@ -162,6 +171,31 @@ export function MatchCard({ match, className }: MatchCardProps) {
               {match.isFeatured && (
                 <Badge variant="secondary" className="text-xs px-2 py-1 bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 border-yellow-500/30">
                   ⭐ Destaque
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {match.source === 'battlefy' && (
+                <Badge variant="outline" className="text-xs px-2 py-1 bg-blue-500/10 text-blue-600 border-blue-500/30">
+                  🏆 Battlefy
+                </Badge>
+              )}
+              {match.matchType && (
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "text-xs px-2 py-1",
+                    match.matchType === 'winner' 
+                      ? "bg-green-500/10 text-green-600 border-green-500/30" 
+                      : "bg-red-500/10 text-red-600 border-red-500/30"
+                  )}
+                >
+                  {match.matchType === 'winner' ? '🏆 Winner Bracket' : '💀 Loser Bracket'}
+                </Badge>
+              )}
+              {match.round && (
+                <Badge variant="outline" className="text-xs px-2 py-1">
+                  R{match.round}
                 </Badge>
               )}
             </div>
@@ -193,9 +227,9 @@ export function MatchCard({ match, className }: MatchCardProps) {
                 )}>
                   {team1Name}
                 </div>
-                {mainScore && match.status === 'finished' && mainScore.winner === 'team1' && (
+                {((mainScore && match.status === 'finished' && mainScore.winner === 'team1') || match.isBye) && (
                   <div className="text-xs text-green-500 font-medium">
-                    🏆 Vencedor
+                    🏆 Vencedor{match.isBye ? ' (Bye)' : ''}
                   </div>
                 )}
               </div>
@@ -216,7 +250,11 @@ export function MatchCard({ match, className }: MatchCardProps) {
                   <div className="text-xs text-muted-foreground mt-1">
                     {secondaryScore ? (match.resultMD5 ? 'MD5' : 'MD3') : (mainScore.format || 'BO1')}
                   </div>
-
+                  {match.duration && match.source === 'battlefy' && (
+                    <div className="text-xs text-blue-600 mt-1 font-medium">
+                      ⏱️ {match.duration}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center">
@@ -234,33 +272,53 @@ export function MatchCard({ match, className }: MatchCardProps) {
             </div>
 
             {/* Time 2 */}
-            <div className="flex items-center gap-3 flex-1 min-w-0 flex-row-reverse">
-              <div className="relative">
-                <div className="w-12 h-12 border-2 border-primary/20 rounded-lg p-1.5 bg-muted/30">
-                  <Avatar className="w-full h-full">
-                    {team2Logo ? (
-                      <AvatarImage src={team2Logo} alt={team2Name} />
-                    ) : (
-                      <AvatarFallback className="text-sm font-bold bg-primary/10 text-primary">
-                        {team2Name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                </div>
-              </div>
-              <div className="min-w-0 flex-1 text-right">
-                <div className={cn(
-                  "font-semibold truncate text-foreground"
-                )}>
-                  {team2Name}
-                </div>
-                {mainScore && match.status === 'finished' && mainScore.winner === 'team2' && (
-                  <div className="text-xs text-green-500 font-medium">
-                    🏆 Vencedor
+            {match.isBye ? (
+              <div className="flex items-center gap-3 flex-1 min-w-0 flex-row-reverse">
+                <div className="relative">
+                  <div className="w-12 h-12 border-2 border-muted/40 rounded-lg p-1.5 bg-muted/20">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                      <span className="text-lg">—</span>
+                    </div>
                   </div>
-                )}
+                </div>
+                <div className="min-w-0 flex-1 text-right">
+                  <div className="font-semibold truncate text-muted-foreground italic">
+                    {team2Name}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Bye
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-3 flex-1 min-w-0 flex-row-reverse">
+                <div className="relative">
+                  <div className="w-12 h-12 border-2 border-primary/20 rounded-lg p-1.5 bg-muted/30">
+                    <Avatar className="w-full h-full">
+                      {team2Logo ? (
+                        <AvatarImage src={team2Logo} alt={team2Name} />
+                      ) : (
+                        <AvatarFallback className="text-sm font-bold bg-primary/10 text-primary">
+                          {team2Name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1 text-right">
+                  <div className={cn(
+                    "font-semibold truncate text-foreground"
+                  )}>
+                    {team2Name}
+                  </div>
+                  {mainScore && match.status === 'finished' && mainScore.winner === 'team2' && (
+                    <div className="text-xs text-green-500 font-medium">
+                      🏆 Vencedor
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useMatches } from "@/hooks/useMatches"
+import { useCombinedMatches } from '@/hooks/useCombinedMatches'
 import { MatchCard } from "@/components/matches/MatchCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 type FilterStatus = 'all' | 'ongoing' | 'scheduled' | 'finished'
 
 export function MatchesContent() {
-  const { matches, isLoading, error, refetch } = useMatches()
+  const { matches, isLoading, error, refetch } = useCombinedMatches()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
   const [gameFilter, setGameFilter] = useState('all')

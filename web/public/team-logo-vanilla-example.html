@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Portal de Logos dos Times - Firebase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .controls-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input, select, button {
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 150px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .team-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .team-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #f0f0f0;
+        }
+        
+        .team-logo-placeholder {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            margin: 0 auto 15px;
+        }
+        
+        .team-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #212529;
+        }
+        
+        .team-info {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .team-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .has-logo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .no-logo {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .pagination button {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .pagination-info {
+            margin: 0 20px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .export-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+            
+            .teams-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .team-logo, .team-logo-placeholder {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Portal de Logos dos Times</h1>
+            <p>Importação e visualização das logoUrl da coleção battlefy_teams do Firebase</p>
+        </div>
+        
+        <div class="controls">
+            <div class="controls-row">
+                <div class="control-group">
+                    <label for="searchInput">Buscar Time:</label>
+                    <input type="text" id="searchInput" placeholder="Digite o nome do time...">
+                </div>
+                
+                <div class="control-group">
+                    <label for="tournamentFilter">Filtrar por Torneio:</label>
+                    <select id="tournamentFilter">
+                        <option value="">Todos os torneios</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="logoFilter">Filtrar por Logo:</label>
+                    <select id="logoFilter">
+                        <option value="all">Todos os times</option>
+                        <option value="with-logo">Com logo</option>
+                        <option value="without-logo">Sem logo</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>&nbsp;</label>
+                    <button id="loadTeamsBtn">Carregar Times</button>
+                </div>
+            </div>
+            
+            <div class="stats" id="statsContainer" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTeams">0</div>
+                    <div class="stat-label">Total de Times</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="teamsWithLogo">0</div>
+                    <div class="stat-label">Com Logo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="teamsWithoutLogo">0</div>
+                    <div class="stat-label">Sem Logo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="logoPercentage">0%</div>
+                    <div class="stat-label">% com Logo</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div id="loadingMessage" class="loading" style="display: none;">
+                🔄 Carregando times do Firebase...
+            </div>
+            
+            <div id="errorMessage" class="error" style="display: none;"></div>
+            
+            <div id="teamsContainer">
+                <div class="teams-grid" id="teamsGrid"></div>
+                
+                <div class="pagination" id="pagination" style="display: none;">
+                    <button id="prevBtn">← Anterior</button>
+                    <span class="pagination-info" id="paginationInfo"></span>
+                    <button id="nextBtn">Próxima →</button>
+                </div>
+            </div>
+            
+            <div class="export-section" id="exportSection" style="display: none;">
+                <h3>Exportar Dados</h3>
+                <button id="exportCsvBtn">📊 Exportar para CSV</button>
+                <button id="exportJsonBtn">📄 Exportar para JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // ⚠️ CONFIGURE SUAS CREDENCIAIS DO FIREBASE AQUI
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "sua-api-key",
+            authDomain: "seu-projeto.firebaseapp.com",
+            projectId: "seu-projeto-id",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "sua-app-id"
+        };
+        
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Estado da aplicação
+        let allTeams = [];
+        let filteredTeams = [];
+        let currentPage = 1;
+        const itemsPerPage = 12;
+        
+        // Elementos DOM
+        const elements = {
+            loadTeamsBtn: document.getElementById('loadTeamsBtn'),
+            searchInput: document.getElementById('searchInput'),
+            tournamentFilter: document.getElementById('tournamentFilter'),
+            logoFilter: document.getElementById('logoFilter'),
+            loadingMessage: document.getElementById('loadingMessage'),
+            errorMessage: document.getElementById('errorMessage'),
+            statsContainer: document.getElementById('statsContainer'),
+            teamsGrid: document.getElementById('teamsGrid'),
+            pagination: document.getElementById('pagination'),
+            exportSection: document.getElementById('exportSection'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            paginationInfo: document.getElementById('paginationInfo'),
+            exportCsvBtn: document.getElementById('exportCsvBtn'),
+            exportJsonBtn: document.getElementById('exportJsonBtn')
+        };
+        
+        // Função para buscar times do Firebase
+        async function loadTeamsFromFirebase() {
+            try {
+                showLoading(true);
+                hideError();
+                
+                const teamsCollection = collection(db, 'battlefy_teams');
+                const teamsSnapshot = await getDocs(teamsCollection);
+                
+                allTeams = [];
+                teamsSnapshot.forEach(doc => {
+                    const teamData = doc.data();
+                    
+                    // Extrair logoUrl do rawData
+                    let logoUrl = null;
+                    if (teamData.rawData && typeof teamData.rawData === 'object') {
+                        // Priorizar rawData.persistentTeam.logoUrl (estrutura real do Battlefy)
+                if (teamData.rawData.persistentTeam && teamData.rawData.persistentTeam.logoUrl) {
+                  logoUrl = teamData.rawData.persistentTeam.logoUrl;
+                } else {
+                  // Fallback para outras possíveis estruturas
+                  logoUrl = teamData.rawData.logoUrl || teamData.rawData.logo;
+                }
+                    }
+                    
+                    allTeams.push({
+                        id: doc.id,
+                        battlefyId: teamData.battlefyId,
+                        name: teamData.name || 'Nome não disponível',
+                        logoUrl: logoUrl,
+                        tournamentId: teamData.tournamentId,
+                        importedAt: teamData.importedAt,
+                        updatedAt: teamData.updatedAt
+                    });
+                });
+                
+                populateTournamentFilter();
+                applyFilters();
+                updateStats();
+                showExportSection(true);
+                
+            } catch (error) {
+                console.error('Erro ao carregar times:', error);
+                showError(`Erro ao carregar times: ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Função para popular o filtro de torneios
+        function populateTournamentFilter() {
+            const tournaments = [...new Set(allTeams.map(team => team.tournamentId).filter(Boolean))];
+            
+            elements.tournamentFilter.innerHTML = '<option value="">Todos os torneios</option>';
+            tournaments.forEach(tournamentId => {
+                const option = document.createElement('option');
+                option.value = tournamentId;
+                option.textContent = `Torneio ${tournamentId.substring(0, 8)}...`;
+                elements.tournamentFilter.appendChild(option);
+            });
+        }
+        
+        // Função para aplicar filtros
+        function applyFilters() {
+            const searchTerm = elements.searchInput.value.toLowerCase();
+            const tournamentId = elements.tournamentFilter.value;
+            const logoFilter = elements.logoFilter.value;
+            
+            filteredTeams = allTeams.filter(team => {
+                // Filtro por busca
+                if (searchTerm && !team.name.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+                
+                // Filtro por torneio
+                if (tournamentId && team.tournamentId !== tournamentId) {
+                    return false;
+                }
+                
+                // Filtro por logo
+                if (logoFilter === 'with-logo' && !team.logoUrl) {
+                    return false;
+                }
+                if (logoFilter === 'without-logo' && team.logoUrl) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            currentPage = 1;
+            renderTeams();
+            updatePagination();
+        }
+        
+        // Função para renderizar times
+        function renderTeams() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const teamsToShow = filteredTeams.slice(startIndex, endIndex);
+            
+            elements.teamsGrid.innerHTML = '';
+            
+            if (teamsToShow.length === 0) {
+                elements.teamsGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #6c757d;">Nenhum time encontrado com os filtros aplicados.</div>';
+                return;
+            }
+            
+            teamsToShow.forEach(team => {
+                const teamCard = createTeamCard(team);
+                elements.teamsGrid.appendChild(teamCard);
+            });
+        }
+        
+        // Função para criar card do time
+        function createTeamCard(team) {
+            const card = document.createElement('div');
+            card.className = 'team-card';
+            
+            const logoElement = team.logoUrl 
+                ? `<img src="${team.logoUrl}" alt="${team.name}" class="team-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+                : '';
+            
+            const placeholderElement = `<div class="team-logo-placeholder" style="${team.logoUrl ? 'display: none;' : ''}">${team.name.charAt(0).toUpperCase()}</div>`;
+            
+            card.innerHTML = `
+                ${logoElement}
+                ${placeholderElement}
+                <div class="team-name">${team.name}</div>
+                <div class="team-info">ID: ${team.battlefyId || 'N/A'}</div>
+                <div class="team-info">Torneio: ${team.tournamentId ? team.tournamentId.substring(0, 12) + '...' : 'N/A'}</div>
+                <div class="team-status ${team.logoUrl ? 'has-logo' : 'no-logo'}">
+                    ${team.logoUrl ? '✅ Com logo' : '❌ Sem logo'}
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                showTeamDetails(team);
+            });
+            
+            return card;
+        }
+        
+        // Função para mostrar detalhes do time
+        function showTeamDetails(team) {
+            const details = `
+Detalhes do Time:
+
+Nome: ${team.name}
+ID Battlefy: ${team.battlefyId || 'N/A'}
+Torneio: ${team.tournamentId || 'N/A'}
+Logo URL: ${team.logoUrl || 'Não disponível'}
+Importado em: ${team.importedAt || 'N/A'}
+Atualizado em: ${team.updatedAt || 'N/A'}
+            `;
+            alert(details);
+        }
+        
+        // Função para atualizar estatísticas
+        function updateStats() {
+            const total = allTeams.length;
+            const withLogo = allTeams.filter(team => team.logoUrl).length;
+            const withoutLogo = total - withLogo;
+            const percentage = total > 0 ? Math.round((withLogo / total) * 100) : 0;
+            
+            document.getElementById('totalTeams').textContent = total;
+            document.getElementById('teamsWithLogo').textContent = withLogo;
+            document.getElementById('teamsWithoutLogo').textContent = withoutLogo;
+            document.getElementById('logoPercentage').textContent = percentage + '%';
+            
+            elements.statsContainer.style.display = 'flex';
+        }
+        
+        // Função para atualizar paginação
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredTeams.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                elements.pagination.style.display = 'none';
+                return;
+            }
+            
+            elements.pagination.style.display = 'flex';
+            elements.prevBtn.disabled = currentPage === 1;
+            elements.nextBtn.disabled = currentPage === totalPages;
+            elements.paginationInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+        }
+        
+        // Função para exportar para CSV
+        function exportToCSV() {
+            const headers = ['Nome', 'ID Battlefy', 'Torneio', 'Logo URL', 'Tem Logo'];
+            const rows = filteredTeams.map(team => [
+                team.name,
+                team.battlefyId || '',
+                team.tournamentId || '',
+                team.logoUrl || '',
+                team.logoUrl ? 'Sim' : 'Não'
+            ]);
+            
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(field => `"${field}"`).join(','))
+                .join('\n');
+            
+            downloadFile(csvContent, 'teams-logos.csv', 'text/csv');
+        }
+        
+        // Função para exportar para JSON
+        function exportToJSON() {
+            const jsonContent = JSON.stringify(filteredTeams, null, 2);
+            downloadFile(jsonContent, 'teams-logos.json', 'application/json');
+        }
+        
+        // Função para fazer download de arquivo
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Funções de UI
+        function showLoading(show) {
+            elements.loadingMessage.style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+        }
+        
+        function hideError() {
+            elements.errorMessage.style.display = 'none';
+        }
+        
+        function showExportSection(show) {
+            elements.exportSection.style.display = show ? 'block' : 'none';
+        }
+        
+        // Event Listeners
+        elements.loadTeamsBtn.addEventListener('click', loadTeamsFromFirebase);
+        elements.searchInput.addEventListener('input', applyFilters);
+        elements.tournamentFilter.addEventListener('change', applyFilters);
+        elements.logoFilter.addEventListener('change', applyFilters);
+        
+        elements.prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTeams();
+                updatePagination();
+            }
+        });
+        
+        elements.nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredTeams.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTeams();
+                updatePagination();
+            }
+        });
+        
+        elements.exportCsvBtn.addEventListener('click', exportToCSV);
+        elements.exportJsonBtn.addEventListener('click', exportToJSON);
+        
+        // Inicialização
+        console.log('🏆 Portal de Logos dos Times carregado!');
+        console.log('⚠️ Lembre-se de configurar suas credenciais do Firebase no código!');
+    </script>
+</body>
+</html>
