@@ -78,46 +78,138 @@ async function TournamentsContent() {
   let isFirebaseConnected = false
 
   try {
-    // Tentar buscar dados do Firebase
-    const tournamentsSnapshot = await firestoreHelpers.getAllTournaments()
+    // Buscar dados de ambas as coleções
+    const [battlefySnapshot, tournamentsSnapshot] = await Promise.all([
+      firestoreHelpers.getBattlefyTournaments(),
+      firestoreHelpers.getAllTournaments()
+    ])
 
-    if (tournamentsSnapshot && !tournamentsSnapshot.empty) {
+    let battlefyTournaments: Tournament[] = []
+    let seedTournaments: Tournament[] = []
+
+    // Processar dados do Battlefy
+    if (battlefySnapshot && !battlefySnapshot.empty) {
       isFirebaseConnected = true
-      tournaments = tournamentsSnapshot.docs.map(doc => {
+      battlefyTournaments = battlefySnapshot.docs.map(doc => {
         const data = doc.data()
+        const rawData = data.rawData || {}
 
-        // Mapear dados do Firebase para a estrutura esperada
+        // Função para extrair prêmios do HTML
+        const extractPrizePool = (prizesHtml: string): number => {
+          if (!prizesHtml) return 0
+          // Procurar por valores em R$ no HTML
+          const matches = prizesHtml.match(/R\$\s*([\d.,]+)/g)
+          if (matches && matches.length > 0) {
+            // Pegar o maior valor encontrado
+            const values = matches.map(match => {
+              const numStr = match.replace(/R\$\s*/, '').replace(/\./g, '').replace(',', '.')
+              return parseFloat(numStr) || 0
+            })
+            return Math.max(...values)
+          }
+          return 0
+        }
+
+        // Função para determinar status baseado nas datas
+        const determineStatus = (startTime: string, lastCompletedMatchAt?: string): 'upcoming' | 'ongoing' | 'finished' => {
+          if (!startTime) return 'upcoming'
+          
+          const startDate = new Date(startTime)
+          const now = new Date()
+          
+          if (lastCompletedMatchAt) {
+            return 'finished'
+          }
+          
+          if (now < startDate) {
+            return 'upcoming'
+          } else {
+            return 'ongoing'
+          }
+        }
+
+        // Mapear dados do Battlefy para a estrutura esperada
         const tournament: Tournament = {
-          id: doc.id,
-          name: data.name || 'Sem nome',
-          game: data.game || 'Jogo não especificado',
-          format: data.format || 'Formato não especificado',
-          description: data.description || 'Sem descrição',
-          startDate: convertFirebaseTimestamp(data.startDate),
-          endDate: convertFirebaseTimestamp(data.endDate),
-          registrationDeadline: convertFirebaseTimestamp(data.registrationDeadline),
-          maxParticipants: data.maxParticipants || data.maxTeams || 0,
-          prizePool: data.prizePool || 0,
-          entryFee: data.entryFee || 0,
-          rules: data.rules || 'Regras não especificadas',
-          status: mapStatus(data.status),
-          isActive: data.isActive || false,
-          avatar: data.avatar || data.bannerUrl || undefined,
-          tournamentUrl: data.tournamentUrl || data.rules || undefined
+          id: `battlefy_${doc.id}`,
+          name: data.name || rawData.name || 'Sem nome',
+          game: data.game || rawData.gameName || 'Jogo não especificado',
+          format: rawData.type === 'team' ? `Equipes (${rawData.playersPerTeam || 5} jogadores)` : 'Individual',
+          description: rawData.about ? rawData.about.replace(/<[^>]*>/g, '').substring(0, 200) + '...' : 'Sem descrição',
+          startDate: rawData.startTime || new Date().toISOString(),
+          endDate: rawData.startTime ? new Date(new Date(rawData.startTime).getTime() + 24 * 60 * 60 * 1000).toISOString() : new Date().toISOString(),
+          registrationDeadline: rawData.checkInStartTime || rawData.startTime || new Date().toISOString(),
+          maxParticipants: rawData.teamCap || rawData.maxPlayers || 0,
+          prizePool: extractPrizePool(rawData.prizes || ''),
+          entryFee: 0, // Battlefy tournaments são geralmente gratuitos
+          rules: rawData.rules?.complete || rawData.rules?.critical || 'Regras não especificadas',
+          status: determineStatus(rawData.startTime, rawData.lastCompletedMatchAt),
+          isActive: true,
+          avatar: rawData.bannerUrl || undefined,
+          tournamentUrl: `https://battlefy.com/tournament/${rawData.slug || data.battlefyId}`
         }
 
         return tournament
       })
+    }
 
-      // Ordenar por data de início (mais recente primeiro)
-      tournaments.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
-    } else if (tournamentsSnapshot) {
-      // Firebase conectado mas sem dados
+    // Processar dados da coleção tournaments (seed data)
+    if (tournamentsSnapshot && !tournamentsSnapshot.empty) {
       isFirebaseConnected = true
+      seedTournaments = tournamentsSnapshot.docs.map(doc => {
+        const data = doc.data()
+        
+        // Converter timestamps do Firebase para strings ISO
+        const convertTimestamp = (timestamp: any): string => {
+          if (!timestamp) return new Date().toISOString()
+          if (timestamp.toDate) {
+            return timestamp.toDate().toISOString()
+          }
+          if (typeof timestamp === 'string') {
+            return new Date(timestamp).toISOString()
+          }
+          return new Date().toISOString()
+        }
+
+        const mappedStatus = mapStatus(data.status || 'upcoming')
+        
+        const tournament: Tournament = {
+          id: `seed_${doc.id}`,
+          name: data.name || 'Sem nome',
+          game: data.game || 'Jogo não especificado',
+          format: data.format || 'Formato não especificado',
+          description: data.description || 'Sem descrição',
+          startDate: convertTimestamp(data.startDate),
+          endDate: convertTimestamp(data.endDate),
+          registrationDeadline: convertTimestamp(data.registrationDeadline),
+          maxParticipants: data.maxParticipants || data.maxTeams || 0,
+          prizePool: data.prizePool || 0,
+          entryFee: data.entryFee || 0,
+          rules: data.rules || 'Regras não especificadas',
+          status: mappedStatus,
+          isActive: data.isActive !== false,
+          avatar: data.avatar || data.bannerUrl || undefined,
+          tournamentUrl: data.tournamentUrl || undefined
+        }
+
+
+
+        return tournament
+      })
+    }
+
+    // Combinar ambos os arrays
+    tournaments = [...battlefyTournaments, ...seedTournaments]
+
+
+
+    // Ordenar por data de início (mais recente primeiro)
+    tournaments.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+
+    if (tournaments.length === 0 && isFirebaseConnected) {
+      // Firebase conectado mas sem dados
       tournaments = []
-    } else {
+    } else if (!isFirebaseConnected) {
       firebaseError = 'Firebase retornou null - verifique a configuração'
-      isFirebaseConnected = false
     }
   } catch (error) {
     firebaseError = error instanceof Error ? error.message : 'Erro desconhecido ao conectar com o banco de dados'
@@ -280,6 +372,8 @@ async function TournamentsContent() {
   const ongoingTournaments = tournaments.filter(t => t.status === 'ongoing')
   const upcomingTournaments = tournaments.filter(t => t.status === 'upcoming')
   const finishedTournaments = tournaments.filter(t => t.status === 'finished')
+
+
 
   // Estatísticas para exibição
   const totalTournaments = tournaments.length

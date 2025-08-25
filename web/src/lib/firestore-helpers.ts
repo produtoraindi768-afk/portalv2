@@ -378,6 +378,39 @@ export class FirestoreHelpers {
     }
   }
 
+  // Buscar dados da coleção battlefy_tournaments
+  async getBattlefyTournaments(): Promise<QuerySnapshot<DocumentData> | null> {
+    console.log('🔍 getBattlefyTournaments: Iniciando...')
+    
+    if (!this.db) {
+      console.error('❌ getBattlefyTournaments: this.db é null - Firebase não configurado')
+      return null
+    }
+
+    try {
+      console.log('🔍 getBattlefyTournaments: Criando query...')
+      
+      const battlefyQuery = query(
+        collection(this.db, 'battlefy_tournaments'),
+        orderBy('importedAt', 'desc')
+      )
+      
+      console.log('🔍 getBattlefyTournaments: Executando query...')
+      const result = await getDocs(battlefyQuery)
+      console.log(`✅ getBattlefyTournaments: Query executada com sucesso. Resultado: ${result ? 'sucesso' : 'null'}, Empty: ${result?.empty}, Size: ${result?.size}`)
+      
+      return result
+    } catch (error) {
+      console.error('❌ getBattlefyTournaments: Erro ao buscar torneios do Battlefy:', error)
+      console.error('❌ getBattlefyTournaments: Detalhes do erro:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown',
+        stack: error instanceof Error ? error.stack : 'Unknown'
+      })
+      return null
+    }
+  }
+
   // Matches operations
   async createMatch(matchData: MatchData): Promise<DocumentReference | null> {
     if (!this.db) return null
