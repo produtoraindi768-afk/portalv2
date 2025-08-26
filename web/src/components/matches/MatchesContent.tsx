@@ -72,7 +72,7 @@ export function MatchesContent() {
   const statusOptions: Array<{ value: FilterStatus; label: string; icon: any; color: string }> = [
     { value: 'all', label: 'Todas', icon: Calendar, color: 'bg-muted text-muted-foreground' },
     { value: 'ongoing', label: 'Ao Vivo', icon: Clock, color: 'bg-red-500 text-white' },
-    { value: 'scheduled', label: 'Agendadas', icon: Calendar, color: 'bg-blue-500 text-white' },
+    { value: 'scheduled', label: 'Ao Vivo', icon: Clock, color: 'bg-red-500 text-white' },
     { value: 'finished', label: 'Finalizadas', icon: Trophy, color: 'bg-green-500 text-white' },
   ]
 
@@ -198,10 +198,10 @@ export function MatchesContent() {
           {organizedMatches.scheduled.length > 0 && (
             <section className="space-y-6">
               <div className="flex items-center gap-3">
-                <Badge variant="outline" className="border-blue-500 text-blue-500">
-                  📅 AGENDADAS
+                <Badge variant="destructive" className="bg-red-500 text-white">
+                  🔴 AO VIVO
                 </Badge>
-                <h2 className="text-xl font-semibold">Próximas Partidas</h2>
+                <h2 className="text-xl font-semibold">Partidas Ao Vivo</h2>
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {organizedMatches.scheduled.map((match) => (
@@ -241,7 +241,7 @@ export function MatchesContent() {
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold">
               {statusFilter === 'ongoing' && 'Partidas Ao Vivo'}
-              {statusFilter === 'scheduled' && 'Partidas Agendadas'}
+              {statusFilter === 'scheduled' && 'Partidas Ao Vivo'}
               {statusFilter === 'finished' && 'Partidas Finalizadas'}
             </h2>
             <Badge variant="outline">

@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
+
 import { Separator } from '@/components/ui/separator'
 import { Calendar, Users, DollarSign, Clock } from 'lucide-react'
 import { format, differenceInDays, isPast } from 'date-fns'
@@ -56,10 +56,7 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
   const daysUntilEnd = differenceInDays(endDate, currentDate)
   const registrationClosed = isPast(registrationDeadline)
   
-  // Calcular progresso do torneio (se em andamento)
-  const tournamentProgress = realStatus === 'ongoing' 
-    ? Math.max(0, Math.min(100, ((currentDate.getTime() - startDate.getTime()) / (endDate.getTime() - startDate.getTime())) * 100))
-    : 0
+
   
   const getStatusConfig = () => {
     switch (realStatus) {
@@ -159,16 +156,7 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
           </Badge>
         </div>
 
-        {/* Progresso do torneio (apenas se em andamento) */}
-        {realStatus === 'ongoing' && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Progresso</span>
-              <span>{Math.round(tournamentProgress)}%</span>
-            </div>
-            <Progress value={tournamentProgress} className="h-2" />
-          </div>
-        )}
+
 
         {/* Informações de data */}
         <div className="space-y-3">

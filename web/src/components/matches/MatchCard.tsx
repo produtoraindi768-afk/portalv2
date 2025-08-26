@@ -103,9 +103,10 @@ export function MatchCard({ match, className }: MatchCardProps) {
           </Badge>
         )
       default:
+        // Mostrar partidas agendadas como "Ao vivo" ao invés de "AGENDADA"
         return (
-          <Badge variant="outline" className="border-primary text-primary">
-            AGENDADA
+          <Badge variant="destructive" className="bg-red-500 text-white animate-pulse">
+            Ao vivo
           </Badge>
         )
     }

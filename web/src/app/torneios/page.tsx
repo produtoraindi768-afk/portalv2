@@ -366,10 +366,25 @@ async function TournamentsContent() {
     tournaments = mockTournaments
   }
 
-  // Separar torneios por status
-  const ongoingTournaments = tournaments.filter(t => t.status === 'ongoing')
-  const upcomingTournaments = tournaments.filter(t => t.status === 'upcoming')
-  const finishedTournaments = tournaments.filter(t => t.status === 'finished')
+  // Função para calcular status real baseado nas datas (igual ao TournamentCard)
+  const calculateRealStatus = (tournament: Tournament) => {
+    const now = new Date().getTime()
+    const start = new Date(tournament.startDate).getTime()
+    const end = new Date(tournament.endDate).getTime()
+    
+    if (now < start) {
+      return 'upcoming' // Torneio ainda não começou
+    } else if (now >= start && now <= end) {
+      return 'ongoing' // Torneio em andamento
+    } else {
+      return 'finished' // Torneio já terminou
+    }
+  }
+
+  // Separar torneios por status real (calculado dinamicamente)
+  const ongoingTournaments = tournaments.filter(t => calculateRealStatus(t) === 'ongoing')
+  const upcomingTournaments = tournaments.filter(t => calculateRealStatus(t) === 'upcoming')
+  const finishedTournaments = tournaments.filter(t => calculateRealStatus(t) === 'finished')
 
 
 
