@@ -200,8 +200,6 @@ async function TournamentsContent() {
     // Combinar ambos os arrays
     tournaments = [...battlefyTournaments, ...seedTournaments]
 
-
-
     // Ordenar por data de início (mais recente primeiro)
     tournaments.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
 
@@ -216,8 +214,8 @@ async function TournamentsContent() {
     isFirebaseConnected = false
   }
 
-  // Se não há dados do Firebase, usar dados de exemplo
-  if (!isFirebaseConnected || tournaments.length === 0) {
+  // Se não há conexão com Firebase, usar dados de exemplo
+  if (!isFirebaseConnected) {
     const mockTournaments: Tournament[] = [
       {
         id: "1",
