@@ -6,6 +6,7 @@ import { MiniplPlayerProvider } from "@/components/miniplayer/MiniplPlayerProvid
 import { HeaderHeightProvider } from "@/contexts/HeaderHeightContext"
 import { Toaster } from "@/components/ui/toaster"
 import { Inter } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </MiniplPlayerProvider>
         </HeaderHeightProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   )
