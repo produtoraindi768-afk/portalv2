@@ -88,7 +88,7 @@ export default function EpicDemoPage() {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Demonstração do Perfil Epic Games</h1>
+          <h1 className="text-2xl font-bold">Demonstração do Perfil Epic Games</h1>
           <p className="text-muted-foreground">
             Esta página mostra como os dados do usuário Epic Games são exibidos após o login bem-sucedido.
           </p>

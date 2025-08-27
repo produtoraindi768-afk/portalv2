@@ -425,7 +425,7 @@ async function TournamentsContent() {
         {/* Header */}
         <div className="mb-12">
           <div className="text-center lg:text-left">
-            <h1 className="text-3xl/tight font-bold tracking-tight text-balance sm:text-4xl/tight lg:text-5xl/tight text-foreground">
+            <h1 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight lg:text-4xl/tight text-foreground">
               Campeonatos
             </h1>
             <p className="text-muted-foreground mt-4 text-base/7 text-balance sm:text-lg/8">
@@ -441,7 +441,7 @@ async function TournamentsContent() {
         {ongoingTournaments.length > 0 && (
           <section className="mb-16">
             <div className="mb-8">
-              <h2 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight text-destructive">
+              <h2 className="text-xl/tight font-bold tracking-tight text-balance sm:text-2xl/tight text-destructive">
                 EM ANDAMENTO
               </h2>
             </div>
@@ -457,7 +457,7 @@ async function TournamentsContent() {
         {upcomingTournaments.length > 0 && (
           <section className="mb-16">
             <div className="mb-8">
-              <h2 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight text-primary">
+              <h2 className="text-xl/tight font-bold tracking-tight text-balance sm:text-2xl/tight text-primary">
                 PRÓXIMOS TORNEIOS
               </h2>
             </div>
@@ -473,7 +473,7 @@ async function TournamentsContent() {
         {finishedTournaments.length > 0 && (
           <section className="mb-16">
             <div className="mb-8">
-              <h2 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight text-muted-foreground">
+              <h2 className="text-xl/tight font-bold tracking-tight text-balance sm:text-2xl/tight text-muted-foreground">
                 TORNEIOS FINALIZADOS
               </h2>
             </div>

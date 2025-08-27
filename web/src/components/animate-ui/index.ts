@@ -1,0 +1,102 @@
+// Background components
+export { default as BubbleBackground } from "./backgrounds/bubble";
+export { default as GradientBackground } from "./backgrounds/gradient";
+
+// Button components  
+export { default as CopyButton } from "./buttons/copy";
+
+// Re-export existing components
+export {
+  MotionHighlight,
+  MotionHighlightItem,
+  useMotionHighlight,
+  type MotionHighlightProps,
+  type MotionHighlightItemProps,
+} from "./effects/motion-highlight";
+
+export {
+  useSheet,
+  Sheet,
+  SheetPortal,
+  SheetOverlay,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+  type SheetProps,
+  type SheetPortalProps,
+  type SheetOverlayProps,
+  type SheetTriggerProps,
+  type SheetCloseProps,
+  type SheetContentProps,
+  type SheetHeaderProps,
+  type SheetFooterProps,
+  type SheetTitleProps,
+  type SheetDescriptionProps,
+} from "./radix/sheet";
+
+export {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInput,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSkeleton,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
+  type SidebarProps,
+  type SidebarContentProps,
+  type SidebarFooterProps,
+  type SidebarGroupProps,
+  type SidebarGroupActionProps,
+  type SidebarGroupContentProps,
+  type SidebarGroupLabelProps,
+  type SidebarHeaderProps,
+  type SidebarInputProps,
+  type SidebarInsetProps,
+  type SidebarMenuProps,
+  type SidebarMenuActionProps,
+  type SidebarMenuBadgeProps,
+  type SidebarMenuButtonProps,
+  type SidebarMenuItemProps,
+  type SidebarMenuSkeletonProps,
+  type SidebarMenuSubProps,
+  type SidebarMenuSubItemProps,
+  type SidebarMenuSubButtonProps,
+  type SidebarProviderProps,
+  type SidebarRailProps,
+  type SidebarSeparatorProps,
+  type SidebarTriggerProps,
+} from "./radix/sidebar";
+
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+  useTooltip,
+  type TooltipContextType,
+  type TooltipProps,
+  type TooltipTriggerProps,
+  type TooltipContentProps,
+  type TooltipProviderProps,
+} from "./radix/tooltip";

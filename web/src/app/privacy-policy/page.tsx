@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">Política de Privacidade</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Política de Privacidade</h1>
           <p className="text-muted-foreground text-lg">
             Última atualização: {new Date().toLocaleDateString('pt-BR')}
           </p>

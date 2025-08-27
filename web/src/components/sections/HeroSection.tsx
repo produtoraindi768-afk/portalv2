@@ -113,7 +113,7 @@ export default function HeroSection() {
                   </Badge>
                 </div>
               ) : null}
-              <h1 className="text-3xl/tight font-bold tracking-tight text-balance sm:text-4xl/tight lg:text-5xl/tight">
+              <h1 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight lg:text-4xl/tight">
                 <Link
                   href={featured.slug ? `/noticias/${featured.slug}` : `#`}
                   className="hover:text-primary transition-colors duration-200"

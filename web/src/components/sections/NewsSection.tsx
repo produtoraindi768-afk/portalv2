@@ -154,7 +154,7 @@ export function NewsSection({
       <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
         {showHeader && (
           <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-3xl/tight font-semibold tracking-tight sm:text-4xl/tight">
+            <h2 className="text-xl/tight font-semibold tracking-tight sm:text-2xl/tight lg:text-3xl/tight">
               Últimas notícias
             </h2>
             <p className="text-muted-foreground mt-4 text-base/7 sm:text-lg/8">

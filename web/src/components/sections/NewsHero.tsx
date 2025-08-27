@@ -37,7 +37,7 @@ export default function NewsHero({
                 <Badge key={t} variant="secondary">{t}</Badge>
               ))}
             </div>
-            <h1 className="mt-4 text-2xl/tight font-bold tracking-tight text-balance sm:text-4xl/tight lg:text-5xl/tight">
+            <h1 className="mt-4 text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight lg:text-4xl/tight">
               {title}
             </h1>
             {excerpt ? (

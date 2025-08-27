@@ -199,7 +199,7 @@ export function TeamManagement({ user, existingTeam }: TeamManagementProps) {
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Gerenciar Equipe</h1>
+        <h1 className="text-2xl font-bold mb-2">Gerenciar Equipe</h1>
         <p className="text-muted-foreground">
           {existingTeam ? 'Gerencie sua equipe e membros' : 'Crie uma nova equipe para competir'}
         </p>

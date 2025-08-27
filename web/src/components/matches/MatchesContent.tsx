@@ -105,7 +105,7 @@ export function MatchesContent() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Partidas</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Partidas</h1>
             <p className="text-muted-foreground mt-1">
               Acompanhe todas as partidas dos torneios em tempo real
             </p>

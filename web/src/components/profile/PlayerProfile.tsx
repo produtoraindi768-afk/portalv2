@@ -133,7 +133,7 @@ export function PlayerProfile({ username: propUsername }: PlayerProfileProps = {
             {/* Profile Info */}
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
-                <h1 className="text-3xl font-bold">{player.displayName}</h1>
+                <h1 className="text-2xl font-bold">{player.displayName}</h1>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">@{player.username}</span>
                   {player.isVerified && (
