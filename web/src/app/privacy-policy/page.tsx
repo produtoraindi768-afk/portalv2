@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade | SAFEZONE',
-  description: 'Nossa política de privacidade descreve como coletamos, usamos e protegemos suas informações pessoais.',
+  title: 'Política de Privacidade | SZ - Fortnite Ballistic',
 }
 
 export default function PrivacyPolicyPage() {

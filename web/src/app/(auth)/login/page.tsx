@@ -1,5 +1,10 @@
+import { Metadata } from "next"
 import { GalleryVerticalEnd } from "lucide-react"
 import { LoginForm } from "@/components/auth/LoginForm"
+
+export const metadata: Metadata = {
+  title: "Login | SZ - Fortnite Ballistic",
+}
 
 export default function LoginPage() {
   return (

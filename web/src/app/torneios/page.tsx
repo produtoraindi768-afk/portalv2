@@ -6,8 +6,7 @@ import { TournamentFilters } from '@/components/tournaments/TournamentFilters'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export const metadata: Metadata = {
-  title: 'Campeonatos - ProjetoSIA',
-  description: 'Confira todos os campeonatos e torneios disponíveis. Participe das competições mais emocionantes.',
+  title: 'Campeonatos | SZ - Fortnite Ballistic',
 }
 
 interface Tournament {

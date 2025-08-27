@@ -4,8 +4,7 @@ import { MatchesContent } from '@/components/matches/MatchesContent'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export const metadata: Metadata = {
-  title: 'Partidas - ProjetoSIA',
-  description: 'Acompanhe todas as partidas dos torneios. Veja resultados, horários e estatísticas das competições.',
+  title: 'Partidas | SZ - Fortnite Ballistic',
 }
 
 function MatchesLoadingSkeleton() {

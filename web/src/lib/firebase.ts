@@ -9,7 +9,29 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
+// Validate Firebase configuration
+function validateFirebaseConfig() {
+  const requiredFields = [
+    'apiKey',
+    'authDomain', 
+    'projectId',
+    'storageBucket',
+    'messagingSenderId',
+    'appId'
+  ]
+  
+  const missingFields = requiredFields.filter(field => !firebaseConfig[field as keyof typeof firebaseConfig])
+  
+  if (missingFields.length > 0) {
+    console.error('Firebase configuration missing fields:', missingFields)
+    console.error('Current config:', firebaseConfig)
+    throw new Error(`Firebase não configurado. Campos ausentes: ${missingFields.join(', ')}`)
+  }
+}
+
 export function getFirebaseApp(): FirebaseApp {
+  validateFirebaseConfig()
+  
   if (!getApps().length) {
     return initializeApp(firebaseConfig)
   }

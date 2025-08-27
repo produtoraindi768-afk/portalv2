@@ -2,8 +2,7 @@ import { Metadata } from 'next'
 import { NewsSection } from "@/components/sections/NewsSection"
 
 export const metadata: Metadata = {
-  title: 'Notícias',
-  description: 'Últimas notícias e atualizações sobre esports, torneios e streamers'
+  title: 'Notícias | SZ - Fortnite Ballistic',
 }
 
 export default function NoticiasPage() {

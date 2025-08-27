@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 
 export const metadata: Metadata = {
-  title: 'Termos de Serviço | SAFEZONE',
-  description: 'Nossos termos de serviço descrevem as condições de uso da plataforma SAFEZONE e integração com Epic Games.',
+  title: 'Termos de Serviço | SZ - Fortnite Ballistic',
 }
 
 export default function TermsOfServicePage() {
