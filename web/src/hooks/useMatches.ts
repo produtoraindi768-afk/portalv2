@@ -120,7 +120,7 @@ export function useMatches(): UseMatchesReturn {
         tournamentName: typeof raw.tournamentName === "string" ? raw.tournamentName : undefined,
         scheduledDate: typeof raw.scheduledDate === "string" ? raw.scheduledDate : undefined,
         format: typeof raw.format === "string" ? raw.format : undefined,
-        game: typeof raw.game === "string" ? raw.game : undefined,
+        game: "Fortnite",
         isFeatured: Boolean(raw.isFeatured),
         team1,
         team2,

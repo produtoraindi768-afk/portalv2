@@ -35,22 +35,9 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
   const registrationDeadline = new Date(tournament.registrationDeadline)
   const currentDate = new Date()
   
-  // Calcular status dinamicamente baseado nas datas
-  const calculateRealStatus = () => {
-    const now = currentDate.getTime()
-    const start = startDate.getTime()
-    const end = endDate.getTime()
-    
-    if (now < start) {
-      return 'upcoming' // Torneio ainda não começou
-    } else if (now >= start && now <= end) {
-      return 'ongoing' // Torneio em andamento
-    } else {
-      return 'finished' // Torneio já terminou
-    }
-  }
-  
-  const realStatus = calculateRealStatus()
+  // Usar o status já calculado corretamente na página principal
+  // que considera lastCompletedMatchAt para torneios Battlefy
+  const realStatus = tournament.status
   const isToday = format(startDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd')
   const daysUntilStart = differenceInDays(startDate, currentDate)
   const daysUntilEnd = differenceInDays(endDate, currentDate)

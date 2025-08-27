@@ -27,6 +27,10 @@ interface Tournament {
   isActive: boolean
   avatar?: string
   tournamentUrl?: string
+  // Campos específicos do Battlefy para determinar status correto
+  lastCompletedMatchAt?: string
+  battlefyStatus?: string
+  battlefyState?: string
 }
 
 async function TournamentsContent() {
@@ -123,7 +127,7 @@ async function TournamentsContent() {
         const tournament: Tournament = {
           id: `battlefy_${doc.id}`,
           name: data.name || rawData.name || 'Sem nome',
-          game: data.game || rawData.gameName || 'Jogo não especificado',
+          game: 'Fortnite',
           format: rawData.type === 'team' ? `Equipes (${rawData.playersPerTeam || 5} jogadores)` : 'Individual',
           description: rawData.about ? rawData.about.replace(/<[^>]*>/g, '').substring(0, 200) + '...' : 'Sem descrição',
           startDate: rawData.startTime || new Date().toISOString(),
@@ -136,7 +140,11 @@ async function TournamentsContent() {
           status: determineBattlefyStatus(rawData) === 'complete' ? 'finished' : 'upcoming', // Status será recalculado dinamicamente
           isActive: true,
           avatar: rawData.bannerUrl || undefined,
-          tournamentUrl: `https://battlefy.com/tournament/${rawData.slug || data.battlefyId}`
+          tournamentUrl: `https://battlefy.com/tournament/${rawData.slug || data.battlefyId}`,
+          // Campos específicos do Battlefy para determinar status correto
+          lastCompletedMatchAt: rawData.lastCompletedMatchAt,
+          battlefyStatus: rawData.status,
+          battlefyState: rawData.state
         }
 
         return tournament
@@ -166,7 +174,7 @@ async function TournamentsContent() {
         const tournament: Tournament = {
           id: `seed_${doc.id}`,
           name: data.name || 'Sem nome',
-          game: data.game || 'Jogo não especificado',
+          game: 'Fortnite',
           format: data.format || 'Formato não especificado',
           description: data.description || 'Sem descrição',
           startDate: convertTimestamp(data.startDate),
@@ -357,12 +365,34 @@ async function TournamentsContent() {
     tournaments = mockTournaments
   }
 
-  // Função para calcular status real baseado nas datas (igual ao TournamentCard)
-  const calculateRealStatus = (tournament: Tournament) => {
+  // Função para calcular status real baseado nas datas e dados do Battlefy
+  const calculateRealStatus = (tournament: Tournament): 'upcoming' | 'ongoing' | 'finished' => {
     const now = new Date().getTime()
     const start = new Date(tournament.startDate).getTime()
     const end = new Date(tournament.endDate).getTime()
     
+    // Para torneios do Battlefy, verificar se foi explicitamente finalizado
+    if (tournament.id.startsWith('battlefy_')) {
+      // Se tem lastCompletedMatchAt, o torneio foi finalizado
+      if (tournament.lastCompletedMatchAt) {
+        return 'finished'
+      }
+      
+      // Se o status/state do Battlefy é 'complete', foi finalizado
+      if (tournament.battlefyStatus === 'complete' || tournament.battlefyState === 'complete') {
+        return 'finished'
+      }
+      
+      // Se passou mais de 7 dias desde o início, considerar finalizado
+      if (tournament.startDate) {
+        const daysSinceStart = (now - start) / (1000 * 60 * 60 * 24)
+        if (daysSinceStart > 7) {
+          return 'finished'
+        }
+      }
+    }
+    
+    // Lógica padrão baseada em datas
     if (now < start) {
       return 'upcoming' // Torneio ainda não começou
     } else if (now >= start && now <= end) {
@@ -372,17 +402,23 @@ async function TournamentsContent() {
     }
   }
 
+  // Mapear torneios com status calculado dinamicamente
+  const tournamentsWithRealStatus = tournaments.map(tournament => ({
+    ...tournament,
+    status: calculateRealStatus(tournament)
+  }))
+
   // Separar torneios por status real (calculado dinamicamente)
-  const ongoingTournaments = tournaments.filter(t => calculateRealStatus(t) === 'ongoing')
-  const upcomingTournaments = tournaments.filter(t => calculateRealStatus(t) === 'upcoming')
-  const finishedTournaments = tournaments.filter(t => calculateRealStatus(t) === 'finished')
+  const ongoingTournaments = tournamentsWithRealStatus.filter(t => t.status === 'ongoing')
+  const upcomingTournaments = tournamentsWithRealStatus.filter(t => t.status === 'upcoming')
+  const finishedTournaments = tournamentsWithRealStatus.filter(t => t.status === 'finished')
 
 
 
   // Estatísticas para exibição
-  const totalTournaments = tournaments.length
-  const freeTournaments = tournaments.filter(t => t.entryFee === 0).length
-  const totalPrizePool = tournaments.reduce((sum, t) => sum + t.prizePool, 0)
+  const totalTournaments = tournamentsWithRealStatus.length
+  const freeTournaments = tournamentsWithRealStatus.filter(t => t.entryFee === 0).length
+  const totalPrizePool = tournamentsWithRealStatus.reduce((sum, t) => sum + t.prizePool, 0)
 
   return (
     <div className="pt-24 pb-8 lg:pt-32 lg:pb-16">

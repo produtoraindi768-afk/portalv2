@@ -88,7 +88,7 @@ async function testTournamentsMapping() {
       const mappedTournament = {
         id: doc.id,
         name: data.name || 'Sem nome',
-        game: data.game || 'Jogo não especificado',
+        game: 'Fortnite',
         format: data.format || 'Formato não especificado',
         description: data.description || 'Sem descrição',
         startDate: convertFirebaseTimestamp(data.startDate),
@@ -137,4 +137,4 @@ async function testTournamentsMapping() {
 }
 
 // Executar teste
-testTournamentsMapping().catch(console.error) 
+testTournamentsMapping().catch(console.error)
