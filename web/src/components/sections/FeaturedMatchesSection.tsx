@@ -22,6 +22,7 @@ type MatchDoc = {
   format?: string
   game?: string
   isFeatured?: boolean
+  isBye?: boolean
   team1?: TeamInfo
   team2?: TeamInfo
   youtubeVideoId?: string // opcional, se existir no documento
@@ -57,14 +58,14 @@ export function FeaturedMatchesSection() {
           orderBy("scheduledDate", "asc")
         )
         const snap = await getDocs(q)
-        const data = mapMatches(snap.docs)
+        const data = mapMatches(snap.docs).filter(match => !match.isBye)
         setItems(data)
         setErrorMsg(null)
       } catch (e) {
         try {
           // Fallback sem índice composto: buscar apenas isFeatured e ordenar/filtrar no cliente
           const snap = await getDocs(query(collection(db, "matches"), where("isFeatured", "==", true)))
-          const all = mapMatches(snap.docs)
+          const all = mapMatches(snap.docs).filter(match => !match.isBye)
           const future = all
             .filter((m) => (m.scheduledDate ? m.scheduledDate >= nowIso : false))
             .sort((a, b) => (a.scheduledDate ?? "").localeCompare(b.scheduledDate ?? ""))
@@ -121,6 +122,7 @@ export function FeaturedMatchesSection() {
         format: typeof raw.format === "string" ? raw.format : undefined,
         game: typeof raw.game === "string" ? raw.game : undefined,
         isFeatured: Boolean(raw.isFeatured),
+        isBye: Boolean(raw.isBye),
         team1,
         team2,
         youtubeVideoId: typeof raw.youtubeVideoId === "string" ? (raw.youtubeVideoId as string) : undefined,

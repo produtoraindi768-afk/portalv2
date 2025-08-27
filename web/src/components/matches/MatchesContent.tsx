@@ -22,6 +22,9 @@ export function MatchesContent() {
   const filteredMatches = useMemo(() => {
     let filtered = matches
 
+    // Filtro para excluir partidas Bye
+    filtered = filtered.filter(match => !match.isBye)
+
     // Filtro por termo de busca
     if (searchTerm) {
       const term = searchTerm.toLowerCase()

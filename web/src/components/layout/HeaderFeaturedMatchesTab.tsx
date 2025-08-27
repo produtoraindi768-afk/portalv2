@@ -22,6 +22,7 @@ type MatchDoc = {
   format?: string
   game?: string
   isFeatured?: boolean
+  isBye?: boolean
   isLive?: boolean
   team1?: TeamInfo
   team2?: TeamInfo
@@ -72,13 +73,13 @@ export function HeaderFeaturedMatchesTab() {
           orderBy("scheduledDate", "asc")
         )
         const snap = await getDocs(q)
-        const data = mapMatches(snap.docs)
+        const data = mapMatches(snap.docs).filter(match => !match.isBye)
         setItems(limitAndSortLiveFirst(data))
         setErrorMsg(null)
       } catch (e) {
         try {
           const snap = await getDocs(query(collection(db, "matches"), where("isFeatured", "==", true)))
-          const all = mapMatches(snap.docs)
+          const all = mapMatches(snap.docs).filter(match => !match.isBye)
           const future = all
             .filter((m) => (m.scheduledDate ? m.scheduledDate >= nowIso : false))
             .sort((a, b) => (a.scheduledDate ?? "").localeCompare(b.scheduledDate ?? ""))
@@ -302,6 +303,7 @@ function mapMatches(
         format: typeof raw.format === "string" ? raw.format : undefined,
         game: typeof raw.game === "string" ? raw.game : undefined,
         isFeatured: Boolean(raw.isFeatured),
+        isBye: Boolean(raw.isBye),
         isLive: typeof (raw as Record<string, unknown>).isLive === "boolean" ? ((raw as Record<string, unknown>).isLive as boolean) : false,
         status: typeof raw.status === "string" ? raw.status as 'scheduled' | 'ongoing' | 'finished' : undefined,
         team1,
