@@ -110,37 +110,13 @@ async function TournamentsContent() {
           return 0
         }
 
-        // Função para determinar status baseado nas datas
-        const determineStatus = (startTime: string, lastCompletedMatchAt?: string, rawData?: any): 'upcoming' | 'ongoing' | 'finished' => {
-          if (!startTime) return 'upcoming'
-          
-          const startDate = new Date(startTime)
-          const now = new Date()
-          
-          // 1. Verificar se o torneio foi explicitamente finalizado
-          if (lastCompletedMatchAt) {
-            return 'finished'
-          }
-          
-          // 2. Verificar status/state do Battlefy
+        // Função para determinar status baseado apenas no Battlefy (para casos específicos)
+        const determineBattlefyStatus = (rawData?: any): 'complete' | null => {
+          // Verificar apenas status/state do Battlefy para casos explicitamente finalizados
           if (rawData?.status === 'complete' || rawData?.state === 'complete') {
-            return 'finished'
+            return 'complete'
           }
-          
-          // 3. Verificar se passou muito tempo desde o início (mais de 7 dias)
-          if (startTime) {
-            const daysSinceStart = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-            
-            if (daysSinceStart > 7) {
-              return 'finished'
-            }
-          }
-          
-          if (now < startDate) {
-            return 'upcoming'
-          } else {
-            return 'ongoing'
-          }
+          return null
         }
 
         // Mapear dados do Battlefy para a estrutura esperada
@@ -157,7 +133,7 @@ async function TournamentsContent() {
           prizePool: extractPrizePool(rawData.prizes || ''),
           entryFee: 0, // Battlefy tournaments são geralmente gratuitos
           rules: rawData.rules?.complete || rawData.rules?.critical || 'Regras não especificadas',
-          status: determineStatus(rawData.startTime, rawData.lastCompletedMatchAt, rawData),
+          status: determineBattlefyStatus(rawData) === 'complete' ? 'finished' : 'upcoming', // Status será recalculado dinamicamente
           isActive: true,
           avatar: rawData.bannerUrl || undefined,
           tournamentUrl: `https://battlefy.com/tournament/${rawData.slug || data.battlefyId}`
