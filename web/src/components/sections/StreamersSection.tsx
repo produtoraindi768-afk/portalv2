@@ -1517,7 +1517,6 @@ export function StreamersSection() {
         - z-55: Controles de navegação (setas) - PRINCIPAIS, sempre acessíveis
         - z-60: Loading overlay do player (SÓ quando NÃO em transição)
         - z-65: Box de transição quadrado - Único overlay durante transição
-        - z-[100]: Debug panel (desenvolvimento)
         
         CONFLITOS RESOLVIDOS:
         - Removida borda azul (ring) durante transição
@@ -1686,45 +1685,6 @@ export function StreamersSection() {
           )}
         </React.Fragment>
       ))}
-
-      {/* Debug info melhorado */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-4 right-4 bg-black/90 text-white p-3 rounded-lg text-xs z-[100] max-w-sm border border-gray-600">
-          <div className="font-bold mb-2">Debug Streamers Section</div>
-          <div>Streamers: {streamers.length}</div>
-          <div>Selected Index: {selectedIndex}</div>
-          <div>Visible Streams: {visibleStreams.length}</div>
-          <div>Should Show Previews: {shouldShowPreviews.toString()}</div>
-          <div>Is Transitioning: {isTransitioning.toString()}</div>
-          <div>Viewport Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}</div>
-          <div className="mt-2 border-t border-gray-500 pt-2">
-            <div className="font-semibold mb-1">Z-Index Hierarchy (Otimizada):</div>
-            <div className="text-xs mb-1">Previews: z-35</div>
-            <div className="text-xs mb-1 text-green-400 font-bold">Main Player: z-50</div>
-            <div className="text-xs mb-1 text-yellow-400 font-bold">Controls: z-55 (PRINCIPAIS) 🎯</div>
-            <div className="text-xs mb-1 text-blue-400">Loading: z-60 (só se !transitioning)</div>
-            <div className="text-xs mb-1 text-purple-400 font-bold">Transition Box: z-65 🟦 (exclusivo)</div>
-            <div className="text-xs mb-1 mt-2 text-orange-400">
-              {isTransitioning ? '⚠️ TRANSIÇÃO ATIVA' : '✅ Estável'}
-            </div>
-          </div>
-          <div className="mt-2 border-t border-gray-500 pt-2">
-            <div className="font-semibold mb-1">Stream Positions:</div>
-            {visibleStreams.map((stream, i) => (
-              <div key={i} className="text-xs mb-1 p-1 bg-gray-800 rounded">
-                <div className="font-medium">{stream.position.toUpperCase()}: {stream.streamer.name?.substring(0, 15)}...</div>
-                <div>Left: {Math.round(stream.containerStyle.left || 0)}px</div>
-                <div>Width: {Math.round(stream.containerStyle.width || 0)}px</div>
-                <div>Right Edge: {Math.round((stream.containerStyle.left || 0) + (stream.containerStyle.width || 0))}px</div>
-                <div className={cn(
-                  "font-medium",
-                  stream.isSelected ? "text-green-300" : "text-blue-300"
-                )}>{stream.isSelected ? '[PLAYER PRINCIPAL - Z:50] 👑' : '[PREVIEW - Z:35]'}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </>
   )
 }
