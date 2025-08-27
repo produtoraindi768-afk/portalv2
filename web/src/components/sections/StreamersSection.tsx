@@ -11,6 +11,8 @@ import { useHeaderHeight } from '@/contexts/HeaderHeightContext'
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { twitchStatusService } from "@/lib/twitch-status"
 import { cn } from "@/lib/utils"
+import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
+import { Separator } from "@/components/ui/separator"
 
 type StreamerDoc = {
   id: string
@@ -210,19 +212,31 @@ function PersistentTwitchPlayer({
   const playerContent = (
     <div
       className={cn(
-        "fixed z-40 transition-all duration-500 ease-in-out",
+        "fixed z-50 transition-all duration-500 ease-in-out",
         isVisible && !isTransitioning ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
         isTransitioning && "scale-95"
       )}
       style={containerStyle}
     >
       <AspectRatio ratio={16 / 9} className="w-full h-full relative">
-        {/* Loading overlay durante transição */}
-        {isLoading && (
-          <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-lg">
-            <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <span className="text-sm text-muted-foreground animate-pulse">Carregando stream...</span>
+        {/* Loading overlay do player - SÓ quando NÃO estiver em transição */}
+        {isLoading && !isTransitioning && (
+          <div className="absolute inset-0 z-60 bg-gradient-to-br from-background/95 via-background/90 to-background/95 backdrop-blur-md flex items-center justify-center rounded-lg border border-border/30 shadow-2xl">
+            {/* Conteúdo compacto do loading do player */}
+            <div className="relative z-10 flex flex-col items-center gap-4 p-6">
+              {/* Spinner compacto */}
+              <div className="relative">
+                <div className="animate-spin rounded-full h-12 w-12 border-3 border-border/20 border-t-primary border-r-primary/60" style={{ animationDuration: '1.2s' }} />
+                <div className="absolute inset-2 animate-spin rounded-full h-8 w-8 border-2 border-border/10 border-b-primary/80" style={{ animationDuration: '0.8s', animationDirection: 'reverse' }} />
+                <div className="absolute inset-4 bg-primary/20 rounded-full animate-pulse" />
+              </div>
+              
+              {/* Texto simples */}
+              <div className="text-center">
+                <div className="text-sm font-medium text-foreground/80 animate-pulse">
+                  Carregando player...
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -233,9 +247,9 @@ function PersistentTwitchPlayer({
             key={`persistent-${channel}-${iframeKey}`} // Key que força remontagem quando canal muda
             src={embedUrl}
             className={cn(
-              "w-full h-full block relative transition-all duration-500 ease-in-out",
-              isVisible && !isLoading ? "opacity-100 scale-100" : "opacity-0 scale-95",
-              isTransitioning && "blur-sm"
+              "w-full h-full block relative transition-all duration-700 ease-out transform-gpu",
+              isVisible && !isLoading ? "opacity-100 scale-100 blur-none" : "opacity-0 scale-95 blur-sm",
+              isTransitioning && "blur-md scale-98"
             )}
             frameBorder="0"
             allowFullScreen
@@ -243,12 +257,12 @@ function PersistentTwitchPlayer({
             title={`${channel} - Twitch Stream`}
             allow="autoplay; fullscreen; encrypted-media"
             onLoad={() => {
-              // Quando iframe carrega, remover loading mais rapidamente
+              // Quando iframe carrega, remover loading de forma mais suave
               setTimeout(() => {
                 setIsLoading(false)
                 setIsPlayerReady(true) // Marcar player como pronto
                 onPlayerReady?.(true) // Notificar que player está pronto
-              }, 300)
+              }, 200) // Reduzido de 300 para 200ms para resposta mais rápida
 
               // Trigger autoplay imediato quando iframe carrega
               const immediateAutoplay = () => {
@@ -292,8 +306,8 @@ function PersistentTwitchPlayer({
         ) : (
           // Placeholder quando não há embedUrl disponível
           <div className={cn(
-            "w-full h-full bg-gradient-to-br from-muted/80 via-muted/60 to-background/90 flex items-center justify-center rounded-lg transition-all duration-500",
-            isTransitioning && "scale-95 blur-sm"
+            "w-full h-full bg-gradient-to-br from-muted/80 via-muted/60 to-background/90 flex items-center justify-center rounded-lg transition-all duration-700 ease-out border border-border/20",
+            isTransitioning && "scale-95 blur-md brightness-75"
           )}>
             <div className="relative w-full h-full flex items-center justify-center">
               <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-background/50 rounded-lg" />
@@ -435,14 +449,16 @@ function StreamPreview({
   const previewContent = (
     <div
       className={cn(
-        "fixed z-30 transition-all duration-500 ease-out cursor-pointer group",
+        "fixed z-35 transition-all duration-500 ease-out cursor-pointer group",
         isVisible ? "opacity-100 pointer-events-auto transform-gpu" : "opacity-0 pointer-events-none transform-gpu scale-90",
         isHovered && !isClicked ? "scale-105" : "scale-100",
         isClicked && "scale-110 brightness-110"
       )}
       style={{
         ...containerStyle,
-        filter: isClicked ? 'brightness(1.1) saturate(1.2)' : undefined
+        filter: isClicked ? 'brightness(1.1) saturate(1.2)' : undefined,
+        // Forçar visibility para garantir que não seja cortado
+        visibility: isVisible ? 'visible' : 'hidden'
       }}
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
@@ -939,7 +955,7 @@ export function StreamersSection() {
     }
   }, [selectedIndex, streamers, mounted, triggerGlobalAutoplay])
 
-  // Calcular streams visíveis e suas posições (memoizado para evitar recriações)
+  // Calcular streams visíveis e suas posições com responsividade (memoizado para evitar recriações)
   const visibleStreams = React.useMemo(() => {
     // Calcular offset dinâmico: só adicionar altura quando expandido
     const dynamicOffset = isCollapsed ? 0 : featuredMatchesHeight
@@ -947,6 +963,48 @@ export function StreamersSection() {
     if (streamers.length === 0) {
       return []
     }
+
+    // Sistema responsivo: calcular dimensões baseado no viewport
+    const getResponsiveDimensions = () => {
+      const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200
+      
+      // Mobile (< 640px): Layout vertical compacto
+      if (viewportWidth < 640) {
+        return {
+          centerWidth: Math.min(viewportWidth - 32, 360), // Margem 16px cada lado
+          centerHeight: Math.min((viewportWidth - 32) * 9 / 16, 203), // Aspect ratio 16:9
+          sideWidth: Math.min(viewportWidth - 64, 280),
+          sideHeight: Math.min((viewportWidth - 64) * 9 / 16, 158),
+          sideOffset: 80, // Reduzido para mobile
+          verticalSpacing: 120
+        }
+      }
+      // Tablet (640px - 1024px): Layout médio
+      else if (viewportWidth < 1024) {
+        return {
+          centerWidth: 480,
+          centerHeight: 270,
+          sideWidth: 400,
+          sideHeight: 225,
+          sideOffset: 200,
+          verticalSpacing: 150
+        }
+      }
+      // Desktop (>= 1024px): Layout original
+      else {
+        return {
+          centerWidth: 720,
+          centerHeight: 405,
+          sideWidth: 600,
+          sideHeight: 338,
+          sideOffset: 300,
+          verticalSpacing: 200
+        }
+      }
+    }
+
+    const dimensions = getResponsiveDimensions()
+    
     // Fallback se sectionRect não estiver disponível
     if (!sectionRect) {
       console.log('No sectionRect available, using fallback positioning')
@@ -954,7 +1012,8 @@ export function StreamersSection() {
         left: 0,
         top: 0,
         width: typeof window !== 'undefined' ? window.innerWidth : 1200,
-        height: 480
+        height: typeof window !== 'undefined' && window.innerWidth < 640 ? 240 : 
+               typeof window !== 'undefined' && window.innerWidth < 1024 ? 320 : 480
       }
       
       if (streamers.length === 1) {
@@ -963,19 +1022,24 @@ export function StreamersSection() {
           position: 'center' as const, 
           isSelected: true,
           containerStyle: {
-            left: fallbackRect.width / 2 - 360,
-            top: 100, // Top fixo para fallback
-            width: 720,
-            height: 405
+            left: Math.max(0, fallbackRect.width / 2 - dimensions.centerWidth / 2),
+            top: Math.max(0, 100), // Top responsivo
+            width: dimensions.centerWidth,
+            height: dimensions.centerHeight
           }
         }]
       }
       
       if (streamers.length >= 2) {
         const centerX = fallbackRect.width / 2
-        const centerY = 240 // Centro da seção 480px
+        const centerY = fallbackRect.height / 2
         const leftIndex = (selectedIndex - 1 + streamers.length) % streamers.length
         const rightIndex = (selectedIndex + 1) % streamers.length
+
+        // Corrigir cálculo de posição da direita no fallback também
+        const leftPosition = Math.max(16, centerX - dimensions.centerWidth / 2 - dimensions.sideOffset)
+        const rightBasePosition = centerX + dimensions.centerWidth / 2 + dimensions.sideOffset - dimensions.sideWidth
+        const rightPosition = Math.max(16, Math.min(fallbackRect.width - dimensions.sideWidth - 16, rightBasePosition))
 
         return [
           {
@@ -983,11 +1047,11 @@ export function StreamersSection() {
             position: 'left' as const,
             isSelected: false,
             containerStyle: {
-              left: centerX - 360 - 300,
-              top: centerY - 169 + 100,
-              width: 600,
-              height: 338,
-              transform: 'scale(0.85) rotateY(5deg)'
+              left: leftPosition,
+              top: centerY - dimensions.sideHeight / 2 + 100,
+              width: dimensions.sideWidth,
+              height: dimensions.sideHeight,
+              transform: window.innerWidth >= 1024 ? 'scale(0.85) rotateY(5deg)' : 'scale(0.9)'
             }
           },
           {
@@ -995,10 +1059,10 @@ export function StreamersSection() {
             position: 'center' as const,
             isSelected: true,
             containerStyle: {
-              left: centerX - 360,
-              top: centerY - 202.5 + 100,
-              width: 720,
-              height: 405
+              left: Math.max(0, centerX - dimensions.centerWidth / 2),
+              top: centerY - dimensions.centerHeight / 2 + 100,
+              width: dimensions.centerWidth,
+              height: dimensions.centerHeight
             }
           },
           {
@@ -1006,11 +1070,11 @@ export function StreamersSection() {
             position: 'right' as const,
             isSelected: false,
             containerStyle: {
-              left: centerX + 60,
-              top: centerY - 169 + 100,
-              width: 600,
-              height: 338,
-              transform: 'scale(0.85) rotateY(-5deg)'
+              left: rightPosition,
+              top: centerY - dimensions.sideHeight / 2 + 100,
+              width: dimensions.sideWidth,
+              height: dimensions.sideHeight,
+              transform: window.innerWidth >= 1024 ? 'scale(0.85) rotateY(-5deg)' : 'scale(0.9)'
             }
           }
         ]
@@ -1025,10 +1089,10 @@ export function StreamersSection() {
         position: 'center' as const, 
         isSelected: true,
         containerStyle: {
-          left: sectionRect.left + sectionRect.width / 2 - 360,
-          top: sectionRect.top + sectionRect.height / 2 - 202.5 + dynamicOffset,
-          width: 720,
-          height: 405
+          left: Math.max(0, sectionRect.left + sectionRect.width / 2 - dimensions.centerWidth / 2),
+          top: sectionRect.top + sectionRect.height / 2 - dimensions.centerHeight / 2 + dynamicOffset,
+          width: dimensions.centerWidth,
+          height: dimensions.centerHeight
         }
       }]
     }
@@ -1037,22 +1101,27 @@ export function StreamersSection() {
       const centerX = sectionRect.left + sectionRect.width / 2
       const centerY = sectionRect.top + sectionRect.height / 2 + dynamicOffset
       
+      // Calcular posições para 2 streams de forma consistente
+      const leftPosition = Math.max(16, centerX - dimensions.centerWidth / 2 - dimensions.sideOffset)
+      const rightBasePosition = centerX + dimensions.centerWidth / 2 + dimensions.sideOffset - dimensions.sideWidth
+      const rightPosition = Math.max(16, Math.min(window.innerWidth - dimensions.sideWidth - 16, rightBasePosition))
+      
       return [
         {
           streamer: streamers[0],
           position: selectedIndex === 0 ? 'center' as const : 'left' as const,
           isSelected: selectedIndex === 0,
           containerStyle: selectedIndex === 0 ? {
-            left: centerX - 360,
-            top: centerY - 202.5,
-            width: 720,
-            height: 405
+            left: Math.max(0, centerX - dimensions.centerWidth / 2),
+            top: centerY - dimensions.centerHeight / 2,
+            width: dimensions.centerWidth,
+            height: dimensions.centerHeight
           } : {
-            left: centerX - 360 - 300,
-            top: centerY - 169,
-            width: 600,
-            height: 338,
-            transform: 'scale(0.85) rotateY(5deg)'
+            left: leftPosition,
+            top: centerY - dimensions.sideHeight / 2,
+            width: dimensions.sideWidth,
+            height: dimensions.sideHeight,
+            transform: window.innerWidth >= 1024 ? 'scale(0.85) rotateY(5deg)' : 'scale(0.9)'
           }
         },
         {
@@ -1060,16 +1129,16 @@ export function StreamersSection() {
           position: selectedIndex === 1 ? 'center' as const : 'right' as const,
           isSelected: selectedIndex === 1,
           containerStyle: selectedIndex === 1 ? {
-            left: centerX - 360,
-            top: centerY - 202.5,
-            width: 720,
-            height: 405
+            left: Math.max(0, centerX - dimensions.centerWidth / 2),
+            top: centerY - dimensions.centerHeight / 2,
+            width: dimensions.centerWidth,
+            height: dimensions.centerHeight
           } : {
-            left: centerX + 60,
-            top: centerY - 169,
-            width: 600,
-            height: 338,
-            transform: 'scale(0.85) rotateY(-5deg)'
+            left: rightPosition,
+            top: centerY - dimensions.sideHeight / 2,
+            width: dimensions.sideWidth,
+            height: dimensions.sideHeight,
+            transform: window.innerWidth >= 1024 ? 'scale(0.85) rotateY(-5deg)' : 'scale(0.9)'
           }
         }
       ]
@@ -1081,17 +1150,25 @@ export function StreamersSection() {
     const leftIndex = (selectedIndex - 1 + streamers.length) % streamers.length
     const rightIndex = (selectedIndex + 1) % streamers.length
 
+    // Calcular posições garantindo que fiquem visíveis na viewport
+    const viewportWidth = window.innerWidth
+    const leftPosition = Math.max(16, centerX - dimensions.centerWidth / 2 - dimensions.sideOffset)
+    
+    // CORRIGIDO: Calcular posição da direita sem usar Math.min que estava limitando incorretamente
+    const rightBasePosition = centerX + dimensions.centerWidth / 2 + dimensions.sideOffset - dimensions.sideWidth
+    const rightPosition = Math.max(16, Math.min(viewportWidth - dimensions.sideWidth - 16, rightBasePosition))
+
     return [
       {
         streamer: streamers[leftIndex],
         position: 'left' as const,
         isSelected: false,
         containerStyle: {
-          left: centerX - 360 - 300,
-          top: centerY - 169,
-          width: 600,
-          height: 338,
-          transform: 'scale(0.85) rotateY(5deg)'
+          left: leftPosition,
+          top: centerY - dimensions.sideHeight / 2,
+          width: dimensions.sideWidth,
+          height: dimensions.sideHeight,
+          transform: window.innerWidth >= 1024 ? 'scale(0.85) rotateY(5deg)' : 'scale(0.9)'
         }
       },
       {
@@ -1099,10 +1176,10 @@ export function StreamersSection() {
         position: 'center' as const,
         isSelected: true,
         containerStyle: {
-          left: centerX - 360,
-          top: centerY - 202.5,
-          width: 720,
-          height: 405
+          left: Math.max(0, centerX - dimensions.centerWidth / 2),
+          top: centerY - dimensions.centerHeight / 2,
+          width: dimensions.centerWidth,
+          height: dimensions.centerHeight
         }
       },
       {
@@ -1110,15 +1187,44 @@ export function StreamersSection() {
         position: 'right' as const,
         isSelected: false,
         containerStyle: {
-          left: centerX + 60,
-          top: centerY - 169,
-          width: 600,
-          height: 338,
-          transform: 'scale(0.85) rotateY(-5deg)'
+          left: rightPosition,
+          top: centerY - dimensions.sideHeight / 2,
+          width: dimensions.sideWidth,
+          height: dimensions.sideHeight,
+          transform: window.innerWidth >= 1024 ? 'scale(0.85) rotateY(-5deg)' : 'scale(0.9)'
         }
       }
     ]
   }, [streamers, selectedIndex, sectionRect, featuredMatchesHeight, isCollapsed])
+
+  // Calcular visibilidade do player principal
+  // Player principal é visível quando é o player ativo OU quando miniplayer está minimizado
+  const isMainPlayerVisible = activePlayer === 'main' || (isMiniplaying && isMinimized)
+
+  // Previews devem ser visíveis sempre que não estiver em transição e houver múltiplos streams
+  const shouldShowPreviews = !isTransitioning && streamers.length > 1
+
+  // Debug: verificar se visibleStreams está sendo calculado
+  useEffect(() => {
+    console.log('=== DEBUG STREAMERS SECTION ===')
+    console.log('visibleStreams:', visibleStreams.length, 'streamers total:', streamers.length, 'selectedIndex:', selectedIndex)
+    console.log('sectionRect:', sectionRect)
+    console.log('shouldShowPreviews:', shouldShowPreviews)
+    console.log('viewport width:', typeof window !== 'undefined' ? window.innerWidth : 'N/A')
+    
+    visibleStreams.forEach((stream, index) => {
+      const rightEdge = (stream.containerStyle.left || 0) + (stream.containerStyle.width || 0)
+      console.log(`Stream ${index} [${stream.position.toUpperCase()}]:`, {
+        name: stream.streamer.name,
+        isSelected: stream.isSelected,
+        left: Math.round(stream.containerStyle.left || 0),
+        width: Math.round(stream.containerStyle.width || 0),
+        rightEdge: Math.round(rightEdge),
+        isVisible: rightEdge > 0 && (stream.containerStyle.left || 0) < (typeof window !== 'undefined' ? window.innerWidth : 1200)
+      })
+    })
+    console.log('===============================')
+  }, [visibleStreams, streamers.length, selectedIndex, sectionRect, shouldShowPreviews])
 
   const nextStream = () => {
     // Prevenir cliques rápidos durante transição
@@ -1400,47 +1506,93 @@ export function StreamersSection() {
     return null
   }
 
-  // Calcular visibilidade do player principal
-  // Player principal é visível quando é o player ativo OU quando miniplayer está minimizado
-  const isMainPlayerVisible = activePlayer === 'main' || (isMiniplaying && isMinimized)
-
-  // Previews só devem ser visíveis quando o player principal estiver pronto E visível
-  const shouldShowPreviews = isMainPlayerVisible && isMainPlayerReady && !isTransitioning
-
 
 
   return (
     <>
-      {/* Seção container (apenas estrutural) */}
+      {/* 
+        HIERARQUIA DE Z-INDEX OTIMIZADA (do menor para o maior):
+        - z-35: Previews dos streams não selecionados
+        - z-50: Player principal (PersistentTwitchPlayer) - PRIORIDADE MÁXIMA
+        - z-55: Controles de navegação (setas) - PRINCIPAIS, sempre acessíveis
+        - z-60: Loading overlay do player (SÓ quando NÃO em transição)
+        - z-65: Box de transição quadrado - Único overlay durante transição
+        - z-[100]: Debug panel (desenvolvimento)
+        
+        CONFLITOS RESOLVIDOS:
+        - Removida borda azul (ring) durante transição
+        - Loading overlay só aparece quando NÃO está em transição
+        - Box de transição é o único overlay ativo durante navegação
+      */}
+      
+      {/* Seção container com altura responsiva - SEM bordas de transição */}
       <div 
         ref={sectionRef} 
         className={cn(
-          "relative w-full h-[480px] bg-black overflow-hidden transition-all duration-300",
-          isTransitioning && "ring-2 ring-primary/20 ring-offset-2 ring-offset-background"
+          // Altura responsiva baseada no conteúdo e breakpoints
+          "relative w-full transition-all duration-300",
+          // Mobile: altura compacta
+          "h-60 sm:h-72 md:h-80 lg:h-96 xl:h-[480px]",
+          // IMPORTANTE: Sem overflow-hidden para permitir previews fora do container
+          // REMOVIDO: ring de transição para eliminar borda azul
         )}
         tabIndex={0}
         style={{ outline: 'none' }}
       >
+        {/* Overlay global de transição - UNIFICADO */}
         <div className={cn(
-          "absolute inset-0 bg-black transition-all duration-300",
-          isTransitioning && "bg-black/90"
+          "absolute inset-0 transition-all duration-400 ease-out pointer-events-none",
+          isTransitioning && "bg-background/5 backdrop-blur-[0.5px]"
         )} />
         
-        {/* Indicador de transição */}
+        {/* Box de transição quadrado centralizado - Único overlay ativo */}
         {isTransitioning && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
-            <div className="bg-background/90 backdrop-blur-sm rounded-lg px-4 py-2 border border-border shadow-lg">
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                <span className="text-sm text-foreground">Trocando stream...</span>
+          <div className="absolute inset-0 z-[65] flex items-center justify-center pointer-events-none">
+            <div className={cn(
+              "relative w-20 h-20 transform transition-all duration-400 ease-out",
+              "animate-floating scale-100 opacity-100"
+            )}>
+              {/* Container principal do box */}
+              <div className="relative w-full h-full bg-gradient-to-br from-background/95 via-background/90 to-background/95 backdrop-blur-lg rounded-2xl border border-border/40 shadow-2xl overflow-hidden">
+                
+                {/* Efeito de brilho animado no fundo */}
+                <div className="absolute inset-0 opacity-30">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/15 to-transparent animate-shimmer" />
+                </div>
+                
+                {/* Spinner principal */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="relative">
+                    {/* Anel externo */}
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-border/20 border-t-primary border-r-primary/60" style={{ animationDuration: '1.2s' }} />
+                    {/* Anel interno */}
+                    <div className="absolute inset-1 animate-spin rounded-full h-6 w-6 border-2 border-border/10 border-b-primary/80" style={{ animationDuration: '0.8s', animationDirection: 'reverse' }} />
+                    {/* Centro pulsante */}
+                    <div className="absolute inset-3 bg-primary/30 rounded-full animate-pulse" />
+                  </div>
+                </div>
+                
+                {/* Indicador de progresso no canto */}
+                <div className="absolute bottom-1 left-1 right-1">
+                  <div className="h-0.5 bg-border/30 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full animate-loading-progress" />
+                  </div>
+                </div>
+                
+                {/* Efeito de partículas nos cantos */}
+                <div className="absolute top-1 right-1 w-1 h-1 bg-primary/60 rounded-full animate-ping" style={{ animationDelay: '0s' }} />
+                <div className="absolute bottom-1 left-1 w-1 h-1 bg-primary/40 rounded-full animate-ping" style={{ animationDelay: '0.5s' }} />
               </div>
+              
+              {/* Glow effect externo */}
+              <div className="absolute inset-0 rounded-2xl bg-primary/5 blur-md scale-110 animate-pulse-soft" />
             </div>
           </div>
         )}
         
         {/* Indicador de stream ativo - REMOVIDO */}
 
-        {/* Controles de navegação */}
+        {/* Controles de navegação responsivos */}
         <div className="relative w-full h-full flex items-center justify-center">
           {streamers.length > 1 && (
             <>
@@ -1448,14 +1600,20 @@ export function StreamersSection() {
                 onClick={prevStream}
                 disabled={isTransitioning}
                 className={cn(
-                  "absolute left-4 top-1/2 -translate-y-1/2 z-50 rounded-full p-3 transition-all duration-300 backdrop-blur-sm border border-border",
+                  // Posição responsiva: mais centralizado em mobile
+                  "absolute z-[55] rounded-full transition-all duration-300 backdrop-blur-sm border border-border",
+                  "left-2 sm:left-4 top-1/2 -translate-y-1/2",
+                  // Tamanho responsivo: menor em mobile
+                  "p-2 sm:p-3",
                   isTransitioning 
                     ? "bg-background/40 cursor-not-allowed opacity-50 scale-90" 
                     : "bg-background/60 hover:bg-background/80 hover:scale-110 active:scale-95"
                 )}
               >
                 <ChevronLeft className={cn(
-                  "h-6 w-6 text-foreground transition-all duration-200",
+                  // Ícone responsivo: menor em mobile
+                  "text-foreground transition-all duration-200",
+                  "h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6",
                   isTransitioning && "opacity-50"
                 )} />
               </button>
@@ -1464,14 +1622,20 @@ export function StreamersSection() {
                 onClick={nextStream}
                 disabled={isTransitioning}
                 className={cn(
-                  "absolute right-4 top-1/2 -translate-y-1/2 z-50 rounded-full p-3 transition-all duration-300 backdrop-blur-sm border border-border",
+                  // Posição responsiva: mais centralizado em mobile
+                  "absolute z-[55] rounded-full transition-all duration-300 backdrop-blur-sm border border-border",
+                  "right-2 sm:right-4 top-1/2 -translate-y-1/2",
+                  // Tamanho responsivo: menor em mobile
+                  "p-2 sm:p-3",
                   isTransitioning 
                     ? "bg-background/40 cursor-not-allowed opacity-50 scale-90" 
                     : "bg-background/60 hover:bg-background/80 hover:scale-110 active:scale-95"
                 )}
               >
                 <ChevronRight className={cn(
-                  "h-6 w-6 text-foreground transition-all duration-200",
+                  // Ícone responsivo: menor em mobile
+                  "text-foreground transition-all duration-200",
+                  "h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6",
                   isTransitioning && "opacity-50"
                 )} />
               </button>
@@ -1502,7 +1666,9 @@ export function StreamersSection() {
                 : ''
             }`.trim(),
             // Garantir que não interfira com o scroll da página
-            pointerEvents: isMainPlayerVisible ? 'auto' : 'none'
+            pointerEvents: isMainPlayerVisible ? 'auto' : 'none',
+            // CORRIGIDO: Z-index mais alto que os previews para prioridade visual MÁXIMA
+            zIndex: 50
           }}
         />
       )}
@@ -1520,6 +1686,45 @@ export function StreamersSection() {
           )}
         </React.Fragment>
       ))}
+
+      {/* Debug info melhorado */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-4 right-4 bg-black/90 text-white p-3 rounded-lg text-xs z-[100] max-w-sm border border-gray-600">
+          <div className="font-bold mb-2">Debug Streamers Section</div>
+          <div>Streamers: {streamers.length}</div>
+          <div>Selected Index: {selectedIndex}</div>
+          <div>Visible Streams: {visibleStreams.length}</div>
+          <div>Should Show Previews: {shouldShowPreviews.toString()}</div>
+          <div>Is Transitioning: {isTransitioning.toString()}</div>
+          <div>Viewport Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}</div>
+          <div className="mt-2 border-t border-gray-500 pt-2">
+            <div className="font-semibold mb-1">Z-Index Hierarchy (Otimizada):</div>
+            <div className="text-xs mb-1">Previews: z-35</div>
+            <div className="text-xs mb-1 text-green-400 font-bold">Main Player: z-50</div>
+            <div className="text-xs mb-1 text-yellow-400 font-bold">Controls: z-55 (PRINCIPAIS) 🎯</div>
+            <div className="text-xs mb-1 text-blue-400">Loading: z-60 (só se !transitioning)</div>
+            <div className="text-xs mb-1 text-purple-400 font-bold">Transition Box: z-65 🟦 (exclusivo)</div>
+            <div className="text-xs mb-1 mt-2 text-orange-400">
+              {isTransitioning ? '⚠️ TRANSIÇÃO ATIVA' : '✅ Estável'}
+            </div>
+          </div>
+          <div className="mt-2 border-t border-gray-500 pt-2">
+            <div className="font-semibold mb-1">Stream Positions:</div>
+            {visibleStreams.map((stream, i) => (
+              <div key={i} className="text-xs mb-1 p-1 bg-gray-800 rounded">
+                <div className="font-medium">{stream.position.toUpperCase()}: {stream.streamer.name?.substring(0, 15)}...</div>
+                <div>Left: {Math.round(stream.containerStyle.left || 0)}px</div>
+                <div>Width: {Math.round(stream.containerStyle.width || 0)}px</div>
+                <div>Right Edge: {Math.round((stream.containerStyle.left || 0) + (stream.containerStyle.width || 0))}px</div>
+                <div className={cn(
+                  "font-medium",
+                  stream.isSelected ? "text-green-300" : "text-blue-300"
+                )}>{stream.isSelected ? '[PLAYER PRINCIPAL - Z:50] 👑' : '[PREVIEW - Z:35]'}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   )
 }

@@ -6,6 +6,8 @@ import { getClientFirestore } from "@/lib/safeFirestore"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
 
 type NewsDoc = {
   id: string
@@ -86,74 +88,89 @@ export default function HeroSection() {
 
   if (!featured) {
     return (
-      <div className="pt-24 pb-8 lg:pt-32 lg:pb-16">
-        <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
-          <div className="text-muted-foreground">
+      <SectionWrapper spacing="normal" fullWidth>
+        <PageWrapper maxWidth="wide" paddingY="normal">
+          <Typography variant="muted">
             {missingConfig
               ? "Firebase não configurado. Defina as variáveis .env e adicione documentos em /news."
               : errorMsg
               ? `Erro: ${errorMsg}`
               : "Sem notícia em destaque."}
-          </div>
-        </div>
-      </div>
+          </Typography>
+        </PageWrapper>
+      </SectionWrapper>
     )
   }
 
   return (
-    <div className="pt-24 pb-8 lg:pt-32 lg:pb-16">
-      <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div className="order-2 lg:order-2">
-            <div className="ml-auto text-center lg:max-w-lg lg:text-left">
-              {featured.category ? (
-                <div className="mb-3 flex justify-center lg:justify-start">
-                  <Badge variant="secondary" className="rounded-full">
-                    {featured.category}
-                  </Badge>
-                </div>
-              ) : null}
-              <h1 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight lg:text-4xl/tight">
-                <Link
-                  href={featured.slug ? `/noticias/${featured.slug}` : `#`}
-                  className="hover:text-primary transition-colors duration-200"
-                >
-                  {featured.title}
-                </Link>
-              </h1>
-              <p className="text-muted-foreground mt-4 text-base/7 text-balance sm:text-lg/8">
-                {featured.excerpt}
-              </p>
-              <div className="mt-8 grid gap-3 sm:flex sm:justify-center lg:justify-start">
-                <Button size="lg" asChild>
-                  <Link href={featured.slug ? `/noticias/${featured.slug}` : `#`}>
-                    Ler notícia
-                  </Link>
-                </Button>
+    <SectionWrapper spacing="normal" background="transparent" fullWidth>
+      <PageWrapper maxWidth="wide" paddingY="compact">
+        <ContentWrapper layout="grid-2" gap="normal" align="center" className="md:gap-spacious">
+          {/* Content Column - Text on left, image on right for desktop */}
+          <ContentWrapper layout="stack" gap="normal" className="order-2 md:order-1 md:max-w-lg">
+            {featured.category && (
+              <div className="flex justify-center md:justify-start">
+                <Badge variant="secondary" className="rounded-full">
+                  {featured.category}
+                </Badge>
               </div>
+            )}
+            <Typography 
+              variant="hero" 
+              className="text-balance text-center md:text-left"
+              maxWidth="none"
+            >
+              <Link
+                href={featured.slug ? `/noticias/${featured.slug}` : `#`}
+                className="hover:text-primary transition-colors duration-200"
+              >
+                {featured.title}
+              </Link>
+            </Typography>
+            <Typography 
+              variant="body-lg" 
+              className="text-balance text-center md:text-left text-muted-foreground"
+              maxWidth="none"
+            >
+              {featured.excerpt}
+            </Typography>
+            
+            {/* Subtle separator before action button */}
+            <Separator className="bg-border/20 max-w-24 mx-auto md:mx-0" />
+            
+            <div className="flex justify-center md:justify-start">
+              <Button size="lg" asChild>
+                <Link href={featured.slug ? `/noticias/${featured.slug}` : `#`}>
+                  Ler notícia
+                </Link>
+              </Button>
             </div>
-          </div>
-          <div className="order-1 lg:order-1">
+          </ContentWrapper>
+          
+          {/* Image Column */}
+          <div className="order-1 md:order-2">
             <Link
               href={featured.slug ? `/noticias/${featured.slug}` : `#`}
               aria-label={featured.title}
-              className="block transition-transform hover:scale-[1.02] duration-200"
+              className="block group transition-transform hover:scale-[1.02] duration-200"
             >
               {featured.featuredImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  className="aspect-[16/9] rounded-xl object-cover object-center shadow-sm lg:aspect-[4/3]"
+                  className="aspect-[16/9] sm:aspect-[4/3] md:aspect-[4/3] rounded-xl object-cover object-center shadow-lg group-hover:shadow-xl transition-shadow duration-200"
                   src={featured.featuredImage}
-                  alt={featured.title || "Capa"}
+                  alt={featured.title || "Capa da notícia"}
                 />
               ) : (
-                <div className="aspect-[16/9] rounded-xl border bg-card lg:aspect-[4/3]" />
+                <div className="aspect-[16/9] sm:aspect-[4/3] md:aspect-[4/3] rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/50 flex items-center justify-center">
+                  <Typography variant="muted">Sem imagem</Typography>
+                </div>
               )}
             </Link>
           </div>
-        </div>
-      </div>
-    </div>
+        </ContentWrapper>
+      </PageWrapper>
+    </SectionWrapper>
   )
 }
 

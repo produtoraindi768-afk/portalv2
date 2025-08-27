@@ -147,6 +147,8 @@ export function TournamentFilters({ onFilterChange }: TournamentFiltersProps) {
               </div>
             </div>
 
+            <Separator className="bg-border/30" />
+
             {/* Filtros de status */}
             <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Status do torneio</label>
@@ -170,6 +172,8 @@ export function TournamentFilters({ onFilterChange }: TournamentFiltersProps) {
               </div>
             </div>
 
+            <Separator className="bg-border/30" />
+
             {/* Filtros de jogo */}
             <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Jogo</label>
@@ -186,6 +190,8 @@ export function TournamentFilters({ onFilterChange }: TournamentFiltersProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            <Separator className="bg-border/30" />
 
             {/* Filtros de formato */}
             <div className="space-y-3">
@@ -215,21 +221,23 @@ export function TournamentFilters({ onFilterChange }: TournamentFiltersProps) {
 
       {/* Filtros ativos (chips) */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2">
-          {filters.status !== 'all' && (
-            <Badge 
-              variant="outline" 
-              className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
-            >
-              Status: {statusOptions.find(s => s.value === filters.status)?.label}
-              <button
-                onClick={() => handleFilterChange({ status: 'all' })}
-                className="ml-2 hover:text-primary/80"
+        <>
+          <Separator className="bg-border/40" />
+          <div className="flex flex-wrap gap-2">
+            {filters.status !== 'all' && (
+              <Badge 
+                variant="outline" 
+                className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
               >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          )}
+                Status: {statusOptions.find(s => s.value === filters.status)?.label}
+                <button
+                  onClick={() => handleFilterChange({ status: 'all' })}
+                  className="ml-2 hover:text-primary/80"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            )}
           
           {filters.game !== 'all' && (
             <Badge 
@@ -275,7 +283,8 @@ export function TournamentFilters({ onFilterChange }: TournamentFiltersProps) {
               </button>
             </Badge>
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   )

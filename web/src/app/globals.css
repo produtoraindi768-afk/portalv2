@@ -202,3 +202,102 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+/* Animações customizadas para Loading Overlay aprimorado */
+@layer utilities {
+  @keyframes loading-progress {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translateX(0%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0.6;
+    }
+  }
+  
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%) skewX(-12deg);
+      opacity: 0;
+    }
+    50% {
+      transform: translateX(0%) skewX(-12deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%) skewX(-12deg);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes floating {
+    0%, 100% {
+      transform: translateY(0px) scale(1);
+    }
+    50% {
+      transform: translateY(-10px) scale(1.05);
+    }
+  }
+  
+  @keyframes pulse-soft {
+    0%, 100% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.02);
+    }
+  }
+  
+  .animate-loading-progress {
+    animation: loading-progress 2s ease-in-out infinite;
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  
+  .animate-floating {
+    animation: floating 3s ease-in-out infinite;
+  }
+  
+  @keyframes transition-box-enter {
+    0% {
+      transform: scale(0.3) rotate(-10deg);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1) rotate(2deg);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes transition-box-exit {
+    0% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0.3) rotate(10deg);
+      opacity: 0;
+    }
+  }
+  
+  .animate-transition-box-enter {
+    animation: transition-box-enter 0.4s ease-out forwards;
+  }
+  
+  .animate-transition-box-exit {
+    animation: transition-box-exit 0.3s ease-in forwards;
+  }
+}

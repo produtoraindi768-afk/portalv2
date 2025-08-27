@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { CalendarDays, MapPin, Trophy, Users, ExternalLink, Crown, Shield, Mail } from 'lucide-react'
+import { PageLayout, ContentWrapper, Typography } from '@/components/layout'
 
 interface Team {
   id: string
@@ -151,17 +152,17 @@ export function TeamProfile({ teamTag: propTeamTag }: TeamProfileProps = {}) {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 max-w-6xl">
+      <PageLayout pattern="default">
         <div className="text-center py-12">
-          <div className="text-lg">Carregando equipe...</div>
+          <Typography variant="body-lg">Carregando equipe...</Typography>
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
   if (error || !team) {
     return (
-      <div className="container mx-auto p-6 max-w-6xl">
+      <PageLayout pattern="default">
         <Card>
           <CardHeader>
             <CardTitle>Equipe não encontrada</CardTitle>
@@ -170,28 +171,29 @@ export function TeamProfile({ teamTag: propTeamTag }: TeamProfileProps = {}) {
             </CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </PageLayout>
     )
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      {/* Team Banner - Blookie Style */}
-      <div className="relative mb-8">
-        <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-xl p-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
-            {/* Team Logo */}
-            <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-background shadow-lg">
-              <AvatarImage src={team.avatar} alt={team.name} />
-              <AvatarFallback className="text-4xl font-bold">
-                {team.tag.substring(0, 2)}
-              </AvatarFallback>
-            </Avatar>
+    <PageLayout pattern="default" showHeader={false}>
+      <ContentWrapper layout="stack" gap="loose">
+        {/* Team Banner - Blookie Style */}
+        <div className="relative">
+          <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-xl p-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+              {/* Team Logo */}
+              <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-background shadow-lg">
+                <AvatarImage src={team.avatar} alt={team.name} />
+                <AvatarFallback className="text-4xl font-bold">
+                  {team.tag.substring(0, 2)}
+                </AvatarFallback>
+              </Avatar>
 
-            {/* Team Info */}
-            <div className="flex-1">
-              <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-                <h1 className="text-4xl font-bold">{team.name}</h1>
+              {/* Team Info */}
+              <div className="flex-1">
+                <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                  <Typography variant="h1" className="text-4xl font-bold">{team.name}</Typography>
                 <div className="flex items-center gap-3">
                   <Badge variant="secondary" className="text-lg px-3 py-1">
                     {team.tag}
@@ -517,6 +519,7 @@ export function TeamProfile({ teamTag: propTeamTag }: TeamProfileProps = {}) {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </ContentWrapper>
+    </PageLayout>
   )
 }

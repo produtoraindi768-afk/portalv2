@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, RefreshCw, Calendar, Trophy, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PageLayout, ContentWrapper, Typography } from "@/components/layout"
 
 type FilterStatus = 'all' | 'ongoing' | 'scheduled' | 'finished'
 
@@ -81,13 +82,13 @@ export function MatchesContent() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <PageLayout pattern="default">
         <Card className="border-destructive/50">
           <CardContent className="p-8 text-center">
             <div className="text-destructive mb-4">
               <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <h3 className="text-lg font-semibold">Erro ao carregar partidas</h3>
-              <p className="text-sm text-muted-foreground mt-2">{error}</p>
+              <Typography variant="h3">Erro ao carregar partidas</Typography>
+              <Typography variant="body-sm" className="text-muted-foreground mt-2">{error}</Typography>
             </div>
             <Button onClick={refetch} variant="outline" className="mt-4">
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -95,21 +96,20 @@ export function MatchesContent() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </PageLayout>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
-      <div className="space-y-4">
+    <PageLayout 
+      pattern="wide" 
+      title="Partidas"
+      description="Acompanhe todas as partidas dos torneios em tempo real"
+    >
+      <ContentWrapper layout="stack" gap="loose">
+        {/* Filters and Refresh Button */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Partidas</h1>
-            <p className="text-muted-foreground mt-1">
-              Acompanhe todas as partidas dos torneios em tempo real
-            </p>
-          </div>
+          <div className="flex-1" />
           <Button 
             onClick={refetch} 
             variant="outline" 
@@ -173,7 +173,6 @@ export function MatchesContent() {
             </select>
           )}
         </div>
-      </div>
 
 
 
@@ -187,7 +186,7 @@ export function MatchesContent() {
                 <Badge variant="destructive" className="bg-red-500 text-white animate-pulse">
                   • AO VIVO
                 </Badge>
-                <h2 className="text-xl font-semibold">Partidas em Andamento</h2>
+                <Typography variant="h2">Partidas em Andamento</Typography>
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {organizedMatches.ongoing.map((match) => (
@@ -204,7 +203,7 @@ export function MatchesContent() {
                 <Badge variant="destructive" className="bg-red-500 text-white">
                   🔴 AO VIVO
                 </Badge>
-                <h2 className="text-xl font-semibold">Partidas Ao Vivo</h2>
+                <Typography variant="h2">Partidas Ao Vivo</Typography>
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {organizedMatches.scheduled.map((match) => (
@@ -221,7 +220,7 @@ export function MatchesContent() {
                 <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20">
                   🏁 FINALIZADAS
                 </Badge>
-                <h2 className="text-xl font-semibold">Partidas Finalizadas</h2>
+                <Typography variant="h2">Partidas Finalizadas</Typography>
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {organizedMatches.finished.slice(0, 12).map((match) => (
@@ -242,11 +241,11 @@ export function MatchesContent() {
         /* Visualização filtrada */
         <section className="space-y-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold">
+            <Typography variant="h2">
               {statusFilter === 'ongoing' && 'Partidas Ao Vivo'}
               {statusFilter === 'scheduled' && 'Partidas Ao Vivo'}
               {statusFilter === 'finished' && 'Partidas Finalizadas'}
-            </h2>
+            </Typography>
             <Badge variant="outline">
               {filteredMatches.length} {filteredMatches.length === 1 ? 'partida' : 'partidas'}
             </Badge>
@@ -262,7 +261,7 @@ export function MatchesContent() {
             <Card>
               <CardContent className="p-8 text-center">
                 <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <h3 className="text-lg font-semibold mb-2">Nenhuma partida encontrada</h3>
+                <Typography variant="h3" className="mb-2">Nenhuma partida encontrada</Typography>
                 <p className="text-muted-foreground">
                   {searchTerm 
                     ? `Não encontramos partidas para "${searchTerm}"`
@@ -292,9 +291,10 @@ export function MatchesContent() {
       {isLoading && matches.length === 0 && (
         <div className="text-center py-8">
           <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Carregando partidas...</p>
+          <Typography variant="muted">Carregando partidas...</Typography>
         </div>
       )}
-    </div>
+      </ContentWrapper>
+    </PageLayout>
   )
 }

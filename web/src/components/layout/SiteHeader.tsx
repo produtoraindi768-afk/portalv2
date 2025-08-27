@@ -17,12 +17,19 @@ import { navItems } from "./nav-items"
 export function SiteHeader() {
   return (
     <header className="glass sticky top-0 z-[70]">
-      <nav className="mx-auto flex h-20 w-full items-center gap-6 px-6 lg:max-w-7xl">
+      <nav className="mx-auto flex h-16 sm:h-20 w-full items-center gap-3 sm:gap-6 px-4 sm:px-6 lg:max-w-7xl">
         <Link href="/" className="mr-auto inline-flex items-center gap-2" aria-label="Página inicial">
-          <Image src="/logo sz.svg" alt="SZ" width={85} height={32} priority />
+          <Image 
+            src="/logo sz.svg" 
+            alt="SZ" 
+            width={85} 
+            height={32} 
+            priority
+            className="w-16 h-auto sm:w-[85px]" 
+          />
         </Link>
 
-        <div className="hidden gap-2 lg:inline-flex">
+        <div className="hidden gap-1 sm:gap-2 lg:inline-flex">
           {navItems.map((item) => (
             <Button key={item.title} asChild variant="ghost">
               <Link href={item.href}>{item.title}</Link>
@@ -30,7 +37,7 @@ export function SiteHeader() {
           ))}
         </div>
 
-        <div className="hidden justify-end gap-2 lg:inline-flex">
+        <div className="hidden justify-end gap-1 sm:gap-2 lg:inline-flex">
           <Button asChild variant="outline" size="icon" title="Discord Server">
             <Link 
               href="https://discord.com/invite/Z2wSdgWWTQ" 
@@ -59,27 +66,33 @@ export function SiteHeader() {
 
         <Sheet>
           <SheetTrigger asChild className="ml-auto lg:hidden">
-            <Button variant="outline" size="icon" aria-label="Open Menu">
+            <Button variant="outline" size="sm" className="h-9 w-9" aria-label="Open Menu">
               <Menu className="size-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="flex w-[90%] max-w-sm flex-col px-6 py-6">
+          <SheetContent side="right" className="flex w-[85%] sm:w-[75%] max-w-sm flex-col px-4 sm:px-6 py-4 sm:py-6 bg-background/95 backdrop-blur-md border-border/50">
             <SheetTitle>
               <Link href="/" className="inline-flex items-center gap-2">
-                <Image src="/logo sz.svg" alt="SZ" width={85} height={32} />
+                <Image 
+                  src="/logo sz.svg" 
+                  alt="SZ" 
+                  width={85} 
+                  height={32}
+                  className="w-16 h-auto sm:w-[85px]" 
+                />
               </Link>
             </SheetTitle>
 
-            <nav className="-mx-4 my-6 flex flex-1 flex-col gap-2">
+            <nav className="-mx-2 sm:-mx-4 my-4 sm:my-6 flex flex-1 flex-col gap-2 sm:gap-3">
               {navItems.map((item) => (
-                <Button key={item.title} asChild className="justify-start text-base" variant="ghost">
+                <Button key={item.title} asChild className="justify-start text-sm sm:text-base min-h-[44px] h-auto py-3" variant="ghost">
                   <Link href={item.href}>{item.title}</Link>
                 </Button>
               ))}
             </nav>
 
-            <div className="mt-auto grid gap-2">
-              <Button variant="outline" asChild className="justify-start">
+            <div className="mt-auto grid gap-2 sm:gap-3">
+              <Button variant="outline" asChild className="justify-start text-sm sm:text-base min-h-[44px] h-auto py-3">
                 <Link 
                   href="https://discord.com/invite/Z2wSdgWWTQ" 
                   target="_blank" 
@@ -98,10 +111,10 @@ export function SiteHeader() {
                   <ExternalLink className="size-3 ml-auto" />
                 </Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="min-h-[44px] h-auto py-3">
                 <Link href="#">Log in</Link>
               </Button>
-              <Button asChild>
+              <Button asChild className="min-h-[44px] h-auto py-3">
                 <Link href="#">Get Started</Link>
               </Button>
             </div>

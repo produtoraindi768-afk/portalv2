@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
 type TeamInfo = {
@@ -163,7 +164,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
     )}>
       <CardContent className="p-0">
         {/* Header com torneio */}
-        <div className="bg-gradient-to-r from-muted/20 via-muted/30 to-muted/20 px-4 py-4 border-b border-border/50">
+        <div className="bg-gradient-to-r from-muted/20 via-muted/30 to-muted/20 px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <span className="text-base font-bold text-center bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent drop-shadow-sm">
@@ -202,6 +203,9 @@ export function MatchCard({ match, className }: MatchCardProps) {
             </div>
           </div>
         </div>
+        
+        {/* Separator between header and content */}
+        <Separator className="bg-border/30" />
 
         {/* Conteúdo principal da partida */}
         <div className="p-6">
@@ -320,6 +324,13 @@ export function MatchCard({ match, className }: MatchCardProps) {
                 </div>
               </div>
             )}
+          </div>
+          
+          {/* Status badge with subtle separator */}
+          <div className="mt-4 pt-3 border-t border-border/20">
+            <div className="flex justify-center">
+              {getStatusBadge(match.status)}
+            </div>
           </div>
 
 

@@ -4,6 +4,8 @@ import { firestoreHelpers } from '@/lib/firestore-helpers'
 import { TournamentCard } from '@/components/tournaments/TournamentCard'
 import { TournamentFilters } from '@/components/tournaments/TournamentFilters'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Separator } from '@/components/ui/separator'
+import { PageLayout, ContentWrapper, Typography } from '@/components/layout'
 
 export const metadata: Metadata = {
   title: 'Campeonatos | SZ - Fortnite Ballistic',
@@ -420,106 +422,110 @@ async function TournamentsContent() {
   const totalPrizePool = tournamentsWithRealStatus.reduce((sum, t) => sum + t.prizePool, 0)
 
   return (
-    <div className="pt-24 pb-8 lg:pt-32 lg:pb-16">
-      <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
-        {/* Header */}
-        <div className="mb-12">
-          <div className="text-center lg:text-left">
-            <h1 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight lg:text-4xl/tight text-foreground">
-              Campeonatos
-            </h1>
-            <p className="text-muted-foreground mt-4 text-base/7 text-balance sm:text-lg/8">
-              Confira todos os campeonatos e torneios disponíveis
-            </p>
-          </div>
-        </div>
+    <PageLayout 
+      pattern="wide" 
+      title="Campeonatos"
+      description="Confira todos os campeonatos e torneios disponíveis"
+    >
+      <ContentWrapper layout="stack" gap="spacious">
 
         {/* Filtros */}
         <TournamentFilters />
 
+        {/* Separador após filtros */}
+        {(ongoingTournaments.length > 0 || upcomingTournaments.length > 0 || finishedTournaments.length > 0) && (
+          <Separator className="bg-border/50 my-6" />
+        )}
+
         {/* Torneios em Andamento */}
         {ongoingTournaments.length > 0 && (
-          <section className="mb-16">
-            <div className="mb-8">
-              <h2 className="text-xl/tight font-bold tracking-tight text-balance sm:text-2xl/tight text-destructive">
+          <>
+            <section>
+              <Typography variant="h2" className="mb-8 text-destructive">
                 EM ANDAMENTO
-              </h2>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {ongoingTournaments.map((tournament) => (
-                <TournamentCard key={tournament.id} tournament={tournament} />
-              ))}
-            </div>
-          </section>
+              </Typography>
+              <ContentWrapper layout="grid-4" gap="normal">
+                {ongoingTournaments.map((tournament) => (
+                  <TournamentCard key={tournament.id} tournament={tournament} />
+                ))}
+              </ContentWrapper>
+            </section>
+            
+            {/* Separador após torneios em andamento */}
+            {(upcomingTournaments.length > 0 || finishedTournaments.length > 0) && (
+              <Separator className="bg-border/40 my-8" />
+            )}
+          </>
         )}
 
         {/* Próximos Torneios */}
         {upcomingTournaments.length > 0 && (
-          <section className="mb-16">
-            <div className="mb-8">
-              <h2 className="text-xl/tight font-bold tracking-tight text-balance sm:text-2xl/tight text-primary">
+          <>
+            <section>
+              <Typography variant="h2" className="mb-8 text-primary">
                 PRÓXIMOS TORNEIOS
-              </h2>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {upcomingTournaments.map((tournament) => (
-                <TournamentCard key={tournament.id} tournament={tournament} />
-              ))}
-            </div>
-          </section>
+              </Typography>
+              <ContentWrapper layout="grid-4" gap="normal">
+                {upcomingTournaments.map((tournament) => (
+                  <TournamentCard key={tournament.id} tournament={tournament} />
+                ))}
+              </ContentWrapper>
+            </section>
+            
+            {/* Separador após próximos torneios */}
+            {finishedTournaments.length > 0 && (
+              <Separator className="bg-border/40 my-8" />
+            )}
+          </>
         )}
 
         {/* Torneios Finalizados */}
         {finishedTournaments.length > 0 && (
-          <section className="mb-16">
-            <div className="mb-8">
-              <h2 className="text-xl/tight font-bold tracking-tight text-balance sm:text-2xl/tight text-muted-foreground">
-                TORNEIOS FINALIZADOS
-              </h2>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <section>
+            <Typography variant="h2" className="mb-8 text-muted-foreground">
+              TORNEIOS FINALIZADOS
+            </Typography>
+            <ContentWrapper layout="grid-4" gap="normal">
               {finishedTournaments.map((tournament) => (
                 <TournamentCard key={tournament.id} tournament={tournament} />
               ))}
-            </div>
+            </ContentWrapper>
           </section>
         )}
 
         {/* Mensagem quando não há torneios */}
         {tournaments.length === 0 && (
           <div className="text-center py-16">
-            <h2 className="text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight text-muted-foreground mb-4">
+            <Typography variant="h2" className="text-muted-foreground mb-4">
               Nenhum torneio encontrado
-            </h2>
-            <p className="text-muted-foreground text-base/7">
+            </Typography>
+            <Typography variant="muted">
               {isFirebaseConnected 
                 ? "Não há torneios disponíveis no banco de dados. Adicione torneios através do Firebase Console."
                 : "Não há torneios disponíveis no momento. Volte em breve!"
               }
-            </p>
+            </Typography>
           </div>
         )}
-      </div>
-    </div>
+      </ContentWrapper>
+    </PageLayout>
   )
 }
 
 export default function TournamentsPage() {
   return (
     <Suspense fallback={
-      <div className="pt-24 pb-8 lg:pt-32 lg:pb-16">
-        <div className="mx-auto w-full max-w-2xl px-6 lg:max-w-7xl">
-          <div className="mb-12">
-            <Skeleton className="h-12 w-64 mb-4 bg-muted" />
-            <Skeleton className="h-6 w-96 bg-muted" />
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-80 w-full rounded-xl bg-muted" />
-            ))}
-          </div>
-        </div>
-      </div>
+      <PageLayout 
+        pattern="wide" 
+        title="Campeonatos"
+        description="Confira todos os campeonatos e torneios disponíveis"
+      >
+        <ContentWrapper layout="grid-4" gap="normal">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-80 w-full rounded-xl bg-muted" />
+          ))}
+        </ContentWrapper>
+      </PageLayout>
     }>
       <TournamentsContent />
     </Suspense>

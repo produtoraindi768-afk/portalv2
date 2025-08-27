@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CalendarDays, MapPin, Shield, Trophy, Target, TrendingUp, Users, ExternalLink } from 'lucide-react'
+import { PageLayout, ContentWrapper, Typography } from '@/components/layout'
 
 interface PlayerProfileProps {
   username?: string
@@ -93,17 +94,17 @@ export function PlayerProfile({ username: propUsername }: PlayerProfileProps = {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 max-w-6xl">
+      <PageLayout pattern="default">
         <div className="text-center py-12">
-          <div className="text-lg">Carregando perfil...</div>
+          <Typography variant="body-lg">Carregando perfil...</Typography>
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
   if (error || !player) {
     return (
-      <div className="container mx-auto p-6 max-w-6xl">
+      <PageLayout pattern="default">
         <Card>
           <CardHeader>
             <CardTitle>Jogador não encontrado</CardTitle>
@@ -112,15 +113,16 @@ export function PlayerProfile({ username: propUsername }: PlayerProfileProps = {
             </CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </PageLayout>
     )
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      {/* Profile Header - Blookie Style */}
-      <div className="relative mb-8">
-        <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-xl p-6">
+    <PageLayout pattern="default" showHeader={false}>
+      <ContentWrapper layout="stack" gap="loose">
+        {/* Profile Header - Blookie Style */}
+        <div className="relative">
+          <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-xl p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             {/* Avatar */}
             <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-lg">
@@ -133,7 +135,7 @@ export function PlayerProfile({ username: propUsername }: PlayerProfileProps = {
             {/* Profile Info */}
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
-                <h1 className="text-2xl font-bold">{player.displayName}</h1>
+                <Typography variant="h1" className="text-2xl font-bold">{player.displayName}</Typography>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">@{player.username}</span>
                   {player.isVerified && (
@@ -150,7 +152,7 @@ export function PlayerProfile({ username: propUsername }: PlayerProfileProps = {
               </div>
 
               {player.bio && (
-                <p className="text-lg text-muted-foreground mb-4">{player.bio}</p>
+                <Typography variant="body-lg" className="text-muted-foreground mb-4">{player.bio}</Typography>
               )}
 
               {/* Social Links */}
@@ -449,6 +451,7 @@ export function PlayerProfile({ username: propUsername }: PlayerProfileProps = {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </ContentWrapper>
+    </PageLayout>
   )
 }
