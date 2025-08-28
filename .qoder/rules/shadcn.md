@@ -14,6 +14,6 @@ Implementation Rule
 When implementing:
 
 First call the demo tool to see how it is used
-Then implement it so that it is implementedÂ correctly
+Then implement it so that it is implemented correctly
 
 Use the theme shadcn/ui variables to style the components. Never use hardcoded colours

@@ -156,7 +156,7 @@ export function NewsGrid({
               <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
               <Typography variant="h3" className="text-base sm:text-lg">Filtros</Typography>
               {hasActiveFilters && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
                   {Object.values(filters).filter(v => v !== 'all' && v !== '' && v !== 'date' && v !== 'desc').length} ativo{Object.values(filters).filter(v => v !== 'all' && v !== '' && v !== 'date' && v !== 'desc').length !== 1 ? 's' : ''}
                 </Badge>
               )}
@@ -261,7 +261,7 @@ export function NewsGrid({
               <Separator className="bg-border/40" />
               <div className="flex flex-wrap gap-2">
                 {filters.search && (
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                  <Badge variant="secondary">
                     Busca: \"{filters.search}\"
                     <button
                       onClick={() => handleFilterChange({ search: '' })}
@@ -272,11 +272,11 @@ export function NewsGrid({
                   </Badge>
                 )}
                 {filters.category !== 'all' && (
-                  <Badge variant="outline" className="bg-chart-2/10 text-chart-2 border-chart-2/20">
+                  <Badge variant="secondary">
                     Categoria: {filters.category}
                     <button
                       onClick={() => handleFilterChange({ category: 'all' })}
-                      className="ml-2 hover:text-chart-2/80"
+                      className="ml-2 hover:text-secondary-foreground/80"
                     >
                       <X className="w-3 h-3" />
                     </button>

@@ -59,12 +59,12 @@ export function NewsCard({
     if (!category) return 'bg-muted/50 text-muted-foreground'
     
     const colorMap: Record<string, string> = {
-      'esports': 'bg-red-500/10 text-red-600 border-red-500/20',
-      'streamers': 'bg-purple-500/10 text-purple-600 border-purple-500/20',
-      'torneios': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-      'noticias': 'bg-green-500/10 text-green-600 border-green-500/20',
-      'updates': 'bg-orange-500/10 text-orange-600 border-orange-500/20',
-      'analises': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
+      'esports': 'bg-destructive/10 text-destructive border-destructive/20',
+      'streamers': 'bg-primary/10 text-primary border-primary/20',
+      'torneios': 'bg-primary/10 text-primary border-primary/20',
+      'noticias': 'bg-secondary/10 text-secondary-foreground border-secondary/20',
+      'updates': 'bg-accent/10 text-accent-foreground border-accent/20',
+      'analises': 'bg-muted/10 text-muted-foreground border-muted/20'
     }
     
     return colorMap[category.toLowerCase()] || 'bg-primary/10 text-primary border-primary/20'
@@ -184,7 +184,7 @@ export function NewsCard({
             
             {/* Featured badge */}
             <div className="absolute top-4 left-4">
-              <Badge className="bg-yellow-500 text-yellow-900 border-yellow-400">
+              <Badge variant="secondary">
                 ⭐ Destaque
               </Badge>
             </div>
@@ -192,7 +192,7 @@ export function NewsCard({
             {/* Category badge */}
             {article.category && (
               <div className="absolute top-4 right-4">
-                <Badge variant="outline" className={cn("text-xs bg-white/90 backdrop-blur", getCategoryColor(article.category))}>
+                <Badge variant="outline" className={cn("text-xs", getCategoryColor(article.category))}>
                   {article.category}
                 </Badge>
               </div>
@@ -297,7 +297,7 @@ export function NewsCard({
           {/* Category badge */}
           {article.category && (
             <div className="absolute top-3 right-3">
-              <Badge variant="outline" className={cn("text-xs backdrop-blur bg-white/90", getCategoryColor(article.category))}>
+              <Badge variant="outline" className={cn("text-xs", getCategoryColor(article.category))}>
                 {article.category}
               </Badge>
             </div>

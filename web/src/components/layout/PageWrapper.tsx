@@ -43,10 +43,10 @@ const maxWidthClasses = {
 
 const paddingYClasses = {
   none: "",
-  compact: "py-3 sm:py-4 md:py-6",
-  normal: "py-4 sm:py-6 md:py-8",
-  spacious: "py-6 sm:py-8 md:py-12",
-  hero: "py-8 sm:py-12 md:py-16 lg:py-20"
+  compact: "py-2 sm:py-3 md:py-4",        // 8px → 12px → 16px (minimal)
+  normal: "py-3 sm:py-4 md:py-6",         // 12px → 16px → 24px (standard)
+  spacious: "py-4 sm:py-6 md:py-8",       // 16px → 24px → 32px (comfortable)
+  hero: "py-6 sm:py-8 md:py-12 lg:py-16"  // 24px → 32px → 48px → 64px (dramatic)
 }
 
 const paddingXClasses = {

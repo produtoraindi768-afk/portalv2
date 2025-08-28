@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import { getClientFirestore } from '@/lib/safeFirestore'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -59,12 +60,64 @@ interface MiniplPlayerProviderProps {
 }
 
 export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {}) {
-  const [isVisible, setIsVisible] = useState(false) // Iniciar OCULTO
+  const pathname = usePathname()
+  
+  // Função para verificar se devemos mostrar o miniplayer nesta rota
+  const shouldShowMiniplayerForRoute = useCallback((currentPath: string) => {
+    // Não mostrar na página inicial
+    if (currentPath === '/' || currentPath === '') {
+      return false
+    }
+    
+    // Não mostrar em rotas de autenticação ou páginas especiais
+    const excludedRoutes = [
+      '/login',
+      '/register', 
+      '/auth',
+      '/api',
+      '/_next',
+      '/admin'
+    ]
+    
+    const isExcluded = excludedRoutes.some(route => currentPath.startsWith(route))
+    return !isExcluded
+  }, [])
+  
+  // Iniciar com o estado correto baseado na rota atual
+  const [isVisible, setIsVisible] = useState(() => {
+    // Se estivermos no lado servidor ou rota inicial não permitida, começar oculto
+    if (typeof window === 'undefined' || !shouldShowMiniplayerForRoute(pathname)) {
+      return false
+    }
+    // Em rotas permitidas, começar oculto também (só mostrar sob demanda)
+    return false
+  })
   const [selectedStreamer, setSelectedStreamer] = useState<StreamerForMiniplayer | null>(null)
   const [hasAutoShown, setHasAutoShown] = useState(true) // Desabilitar auto-show permanentemente
   const [streamers, setStreamers] = useState<StreamerForMiniplayer[]>([])
   const [loading, setLoading] = useState(true) // Iniciar como loading até buscar os streamers
   const [isMinimizedState, setIsMinimizedState] = useState(false) // Controlar a minimização
+
+  // Função para verificar se devemos mostrar o miniplayer nesta rota
+  const shouldShowMiniplayer = useCallback(() => {
+    // Não mostrar na página inicial
+    if (pathname === '/' || pathname === '') {
+      return false
+    }
+    
+    // Não mostrar em rotas de autenticação ou páginas especiais
+    const excludedRoutes = [
+      '/login',
+      '/register', 
+      '/auth',
+      '/api',
+      '/_next',
+      '/admin'
+    ]
+    
+    const isExcluded = excludedRoutes.some(route => pathname.startsWith(route))
+    return !isExcluded
+  }, [pathname])
 
   // Novo estado para coordenação de players
   const [activePlayer, setActivePlayerState] = useState<ActivePlayerType>('main')
@@ -79,6 +132,12 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   }, [])
 
   const showMiniplayer = useCallback((streamer?: StreamerForMiniplayer) => {
+    // Verificar se podemos mostrar o miniplayer na rota atual
+    if (!shouldShowMiniplayer()) {
+      console.log(`[MiniplPlayerProvider] Tentativa de mostrar miniplayer na rota não permitida: ${pathname}`)
+      return
+    }
+    
     if (streamer) {
       setSelectedStreamer(streamer)
     }
@@ -91,7 +150,7 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     // clearManualPreference() - Comentado para manter a preferência do usuário
     
     console.log(`[MiniplPlayerProvider] showMiniplayer: mantendo preferência manual: ${hasManualMinimizePreference ? 'sim' : 'não'}`)
-  }, [hasManualMinimizePreference])
+  }, [hasManualMinimizePreference, shouldShowMiniplayer, pathname])
 
   const hideMiniplayer = useCallback(() => {
     setIsVisible(false)
@@ -197,9 +256,15 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     const fetchFeaturedStreamers = async () => {
       try {
         setLoading(true)
+        // DESABILITADO: MiniplPlayer não deve fazer requests próprios
+        // Streamers são controlados apenas pela StreamersSection principal
+        setStreamers([])
+        setLoading(false)
+        return
+
         const db = getClientFirestore()
         if (!db) return
-        
+
         // Query para streamers em destaque e online
         const q = query(
           collection(db, 'streamers'),
@@ -254,6 +319,32 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
     fetchFeaturedStreamers()
   }, [selectedStreamer])
 
+  // Debug logs para troubleshooting
+  useEffect(() => {
+    console.log('[MiniplPlayerProvider] Debug State:', {
+      pathname,
+      shouldShow: shouldShowMiniplayer(),
+      isVisible,
+      provider: 'MiniplPlayerProvider'
+    })
+  }, [pathname, shouldShowMiniplayer, isVisible])
+
+  // Efeito para esconder miniplayer quando mudamos para rotas onde ele não deve aparecer
+  useEffect(() => {
+    console.log(`[MiniplPlayerProvider] Route check: pathname=${pathname}, shouldShow=${shouldShowMiniplayer()}, isVisible=${isVisible}`)
+    
+    if (!shouldShowMiniplayer() && isVisible) {
+      console.log(`[MiniplPlayerProvider] ℹ️ Escondendo miniplayer na rota proibida: ${pathname}`)
+      hideMiniplayer()
+    } else if (shouldShowMiniplayer() && !isVisible) {
+      console.log(`[MiniplPlayerProvider] 📍 Rota permitida, mas miniplayer não está visível: ${pathname}`)
+    } else if (shouldShowMiniplayer() && isVisible) {
+      console.log(`[MiniplPlayerProvider] ✅ Miniplayer visível em rota permitida: ${pathname}`)
+    } else {
+      console.log(`[MiniplPlayerProvider] ❌ Miniplayer oculto em rota proibida (OK): ${pathname}`)
+    }
+  }, [pathname, shouldShowMiniplayer, isVisible, hideMiniplayer])
+
   const contextValue: MiniplPlayerContextValue = {
     isVisible,
     showMiniplayer,
@@ -278,12 +369,15 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   return (
     <MiniplPlayerContext.Provider value={contextValue}>
       {children}
-      <TooltipProvider>
-        <FloatingMiniplayer
-          onClose={handleClose}
-          onOpenTwitch={handleOpenTwitch}
-        />
-      </TooltipProvider>
+      {/* Só renderizar o FloatingMiniplayer nas rotas permitidas */}
+      {shouldShowMiniplayer() && (
+        <TooltipProvider>
+          <FloatingMiniplayer
+            onClose={handleClose}
+            onOpenTwitch={handleOpenTwitch}
+          />
+        </TooltipProvider>
+      )}
     </MiniplPlayerContext.Provider>
   )
 }

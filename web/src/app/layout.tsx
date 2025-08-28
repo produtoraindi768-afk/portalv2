@@ -1,19 +1,23 @@
 import "./globals.css"
+import "@/lib/console-filter"
 import { SiteHeader } from "@/components/layout/SiteHeader"
 import HeaderFeaturedMatchesTab from "@/components/layout/HeaderFeaturedMatchesTab"
 import FooterSection from "@/components/layout/FooterSection"
 import { MiniplPlayerProvider } from "@/components/miniplayer/MiniplPlayerProvider"
+import { PermissionsProvider } from "@/components/providers/PermissionsProvider"
 import { HeaderHeightProvider } from "@/contexts/HeaderHeightContext"
 import { Toaster } from "@/components/ui/toaster"
 import { Inter } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
+import ClientProviders from "@/components/providers/ClientProviders"
 import type { Metadata } from "next"
 
 const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "700"],
-  display: "swap",
+  display: "swap", // Prevent layout shift during font loading
   variable: "--font-inter",
+  preload: true, // Preload the font
+  fallback: ['system-ui', 'arial'], // Ensure fallback fonts
 })
 
 export const metadata: Metadata = {
@@ -64,16 +68,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" sizes="180x180" href="/faviconsz.png" />
       </head>
       <body className="min-h-svh flex flex-col">
-        <HeaderHeightProvider>
-          <MiniplPlayerProvider>
-            <SiteHeader />
-            <HeaderFeaturedMatchesTab />
-            <main className="flex-1">{children}</main>
-            <FooterSection />
-          </MiniplPlayerProvider>
-        </HeaderHeightProvider>
+        <PermissionsProvider suppressWarnings={true}>
+          <HeaderHeightProvider>
+            <MiniplPlayerProvider>
+              <SiteHeader />
+              <HeaderFeaturedMatchesTab />
+              <main className="flex-1">{children}</main>
+              <FooterSection />
+            </MiniplPlayerProvider>
+          </HeaderHeightProvider>
+        </PermissionsProvider>
         <Toaster />
-        <Analytics />
+        <ClientProviders />
       </body>
     </html>
   )

@@ -59,20 +59,23 @@ export function TwitchPlayer({
   const embedUrl = React.useMemo(() => {
     if (!channel || !mounted) return null
 
+    // Configuração otimizada para reduzir rate limiting
     const params = new URLSearchParams({
       channel: channel,
-      autoplay: autoplay ? 'true' : 'false',
-      muted: muted ? 'true' : 'false',
+      autoplay: autoplay.toString(), // Respeitar prop autoplay
+      muted: muted.toString(), // Respeitar prop muted
       controls: 'true',
-      playsinline: 'true'
+      playsinline: 'true',
+      'disable-ads': 'true', // Tentar desabilitar ads
+      allowfullscreen: 'true'
     })
 
-    const parents = new Set<string>()
-    if (typeof window !== 'undefined' && window.location.hostname) {
-      parents.add(window.location.hostname)
+    // Adicionar parents de forma otimizada
+    const parents = ['localhost']
+    if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost') {
+      parents.push(window.location.hostname)
     }
-    parents.add('localhost')
-    parents.forEach((p) => params.append('parent', p))
+    parents.forEach(parent => params.append('parent', parent))
 
     return `https://player.twitch.tv/?${params.toString()}`
   }, [channel, mounted, autoplay, muted])

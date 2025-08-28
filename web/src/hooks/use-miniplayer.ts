@@ -4,6 +4,7 @@ import { useCallback, useEffect, useReducer, useMemo, useState, useRef } from 'r
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { getClientFirestore } from '@/lib/safeFirestore'
 import { twitchStatusService } from '@/lib/twitch-status'
+import { cachedFirebaseUtils, requestCache } from '@/lib/request-cache'
 import { useIsMobile } from './use-mobile'
 import type {
   MiniplPlayerState,
@@ -150,50 +151,36 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
   const throttleTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const prevIsDraggingRef = useRef<boolean>(false)
 
-  // Buscar streamers em destaque do Firestore
+  // Buscar streamers em destaque com cache otimizado
   const fetchFeaturedStreamers = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const db = getClientFirestore()
-      if (!db) {
-        setError('Firestore não disponível')
-        return
-      }
-
-      // Query: apenas streamers em destaque (filtrar online no cliente para tolerar dados inconsistentes)
-      const streamersQuery = query(
-        collection(db, 'streamers'),
-        where('isFeatured', '==', true)
-      )
-
-      const snapshot = await getDocs(streamersQuery)
-      const fetchedStreamers: StreamerForMiniplayer[] = []
-
-      snapshot.forEach((doc) => {
-        const data = doc.data()
-        const streamer: StreamerForMiniplayer = {
-          id: doc.id,
-          name: data.name || '',
-          platform: data.platform || '',
-          streamUrl: data.streamUrl || '',
-          avatarUrl: data.avatarUrl || '',
-          category: data.category || '',
-          isOnline: typeof data.isOnline === 'boolean' ? data.isOnline : String(data.isOnline).toLowerCase() === 'true' || data.isOnline === 1,
-          isFeatured: typeof data.isFeatured === 'boolean' ? data.isFeatured : String(data.isFeatured).toLowerCase() === 'true' || data.isFeatured === 1,
-          twitchChannel: data.platform === 'twitch' ? (extractTwitchChannel(data.streamUrl) || undefined) : undefined,
-          createdAt: data.createdAt || '',
-          lastStatusUpdate: data.lastStatusUpdate || ''
-        }
-
-        if (streamer.name && streamer.streamUrl && streamer.isOnline) {
-          fetchedStreamers.push(streamer)
-        }
-      })
+      // Usar sistema de cache para reduzir requests
+      const cachedStreamers = await cachedFirebaseUtils.getFeaturedStreamers()
+      
+      const processedStreamers: StreamerForMiniplayer[] = cachedStreamers
+        .map((data: any) => {
+          const streamer: StreamerForMiniplayer = {
+            id: data.id,
+            name: data.name || '',
+            platform: data.platform || '',
+            streamUrl: data.streamUrl || '',
+            avatarUrl: data.avatarUrl || '',
+            category: data.category || '',
+            isOnline: typeof data.isOnline === 'boolean' ? data.isOnline : String(data.isOnline).toLowerCase() === 'true' || data.isOnline === 1,
+            isFeatured: typeof data.isFeatured === 'boolean' ? data.isFeatured : String(data.isFeatured).toLowerCase() === 'true' || data.isFeatured === 1,
+            twitchChannel: data.platform === 'twitch' ? (extractTwitchChannel(data.streamUrl) || undefined) : undefined,
+            createdAt: data.createdAt || '',
+            lastStatusUpdate: data.lastStatusUpdate || ''
+          }
+          return streamer
+        })
+        .filter(streamer => streamer.name && streamer.streamUrl && streamer.isOnline)
 
       // Ordenar streamers: primeiro os em destaque, depois os demais
-      const sortedStreamers = fetchedStreamers.sort((a, b) => {
+      const sortedStreamers = processedStreamers.sort((a, b) => {
         if (a.isFeatured && !b.isFeatured) return -1
         if (!a.isFeatured && b.isFeatured) return 1
         return 0

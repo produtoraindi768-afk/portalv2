@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger,
+  TooltipProvider 
+} from '@/components/animate-ui/components/tooltip'
 import { Slider } from '@/components/ui/slider'
 import {
   DropdownMenu,
@@ -35,13 +40,14 @@ export function PlayerControls({
 }: PlayerControlsProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <TooltipProvider openDelay={500} closeDelay={150}>
+      <div className={cn("flex items-center gap-1", className)}>
       {/* Controle de volume */}
       {canShowVolumeSlider ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label={isMuted ? 'Ativar som' : 'Silenciar'}>
-              <Tooltip>
+              <Tooltip side="bottom" sideOffset={8}>
                 <TooltipTrigger asChild>
                   <div>
                     {isMuted ? (
@@ -51,8 +57,11 @@ export function PlayerControls({
                     )}
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>{isMuted ? 'Ativar som' : 'Silenciar'}</p>
+                <TooltipContent>
+                  <div className="text-center">
+                    <p className="font-medium">{isMuted ? 'Ativar som' : 'Silenciar'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Clique para ajustar volume</p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </Button>
@@ -96,7 +105,7 @@ export function PlayerControls({
         </DropdownMenu>
       ) : (
         // Controle simples de mute/unmute para MVP
-        <Tooltip>
+        <Tooltip side="bottom" sideOffset={8}>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
@@ -112,8 +121,11 @@ export function PlayerControls({
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">
-            <p>{isMuted ? 'Ativar som' : 'Silenciar'}</p>
+          <TooltipContent>
+            <div className="text-center">
+              <p className="font-medium">{isMuted ? 'Ativar som' : 'Silenciar'}</p>
+              <p className="text-xs text-muted-foreground mt-1">Tecla M</p>
+            </div>
           </TooltipContent>
         </Tooltip>
       )}
@@ -128,12 +140,15 @@ export function PlayerControls({
             aria-label="Mais opções"
             onClick={() => setMenuOpen((v) => !v)}
           >
-            <Tooltip>
+            <Tooltip side="bottom" sideOffset={8}>
               <TooltipTrigger asChild>
                 <MoreVertical className="h-3 w-3" />
               </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Mais opções</p>
+              <TooltipContent>
+                <div className="text-center">
+                  <p className="font-medium">Mais opções</p>
+                  <p className="text-xs text-muted-foreground mt-1">Controles avançados</p>
+                </div>
               </TooltipContent>
             </Tooltip>
           </Button>
@@ -188,6 +203,7 @@ export function PlayerControls({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
-    </div>
+      </div>
+    </TooltipProvider>
   )
 }

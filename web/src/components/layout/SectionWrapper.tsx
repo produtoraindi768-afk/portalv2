@@ -35,10 +35,10 @@ interface SectionWrapperProps {
 
 const spacingClasses = {
   none: "",
-  compact: "mb-6 sm:mb-8 md:mb-12",
-  normal: "mb-8 sm:mb-12 md:mb-16", 
-  spacious: "mb-12 sm:mb-16 md:mb-20",
-  hero: "mb-16 sm:mb-20 md:mb-24 lg:mb-32"
+  compact: "mb-4 sm:mb-6 md:mb-8",        // 16px → 24px → 32px (Apple harmonic)
+  normal: "mb-6 sm:mb-8 md:mb-12",        // 24px → 32px → 48px (balanced)
+  spacious: "mb-8 sm:mb-12 md:mb-16",     // 32px → 48px → 64px (generous) 
+  hero: "mb-12 sm:mb-16 md:mb-20 lg:mb-24" // 48px → 64px → 80px → 96px (dramatic)
 }
 
 const backgroundClasses = {

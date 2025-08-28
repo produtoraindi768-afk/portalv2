@@ -144,7 +144,7 @@ export function FeaturedMatchesSection() {
                 <>
                   {Array.from({ length: 3 }).map((_, idx) => (
                     <MatchSkeleton key={idx} />
-                  ))}}
+                  ))}
                 </>
               )}
 

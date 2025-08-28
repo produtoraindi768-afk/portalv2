@@ -21,7 +21,12 @@ import { StreamSwitcher } from '@/components/miniplayer/StreamSwitcher'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger,
+  TooltipProvider 
+} from '@/components/animate-ui/components/tooltip'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Minimize2, Maximize2, ExternalLink, Move } from 'lucide-react'
 
@@ -133,6 +138,19 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
   }, [activeStreamer])
 
   const canPlay = Boolean(activeStreamer && activeStreamer.platform === 'twitch' && activeStreamer.isOnline && activeStreamer.twitchChannel)
+
+  // Debug logs para miniplayer (comentado para produção)
+  React.useEffect(() => {
+    if (activeStreamer && process.env.NODE_ENV === 'development') {
+      // console.log('🎬 Miniplayer Debug:', {
+      //   name: activeStreamer.name,
+      //   platform: activeStreamer.platform,
+      //   isOnline: activeStreamer.isOnline,
+      //   twitchChannel: activeStreamer.twitchChannel,
+      //   embedUrl: embedUrl ? 'Generated' : 'NULL'
+      // })
+    }
+  }, [activeStreamer, canPlay, embedUrl])
   
   // Atualiza a altura conforme estado (aberto/minimizado)
   useEffect(() => {
@@ -374,6 +392,16 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
     }
   }, [handleClose])
 
+  // Debug logs para troubleshoot
+  React.useEffect(() => {
+    console.log('[FloatingMiniplayer] Debug:', {
+      mounted,
+      isVisible,
+      contextIsVisible: isVisible,
+      pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown'
+    })
+  }, [mounted, isVisible])
+
   // Não renderizar se não montado ou não visível (permitir loading)
   if (!mounted || !isVisible) {
     return null
@@ -508,18 +536,21 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
           >
             {/* Indicador de drag no mobile */}
             {isMobile && !contextIsMinimized && (
-              <Tooltip>
+              <Tooltip side="bottom" sideOffset={8}>
                 <TooltipTrigger asChild>
                   <div className="flex items-center justify-center h-6 w-6 text-muted-foreground transition-all duration-100"> {/* Transição mais rápida */}
                     <Move className="h-3 w-3" />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="transition-all duration-100"> {/* Transição mais rápida */}
-                  <p>Arraste para mover</p>
+                <TooltipContent>
+                  <div className="text-center">
+                    <p className="font-medium">Arraste para mover</p>
+                    <p className="text-xs text-muted-foreground mt-1">Posicione onde preferir</p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             )}
-            <Tooltip>
+            <Tooltip side="bottom" sideOffset={8}>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
@@ -542,12 +573,15 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="transition-all duration-100"> {/* Transição mais rápida */}
-                <p>{contextIsMinimized ? 'Expandir player' : 'Minimizar player'}</p>
+              <TooltipContent>
+                <div className="text-center">
+                  <p className="font-medium">{contextIsMinimized ? 'Expandir player' : 'Minimizar player'}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{contextIsMinimized ? 'Clique para expandir' : 'Tecla ESC'}</p>
+                </div>
               </TooltipContent>
             </Tooltip>
 
-            <Tooltip>
+            <Tooltip side="bottom" sideOffset={8}>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
@@ -563,8 +597,11 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
                   <ExternalLink className={cn(contextIsMinimized ? "h-3 w-3" : "h-3 w-3")} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="transition-all duration-100"> {/* Transição mais rápida */}
-                <p>Abrir no Twitch</p>
+              <TooltipContent>
+                <div className="text-center">
+                  <p className="font-medium">Abrir no Twitch</p>
+                  <p className="text-xs text-muted-foreground mt-1">Chat e funcionalidades completas</p>
+                </div>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -659,12 +696,14 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
 
   // Renderizar via portal no body
   return createPortal(
-    <div 
-      className="fixed inset-0 pointer-events-none z-40"
-      style={{ pointerEvents: 'none' }}
-    >
-      {playerContent}
-    </div>,
+    <TooltipProvider openDelay={300} closeDelay={150}>
+      <div 
+        className="fixed inset-0 pointer-events-none z-40"
+        style={{ pointerEvents: 'none' }}
+      >
+        {playerContent}
+      </div>
+    </TooltipProvider>,
     document.body
   )
 }

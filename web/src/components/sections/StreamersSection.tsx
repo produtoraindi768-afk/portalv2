@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils"
 import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import { AppleStreamerInfo } from "@/components/streamers/AppleStreamerInfo"
+import { StreamersSideLayout } from "@/components/streamers/StreamersSideLayout"
 
 type StreamerDoc = {
   id: string
@@ -192,7 +194,7 @@ function PersistentTwitchPlayer({
     const params = new URLSearchParams({
       channel: channel,
       autoplay: 'true',
-      muted: 'true',
+      muted: 'false', // SOM ATIVO para player principal
       controls: 'true',
       playsinline: 'true'
     })
@@ -618,8 +620,18 @@ export function StreamersSection() {
     const updateSectionRect = () => {
       if (sectionRef.current) {
         const rect = sectionRef.current.getBoundingClientRect()
-        setSectionRect(rect)
-        console.log('Section rect updated:', rect)
+        setSectionRect(prevRect => {
+          // Só atualizar se realmente mudou para evitar re-renders desnecessários
+          if (!prevRect ||
+              Math.abs(prevRect.width - rect.width) > 1 ||
+              Math.abs(prevRect.height - rect.height) > 1 ||
+              Math.abs(prevRect.top - rect.top) > 1 ||
+              Math.abs(prevRect.left - rect.left) > 1) {
+            console.log('Section rect updated:', rect)
+            return rect
+          }
+          return prevRect
+        })
       }
     }
 
@@ -634,15 +646,22 @@ export function StreamersSection() {
     // Também tentar após um pequeno delay
     const timeoutId = setTimeout(updateSectionRect, 100)
 
-    window.addEventListener('resize', updateSectionRect)
-    // Usar scroll passivo para não bloquear o scroll
-    window.addEventListener('scroll', updateSectionRect, { passive: true })
+    // Throttle para scroll e resize
+    let scrollTimeout: NodeJS.Timeout
+    const throttledUpdate = () => {
+      clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(updateSectionRect, 16) // ~60fps
+    }
+
+    window.addEventListener('resize', throttledUpdate)
+    window.addEventListener('scroll', throttledUpdate, { passive: true })
 
     return () => {
       cancelAnimationFrame(rafId)
       clearTimeout(timeoutId)
-      window.removeEventListener('resize', updateSectionRect)
-      window.removeEventListener('scroll', updateSectionRect)
+      clearTimeout(scrollTimeout)
+      window.removeEventListener('resize', throttledUpdate)
+      window.removeEventListener('scroll', throttledUpdate)
     }
   }, [mounted])
 
@@ -650,21 +669,38 @@ export function StreamersSection() {
   useEffect(() => {
     if (streamers.length > 0 && sectionRef.current && mounted) {
       console.log('Updating section rect after streamers loaded, count:', streamers.length)
+
+      let timeoutIds: NodeJS.Timeout[] = []
+
       const updateSectionRect = () => {
         const rect = sectionRef.current?.getBoundingClientRect()
         if (rect) {
-          setSectionRect(rect)
-          console.log('Section rect updated after streamers loaded:', rect)
+          setSectionRect(prevRect => {
+            // Só atualizar se realmente mudou para evitar re-renders desnecessários
+            if (!prevRect ||
+                Math.abs(prevRect.width - rect.width) > 1 ||
+                Math.abs(prevRect.height - rect.height) > 1 ||
+                Math.abs(prevRect.top - rect.top) > 1 ||
+                Math.abs(prevRect.left - rect.left) > 1) {
+              console.log('Section rect updated after streamers loaded:', rect)
+              return rect
+            }
+            return prevRect
+          })
         }
       }
-      
+
       // Tentar várias vezes para garantir que o layout está estável
       updateSectionRect()
-      setTimeout(updateSectionRect, 50)
-      setTimeout(updateSectionRect, 200)
-      setTimeout(updateSectionRect, 500)
+      timeoutIds.push(setTimeout(updateSectionRect, 50))
+      timeoutIds.push(setTimeout(updateSectionRect, 200))
+      timeoutIds.push(setTimeout(updateSectionRect, 500))
+
+      return () => {
+        timeoutIds.forEach(id => clearTimeout(id))
+      }
     }
-  }, [streamers, mounted])
+  }, [streamers.length, mounted]) // Usar streamers.length ao invés do array completo
 
   // Scroll trigger para autoplay quando seção estiver visível
   useEffect(() => {
@@ -1728,6 +1764,22 @@ export function StreamersSection() {
           )}
         </React.Fragment>
       ))}
+
+      {/* Layout em colunas para múltiplos streamers */}
+      <StreamersSideLayout
+        streamers={streamers}
+        selectedIndex={selectedIndex}
+        isTransitioning={isTransitioning}
+      />
+
+      {/* Apple-style Streamer Info Card centralizado apenas para streamer único */}
+      {streamers.length === 1 && streamers[selectedIndex] && !isTransitioning && (
+        <AppleStreamerInfo 
+          streamer={streamers[selectedIndex]}
+          position="center"
+          className="transform transition-all duration-500 ease-out"
+        />
+      )}
     </>
   )
 }

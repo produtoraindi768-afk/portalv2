@@ -27,38 +27,12 @@ export class TwitchStatusService {
 
   /**
    * Verifica se um streamer específico está ao vivo na Twitch
+   * NOTA: Sem API da Twitch, retorna status baseado nos dados do Firestore
    */
   async checkStreamerLiveStatus(username: string): Promise<boolean> {
-    if (!this.clientId || !this.accessToken) {
-      console.warn('Twitch API credentials not configured')
-      return false
-    }
-
-    try {
-      const response = await fetch(
-        `https://api.twitch.tv/helix/streams?user_login=${username}`,
-        {
-          headers: {
-            'Client-ID': this.clientId,
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-
-      if (!response.ok) {
-        console.error(`Twitch API error: ${response.status}`)
-        return false
-      }
-
-      const data: TwitchApiResponse = await response.json()
-      
-      // Se há dados e o stream está ao vivo
-      return data.data.length > 0 && data.data[0].type === 'live'
-    } catch (error) {
-      console.error('Error checking Twitch stream status:', error)
-      return false
-    }
+    // Sem API da Twitch, retorna false
+    // O status real vem dos dados do Firestore via useStreamerStatus
+    return false
   }
 
   /**
@@ -143,54 +117,47 @@ export class TwitchStatusService {
 
       const streamers = streamersSnapshot.docs
 
-      // Processar cada streamer
+      // Preparar dados dos streamers para verificação em lote
+      const streamersData: Array<{
+        id: string
+        data: any
+        username: string | null
+      }> = []
+
       for (const streamerDoc of streamers) {
-        result.processed++
+        const streamerData = streamerDoc.data()
 
-        try {
-          const streamerData = streamerDoc.data()
-          const streamerId = streamerDoc.id
-
-          // Apenas processar streamers da Twitch
-          if (streamerData.platform !== 'twitch') {
-            continue
-          }
-
-          // Extrair username da URL
-          const username = this.extractUsernameFromTwitchUrl(streamerData.streamUrl)
-          if (!username) {
-            console.warn(`Invalid Twitch URL for streamer ${streamerData.name}: ${streamerData.streamUrl}`)
-            result.errors++
-            continue
-          }
-
-          // Verificar status ao vivo
-          const isCurrentlyLive = await this.checkStreamerLiveStatus(username)
-          const wasLive = Boolean(streamerData.isOnline)
-
-          // Atualizar apenas se houve mudança de status
-          if (isCurrentlyLive !== wasLive) {
-            const updateSuccess = await firestoreHelpers.updateStreamerOnlineStatus(
-              streamerId,
-              isCurrentlyLive
-            )
-
-            if (updateSuccess) {
-              result.updated++
-              console.log(`Updated ${streamerData.name}: ${wasLive ? 'online' : 'offline'} → ${isCurrentlyLive ? 'online' : 'offline'}`)
-            } else {
-              result.errors++
-              console.error(`Failed to update status for streamer ${streamerData.name}`)
-            }
-          } else {
-            // Status não mudou, apenas log se necessário
-            console.log(`No change for ${streamerData.name}: still ${wasLive ? 'online' : 'offline'}`)
-          }
-
-        } catch (error) {
-          result.errors++
-          console.error('Error processing streamer:', error)
+        // Apenas processar streamers da Twitch
+        if (streamerData.platform !== 'twitch') {
+          continue
         }
+
+        // Extrair username da URL
+        const username = this.extractUsernameFromTwitchUrl(streamerData.streamUrl)
+        if (!username) {
+          console.warn(`Invalid Twitch URL for streamer ${streamerData.name}: ${streamerData.streamUrl}`)
+          result.errors++
+          continue
+        }
+
+        streamersData.push({
+          id: streamerDoc.id,
+          data: streamerData,
+          username
+        })
+      }
+
+      result.processed = streamersData.length
+
+      if (streamersData.length === 0) {
+        console.log('No valid Twitch streamers found')
+        return result
+      }
+
+      // Sem API da Twitch, apenas log em desenvolvimento
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Found ${streamersData.length} Twitch streamers (no API calls made)`)
+        console.log('Status updates skipped - no Twitch API configured')
       }
 
       console.log(`Streamer status update completed: ${result.processed} processed, ${result.updated} updated, ${result.errors} errors`)

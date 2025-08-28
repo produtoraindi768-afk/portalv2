@@ -1,16 +1,58 @@
-import { Metadata } from "next"
-import HeroSection from "@/components/sections/HeroSection"
-import { NewsSection } from "@/components/sections/NewsSection"
-import { StreamersSection } from "@/components/sections/StreamersSection"
-// import { TournamentsSection } from "@/components/sections/TournamentsSection"
-import { FeaturedMatchesSection } from "@/components/sections/FeaturedMatchesSection"
-import { StarsBackground } from "@/components/animate-ui/backgrounds/stars"
+"use client"
+
+import { Suspense, lazy } from "react"
 import { Separator } from "@/components/ui/separator"
 import { SectionWrapper, PageWrapper } from "@/components/layout"
+import dynamic from "next/dynamic"
+import SimpleBackground from "@/components/fallback/SimpleBackground"
 
-export const metadata: Metadata = {
-  title: "Home | SZ - Fortnite Ballistic",
-}
+// Dynamically import StarsBackground with fallback
+const StarsBackground = dynamic(
+  () => import("@/components/animate-ui/backgrounds/stars").then(mod => ({ default: mod.StarsBackground })),
+  { 
+    ssr: false,
+    loading: () => <SimpleBackground className="relative min-h-screen"><div /></SimpleBackground>
+  }
+)
+
+// Lazy-loaded components for better performance
+const AppleHeroSection = lazy(() => import("@/components/sections/AppleHeroSection"))
+const NewsSection = lazy(() => import("@/components/sections/NewsSection").then(module => ({ default: module.NewsSection })))
+const StreamersSection = lazy(() => import("@/components/sections/StreamersSectionImproved").then(module => ({ default: module.StreamersSection })))
+
+// Loading components
+const StreamersLoading = () => (
+  <div className="animate-pulse space-y-6">
+    <div className="flex justify-center mb-8">
+      <div className="h-8 bg-muted rounded w-48"></div>
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="bg-muted rounded-lg h-64"></div>
+      ))}
+    </div>
+  </div>
+)
+
+const HeroLoading = () => (
+  <div className="animate-pulse">
+    <div className="h-96 bg-muted rounded-lg mx-4"></div>
+  </div>
+)
+
+const NewsLoading = () => (
+  <div className="animate-pulse space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="bg-muted rounded-lg h-48"></div>
+      ))}
+    </div>
+  </div>
+)
+
+const StarsLoading = () => (
+  <div className="relative min-h-screen bg-background" />
+)
 
 export default function Home() {
   return (
@@ -20,37 +62,57 @@ export default function Home() {
       speed={60}
       factor={0.03}
     >
-      <SectionWrapper spacing="compact" background="transparent">
-        <PageWrapper maxWidth="wide" paddingY="compact">
-          <StreamersSection />
-          
-          {/* Separador dentro da seção de streamers */}
-          <div className="mt-6 sm:mt-8">
-            <Separator className="bg-border/60" />
-          </div>
-        </PageWrapper>
-      </SectionWrapper>
-      
-      <section id="hero">
-        <HeroSection />
-      </section>
-      
-      {/* Separator between Hero and News */}
-      <SectionWrapper spacing="compact" background="transparent">
-        <PageWrapper maxWidth="wide" paddingY="compact">
-          <Separator className="bg-border/60" />
-        </PageWrapper>
-      </SectionWrapper>
-      
-      <section id="news">
-        <NewsSection limit={3} showHeader={false} />
-      </section>
+        {/* Streamers Section - PRIMEIRA SEÇÃO - espaçamento mínimo do header */}
+        <section id="streams" className="pt-3 sm:pt-4 md:pt-6">
+          <SectionWrapper spacing="normal" background="transparent">
+            <PageWrapper maxWidth="wide" paddingY="normal">
+              <Suspense fallback={<StreamersLoading />}>
+                <StreamersSection />
+              </Suspense>
+            </PageWrapper>
+          </SectionWrapper>
+        </section>
+        
+        {/* Separator Apple-style - espaçamento sutil */}
+        <div className="py-3 sm:py-4">
+          <PageWrapper maxWidth="wide" paddingY="none">
+            <div className="flex justify-center">
+              <Separator className="bg-gradient-to-r from-transparent via-border/20 to-transparent max-w-xs" />
+            </div>
+          </PageWrapper>
+        </div>
+        
+        {/* Hero Section - SEGUNDA SEÇÃO - agora são as notícias em destaque */}
+        <section id="hero">
+          <Suspense fallback={<HeroLoading />}>
+            <AppleHeroSection />
+          </Suspense>
+        </section>
+        
+        {/* Separator entre Hero e News - mais sutil */}
+        <div className="py-2 sm:py-3">
+          <PageWrapper maxWidth="wide" paddingY="none">
+            <div className="flex justify-center">
+              <Separator className="bg-gradient-to-r from-transparent via-border/15 to-transparent max-w-sm" />
+            </div>
+          </PageWrapper>
+        </div>
+        
+        {/* News Section - TERCEIRA SEÇÃO - espaçamento compacto */}
+        <SectionWrapper spacing="compact" background="transparent">
+          <PageWrapper maxWidth="wide" paddingY="normal">
+            <Suspense fallback={<NewsLoading />}>
+              <NewsSection limit={3} showHeader={false} />
+            </Suspense>
+          </PageWrapper>
+        </SectionWrapper>
+        
 {/*       <section id="matches">
-        <FeaturedMatchesSection />
-      </section> */}
+          <FeaturedMatchesSection />
+        </section> */}
 {/*       <section id="tournaments">
-        <TournamentsSection />
-      </section> */}
+          <TournamentsSection />
+        </section> */}
     </StarsBackground>
   )
 }

@@ -2,6 +2,7 @@
 export { TwitchPlayer } from './TwitchPlayer'
 export { StreamPreview } from './StreamPreview'
 export { StreamNavigation } from './StreamNavigation'
+export { UnifiedStreamWidget } from './UnifiedStreamWidget'
 
 // Hooks
 export { useStreamers } from '../../hooks/useStreamers'

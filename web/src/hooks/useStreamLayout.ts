@@ -26,7 +26,17 @@ export function useStreamLayout() {
     const updateSectionRect = () => {
       if (sectionRef.current) {
         const rect = sectionRef.current.getBoundingClientRect()
-        setSectionRect(rect)
+        setSectionRect(prevRect => {
+          // Só atualizar se realmente mudou para evitar re-renders desnecessários
+          if (!prevRect ||
+              Math.abs(prevRect.width - rect.width) > 1 ||
+              Math.abs(prevRect.height - rect.height) > 1 ||
+              Math.abs(prevRect.top - rect.top) > 1 ||
+              Math.abs(prevRect.left - rect.left) > 1) {
+            return rect
+          }
+          return prevRect
+        })
       }
     }
 
@@ -36,15 +46,22 @@ export function useStreamLayout() {
     const rafId = requestAnimationFrame(updateSectionRect)
     const timeoutId = setTimeout(updateSectionRect, 100)
 
-    const handleResize = () => updateSectionRect()
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('scroll', handleResize, { passive: true })
+    // Throttle para resize e scroll
+    let resizeTimeout: NodeJS.Timeout
+    const throttledUpdate = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(updateSectionRect, 16) // ~60fps
+    }
+
+    window.addEventListener('resize', throttledUpdate)
+    window.addEventListener('scroll', throttledUpdate, { passive: true })
 
     return () => {
       cancelAnimationFrame(rafId)
       clearTimeout(timeoutId)
-      window.removeEventListener('resize', handleResize)
-      window.removeEventListener('scroll', handleResize)
+      clearTimeout(resizeTimeout)
+      window.removeEventListener('resize', throttledUpdate)
+      window.removeEventListener('scroll', throttledUpdate)
     }
   }, [mounted])
 

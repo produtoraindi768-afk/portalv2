@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from "react"
 import { collection, getDocs, query, where, Timestamp } from "firebase/firestore"
 import { getClientFirestore } from "@/lib/safeFirestore"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
 import { NewsGrid } from "@/components/news/NewsGrid"
@@ -155,62 +157,158 @@ export function NewsSection({
   }, [category, tag, enablePagination, pageSize])
 
   return (
-    <SectionWrapper spacing="compact" background="transparent">
-      <PageWrapper maxWidth="wide">
-        <ContentWrapper layout="stack" gap="normal">
-          {showHeader && (
-            <>
-              <ContentWrapper layout="centered" gap="tight">
-                <Typography variant="h2" align="center">
-                  Últimas notícias
-                </Typography>
-                <Typography variant="lead" align="center" maxWidth="narrow">
-                  Acompanhe as atualizações e novidades da comunidade.
-                </Typography>
-              </ContentWrapper>
-              
-              {/* Separator after header when showing articles */}
-              {displayItems.length > 0 && (
-                <Separator className="bg-border/50 my-4 sm:my-6" />
-              )}
-            </>
-          )}
+    <div className="space-y-8">
+      {isLoading ? (
+        // Skeleton Loading State Apple-style
+        <div className="grid gap-8 sm:gap-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+          {Array.from({ length: limit || pageSize || 6 }).map((_, i) => (
+            <div key={i} className="group">
+              <div className="space-y-4">
+                {/* Image skeleton */}
+                <div className="aspect-[16/10] rounded-2xl bg-muted/50 animate-pulse" />
+                
+                {/* Content skeleton */}
+                <div className="space-y-3">
+                  <div className="h-4 bg-muted/50 rounded-lg w-20 animate-pulse" />
+                  <div className="space-y-2">
+                    <div className="h-6 bg-muted/50 rounded-lg animate-pulse" />
+                    <div className="h-6 bg-muted/50 rounded-lg w-4/5 animate-pulse" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="h-4 bg-muted/50 rounded w-full animate-pulse" />
+                    <div className="h-4 bg-muted/50 rounded w-3/4 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="text-center py-16 lg:py-24">
+          <Typography variant="h3" className="text-muted-foreground mb-4 font-light">
+            {missingConfig
+              ? "Firebase não configurado"
+              : errorMsg
+              ? "Erro ao carregar notícias"
+              : "Nenhuma notícia encontrada"}
+          </Typography>
+          <Typography variant="muted" className="font-light">
+            {missingConfig
+              ? "Defina as variáveis .env e adicione documentos em /news."
+              : errorMsg
+              ? `Erro: ${errorMsg}`
+              : "Sem notícias publicadas no momento."}
+          </Typography>
+        </div>
+      ) : (
+        // News Grid Apple-style
+        <div className="grid gap-8 lg:gap-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+          {displayItems.map((item, index) => (
+            <article 
+              key={item.id} 
+              className="group cursor-pointer transform transition-all duration-500 ease-out hover:translate-y-[-4px] hover:scale-[1.02]"
+            >
+              <Link 
+                href={item.slug ? `/noticias/${item.slug}` : `#`}
+                className="block space-y-4 sm:space-y-6"
+              >
+                {/* Image Apple-style */}
+                <div className="relative overflow-hidden rounded-2xl bg-muted/30">
+                  {item.featuredImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.featuredImage}
+                      alt={item.title || "Imagem da notícia"}
+                      className="aspect-[16/10] w-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="aspect-[16/10] w-full flex items-center justify-center border-2 border-dashed border-muted-foreground/20">
+                      <Typography variant="muted" className="font-light">
+                        Sem imagem
+                      </Typography>
+                    </div>
+                  )}
+                  
+                  {/* Apple-style subtle overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                </div>
 
-          {isLoading ? (
-            // Skeleton Loading State seguindo o design system
-            <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-              {Array.from({ length: limit || pageSize || 6 }).map((_, i) => (
-                <NewsCardSkeleton key={i} variant="default" />
-              ))}
-            </div>
-          ) : filteredItems.length === 0 ? (
-            <div className="text-center py-12 sm:py-16">
-              <Typography variant="h3" className="text-muted-foreground mb-3 sm:mb-4">
-                {missingConfig
-                  ? "Firebase não configurado"
-                  : errorMsg
-                  ? "Erro ao carregar notícias"
-                  : "Nenhuma notícia encontrada"}
-              </Typography>
-              <Typography variant="muted">
-                {missingConfig
-                  ? "Defina as variáveis .env e adicione documentos em /news."
-                  : errorMsg
-                  ? `Erro: ${errorMsg}`
-                  : "Sem notícias publicadas no momento."}
-              </Typography>
-            </div>
-          ) : (
-            <NewsGrid 
-              articles={displayItems}
-              enablePagination={enablePagination}
-              pageSize={pageSize}
-              showFilters={false}
-            />
-          )}
-        </ContentWrapper>
-      </PageWrapper>
-    </SectionWrapper>
+                {/* Content Apple-style */}
+                <div className="space-y-3 sm:space-y-4">
+                  {/* Category Badge */}
+                  {item.category && (
+                    <Badge 
+                      variant="secondary" 
+                      className="rounded-full px-3 py-1 text-xs font-light tracking-wide hover:bg-secondary/80 transition-colors duration-300"
+                    >
+                      {item.category}
+                    </Badge>
+                  )}
+
+                  {/* Title Apple-style */}
+                  <Typography 
+                    variant="h3" 
+                    className="font-medium tracking-tight leading-tight text-base sm:text-lg lg:text-xl group-hover:text-primary transition-colors duration-300"
+                    maxWidth="none"
+                  >
+                    {item.title}
+                  </Typography>
+
+                  {/* Excerpt Apple-style */}
+                  {item.excerpt && (
+                    <Typography 
+                      variant="body" 
+                      className="font-light leading-relaxed text-muted-foreground line-clamp-2 text-sm sm:text-base"
+                      maxWidth="none"
+                    >
+                      {item.excerpt}
+                    </Typography>
+                  )}
+
+                  {/* Date Apple-style */}
+                  {item.publishDate && (
+                    <Typography 
+                      variant="caption" 
+                      className="font-light text-muted-foreground/70 tracking-wide"
+                    >
+                      {new Date(item.publishDate).toLocaleDateString('pt-BR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </Typography>
+                  )}
+                </div>
+              </Link>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {/* Load More Button Apple-style */}
+      {hasMore && enablePagination && (
+        <div className="flex justify-center pt-8 lg:pt-12">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setVisibleCount(prev => prev + pageSize)}
+            className="group px-8 py-4 text-base font-light rounded-2xl border-border/30 hover:border-primary/50 hover:bg-muted/10 transition-all duration-300 hover:scale-[1.02]"
+          >
+            <span className="flex items-center gap-2">
+              Carregar mais notícias
+              <svg 
+                className="size-4 transform transition-transform duration-300 group-hover:translate-y-1" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </span>
+          </Button>
+        </div>
+      )}
+    </div>
   )
 }
 

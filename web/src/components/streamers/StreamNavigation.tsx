@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Button } from '@/components/ui/button'
+import { RippleButton } from '@/components/animate-ui/buttons/ripple'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, Users, Eye } from 'lucide-react'
@@ -34,7 +35,7 @@ export function StreamNavigation({
       {/* Botão anterior */}
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
+          <RippleButton
             onClick={onPrevious}
             disabled={isTransitioning}
             variant="outline"
@@ -53,7 +54,7 @@ export function StreamNavigation({
               "w-4 h-4 sm:w-5 sm:h-5",
               isTransitioning ? "opacity-50" : "opacity-100"
             )} />
-          </Button>
+          </RippleButton>
         </TooltipTrigger>
         <TooltipContent side="top">
           <p>Stream anterior</p>
@@ -63,7 +64,7 @@ export function StreamNavigation({
       {/* Botão próximo */}
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
+          <RippleButton
             onClick={onNext}
             disabled={isTransitioning}
             variant="outline"
@@ -82,7 +83,7 @@ export function StreamNavigation({
               "w-4 h-4 sm:w-5 sm:h-5",
               isTransitioning ? "opacity-50" : "opacity-100"
             )} />
-          </Button>
+          </RippleButton>
         </TooltipTrigger>
         <TooltipContent side="top">
           <p>Próximo stream</p>

@@ -64,10 +64,11 @@ export function useStreamers() {
           }
         })
         
-        const onlineStreamers = data.filter(s => s.isOnline)
-        const sortedStreamers = onlineStreamers.sort((a, b) => {
-          if (a.isFeatured && !b.isFeatured) return -1
-          if (!a.isFeatured && b.isFeatured) return 1
+        const featuredStreamers = data.filter(s => s.isFeatured)
+        const sortedStreamers = featuredStreamers.sort((a, b) => {
+          // Priorizar streamers online
+          if (a.isOnline && !b.isOnline) return -1
+          if (!a.isOnline && b.isOnline) return 1
           return 0
         })
         

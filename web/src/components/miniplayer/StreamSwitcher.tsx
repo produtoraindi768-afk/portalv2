@@ -4,7 +4,11 @@ import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger 
+} from '@/components/animate-ui/components/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +43,7 @@ export function StreamSwitcher({
             const isOnline = streamer.isOnline
 
             return (
-              <Tooltip key={streamer.id}>
+              <Tooltip key={streamer.id} side="bottom" sideOffset={8}>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
@@ -63,10 +67,7 @@ export function StreamSwitcher({
                       </AvatarFallback>
                     </Avatar>
 
-                    {/* Indicador de destaque */}
-                    {streamer.isFeatured && (
-                      <Star className="absolute -top-1 -right-1 h-2 w-2 text-yellow-500 fill-current" />
-                    )}
+
 
                     {/* Indicador online */}
                     {isOnline && (
@@ -74,19 +75,13 @@ export function StreamSwitcher({
                     )}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
+                <TooltipContent>
                   <div className="text-center">
                     <p className="font-medium">{streamer.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {streamer.category}
                     </p>
                     <div className="flex items-center justify-center gap-1 mt-1">
-                      {streamer.isFeatured && (
-                        <Badge variant="secondary" className="h-4 text-xs px-1">
-                          <Star className="h-2 w-2 mr-1" />
-                          Destaque
-                        </Badge>
-                      )}
                       <Badge
                         variant={isOnline ? "default" : "outline"}
                         className="h-4 text-xs px-1"
@@ -102,7 +97,7 @@ export function StreamSwitcher({
 
           {/* Indicador +N quando houver mais que 3 */}
           {streamers.length > 3 && (
-            <Tooltip>
+            <Tooltip side="bottom" sideOffset={8}>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
@@ -113,7 +108,7 @@ export function StreamSwitcher({
                   +{streamers.length - 3}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">
+              <TooltipContent>
                 <p>Mais {streamers.length - 3} streamers</p>
               </TooltipContent>
             </Tooltip>
@@ -171,9 +166,6 @@ export function StreamSwitcher({
                             <p className="text-sm font-medium truncate">
                               {streamer.name}
                             </p>
-                            {streamer.isFeatured && (
-                              <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                            )}
                           </div>
                           <p className="text-xs text-muted-foreground truncate">
                             {streamer.category} • {streamer.isOnline ? 'Ao vivo' : 'Offline'}
@@ -198,9 +190,6 @@ export function StreamSwitcher({
                 <p className="text-sm font-medium text-card-foreground truncate">
                   {currentStreamer.name}
                 </p>
-                {currentStreamer.isFeatured && (
-                  <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                )}
                 {currentStreamer.isOnline && (
                   <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
                 )}
