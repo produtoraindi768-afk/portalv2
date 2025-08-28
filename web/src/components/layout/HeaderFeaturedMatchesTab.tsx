@@ -338,64 +338,37 @@ function limitAndSortLiveFirst(items: MatchDoc[]): MatchDoc[] {
   return sorted.slice(0, MAX)
 }
 
-// Skeleton Component seguindo o design system padronizado
+// Skeleton Component mais simples e responsivo
 function FeaturedMatchCardSkeleton() {
   return (
-    <div className="relative min-w-[700px] max-w-[900px] w-full">
-      {/* Card principal skeleton */}
-      <div className="relative bg-card/95 backdrop-blur-sm rounded-lg border-2 border-border shadow-lg p-6">
+    <div className="w-full max-w-3xl">
+      {/* Card principal */}
+      <div className="bg-card/95 backdrop-blur-sm rounded-lg border border-border shadow-lg p-4 sm:p-6">
         
-        {/* Header com dia da semana skeleton */}
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <Skeleton className="h-6 w-20 rounded-md" />
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-32" />
         </div>
 
-        {/* Informações de stream skeleton */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-3 w-16" />
-            <div className="flex gap-1">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="w-4 h-4 rounded-sm" />
-              ))}
-            </div>
-          </div>
-          <div className="text-right">
-            <Skeleton className="h-4 w-48" />
-          </div>
-        </div>
-
-        {/* Layout principal da partida skeleton */}
-        <div className="flex items-center justify-between gap-8">
-
-          {/* Time 1 skeleton */}
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative">
-              <div className="w-20 h-20 border-2 border-border rounded-lg p-2 bg-muted/50 flex items-center justify-center">
-                <Skeleton className="w-full h-full rounded-md" />
-              </div>
-            </div>
-            <div className="text-left">
-              <Skeleton className="h-6 w-32" />
-            </div>
+        {/* Layout principal da partida */}
+        <div className="flex items-center justify-between gap-4">
+          {/* Time 1 */}
+          <div className="flex items-center gap-3 flex-1">
+            <Skeleton className="h-16 w-16 rounded-lg" />
+            <Skeleton className="h-5 w-24" />
           </div>
 
-          {/* VS e horário central skeleton */}
-          <div className="flex flex-col items-center gap-3 min-w-[140px]">
-            <Skeleton className="h-8 w-12" />
-            <Skeleton className="h-10 w-32 rounded-md" />
+          {/* VS e horário central */}
+          <div className="flex flex-col items-center gap-2">
+            <Skeleton className="h-6 w-8" />
+            <Skeleton className="h-8 w-20 rounded-md" />
           </div>
 
-          {/* Time 2 skeleton */}
-          <div className="flex items-center gap-4 flex-1 flex-row-reverse">
-            <div className="relative">
-              <div className="w-20 h-20 border-2 border-border rounded-lg p-2 bg-muted/50 flex items-center justify-center">
-                <Skeleton className="w-full h-full rounded-md" />
-              </div>
-            </div>
-            <div className="text-right">
-              <Skeleton className="h-6 w-28" />
-            </div>
+          {/* Time 2 */}
+          <div className="flex items-center gap-3 flex-1 flex-row-reverse">
+            <Skeleton className="h-16 w-16 rounded-lg" />
+            <Skeleton className="h-5 w-24" />
           </div>
         </div>
       </div>

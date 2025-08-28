@@ -4,6 +4,7 @@ import { firestoreHelpers } from '@/lib/firestore-helpers'
 import { TournamentCard } from '@/components/tournaments/TournamentCard'
 import { TournamentFilters } from '@/components/tournaments/TournamentFilters'
 import { Skeleton } from '@/components/ui/skeleton'
+import { GridSkeleton } from '@/components/ui/skeleton-patterns'
 import { Separator } from '@/components/ui/separator'
 import { PageLayout, ContentWrapper, Typography } from '@/components/layout'
 
@@ -521,9 +522,7 @@ export default function TournamentsPage() {
         description="Confira todos os campeonatos e torneios disponíveis"
       >
         <ContentWrapper layout="grid-4" gap="normal">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-80 w-full rounded-xl bg-muted" />
-          ))}
+          <GridSkeleton items={8} />
         </ContentWrapper>
       </PageLayout>
     }>

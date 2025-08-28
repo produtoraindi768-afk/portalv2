@@ -18,23 +18,25 @@ export function NewsCardSkeleton({
   if (variant === 'compact') {
     return (
       <Card className={cn(
-        "group overflow-hidden transition-all duration-200 cursor-pointer border-border/50 bg-card",
-        "h-24 grid grid-cols-[120px_1fr] gap-0 p-0",
+        "overflow-hidden border-border/50 bg-card",
+        "h-24 flex gap-0 p-0",
         className
       )}>
-        <div className="relative h-24 overflow-hidden flex-shrink-0 rounded-l-lg -m-px">
-          <Skeleton className="w-full h-full" />
+        {/* Image skeleton */}
+        <div className="w-32 h-full flex-shrink-0">
+          <Skeleton className="w-full h-full rounded-l-lg rounded-r-none" />
         </div>
         
-        <div className="p-3 sm:p-4 flex flex-col justify-between min-h-0">
+        {/* Content skeleton */}
+        <div className="flex-1 p-4 flex flex-col justify-between">
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-3 w-3/4" />
           </div>
           
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2">
             <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-3 w-2" />
+            <span className="text-muted-foreground">•</span>
             <Skeleton className="h-3 w-12" />
           </div>
         </div>
@@ -45,85 +47,98 @@ export function NewsCardSkeleton({
   if (variant === 'featured') {
     return (
       <Card className={cn(
-        "group overflow-hidden transition-all duration-300 cursor-pointer border-border/50 bg-card",
-        "ring-2 ring-primary/20 shadow-lg shadow-primary/10",
-        "h-[480px] sm:h-[520px] md:h-[560px] grid grid-rows-[auto_1fr_auto] gap-0 p-0",
+        "overflow-hidden border-2 border-primary/20 bg-card shadow-lg",
+        "h-[520px] flex flex-col p-0",
         className
       )}>
-        <div className="relative h-44 sm:h-48 md:h-52 overflow-hidden flex-shrink-0 rounded-t-lg -m-px">
-          <Skeleton className="w-full h-full" />
+        {/* Image skeleton */}
+        <div className="relative h-52 flex-shrink-0">
+          <Skeleton className="w-full h-full rounded-t-lg rounded-b-none" />
           
+          {/* Featured badge skeleton */}
           <div className="absolute top-4 left-4">
-            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-20 rounded-full" />
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 md:p-6 flex flex-col justify-between min-h-0">
-          <div className="space-y-4">
+        {/* Content skeleton */}
+        <div className="flex-1 p-6 flex flex-col">
+          <div className="space-y-4 flex-1">
+            {/* Category and date */}
             <div className="flex items-center gap-2">
               <Skeleton className="h-5 w-20 rounded-full" />
-              <Skeleton className="h-3 w-2" />
+              <span className="text-muted-foreground">•</span>
               <Skeleton className="h-3 w-16" />
             </div>
             
+            {/* Title */}
             <div className="space-y-2">
               <Skeleton className="h-7 w-full" />
               <Skeleton className="h-7 w-4/5" />
             </div>
             
+            {/* Description */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
             </div>
           </div>
-        </div>
 
-        <div className="p-4 sm:p-5 md:p-6 pt-2 flex-shrink-0 min-h-[56px] sm:min-h-[60px]">
-          <div className="flex items-center justify-between pt-4 border-t border-border/20">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-3 w-12" />
+          {/* Footer */}
+          <div className="pt-4 border-t border-border/20">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-12" />
+            </div>
           </div>
         </div>
       </Card>
     )
   }
 
+  // Default variant
   return (
     <Card className={cn(
-      "group overflow-hidden transition-all duration-200 cursor-pointer border-border/50 bg-card",
-      "h-[420px] sm:h-[460px] md:h-[500px] grid grid-rows-[auto_1fr_auto] gap-0 p-0",
+      "overflow-hidden border-border/50 bg-card",
+      "h-[460px] flex flex-col p-0",
       className
     )}>
-      <div className="relative h-40 sm:h-44 md:h-48 overflow-hidden flex-shrink-0 rounded-t-lg -m-px">
-        <Skeleton className="w-full h-full" />
+      {/* Image skeleton */}
+      <div className="h-44 flex-shrink-0">
+        <Skeleton className="w-full h-full rounded-t-lg rounded-b-none" />
       </div>
 
-      <div className="p-4 sm:p-5 md:p-6 flex flex-col justify-between min-h-0">
-        <div className="space-y-4">
+      {/* Content skeleton */}
+      <div className="flex-1 p-5 flex flex-col">
+        <div className="space-y-4 flex-1">
+          {/* Category and date */}
           <div className="flex items-center gap-2">
             <Skeleton className="h-4 w-16 rounded-full" />
-            <Skeleton className="h-3 w-2" />
+            <span className="text-muted-foreground">•</span>
             <Skeleton className="h-3 w-14" />
           </div>
           
+          {/* Title */}
           <div className="space-y-2">
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-5/6" />
           </div>
           
+          {/* Description */}
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-2/3" />
           </div>
         </div>
-      </div>
 
-      <div className="p-4 sm:p-5 md:p-6 pt-2 flex-shrink-0 min-h-[56px] sm:min-h-[60px]">
-        <div className="flex items-center justify-between pt-4 border-t border-border/20">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-3 w-10" />
+        {/* Footer */}
+        <div className="pt-4 border-t border-border/20">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-3 w-10" />
+          </div>
         </div>
       </div>
     </Card>

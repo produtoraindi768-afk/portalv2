@@ -25,6 +25,7 @@ const AvatarWithSkeleton = React.forwardRef<
     }
   }, [src])
 
+  // Show skeleton while explicitly loading
   if (isLoading) {
     return (
       <div 
@@ -64,17 +65,14 @@ const AvatarWithSkeleton = React.forwardRef<
       
       <AvatarPrimitive.Fallback
         className={cn(
-          "flex h-full w-full items-center justify-center rounded-full bg-muted transition-opacity duration-300",
-          imageLoaded ? "opacity-0" : "opacity-100"
+          "flex h-full w-full items-center justify-center rounded-full bg-muted",
+          "transition-opacity duration-300",
+          imageLoaded && !imageError ? "opacity-0" : "opacity-100"
         )}
       >
-        {imageError || !src ? (
-          <span className="text-sm font-medium">
-            {fallback?.charAt(0).toUpperCase() || "A"}
-          </span>
-        ) : (
-          <Skeleton className="h-full w-full rounded-full" />
-        )}
+        <span className="text-sm font-medium text-muted-foreground">
+          {fallback?.charAt(0).toUpperCase() || "A"}
+        </span>
       </AvatarPrimitive.Fallback>
     </AvatarPrimitive.Root>
   )
