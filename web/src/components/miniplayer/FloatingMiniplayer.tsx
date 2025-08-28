@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Minimize2, Maximize2, ExternalLink, Move } from 'lucide-react'
 
 export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<MiniplPlayerProps, 'selectedStreamer'>) {
@@ -609,8 +610,13 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
                   "flex items-center justify-center h-full bg-muted/50 text-muted-foreground transition-all duration-100", // Transição mais rápida
                   contextIsMinimized && "opacity-0"
                 )}>
-                  <div className="text-center space-y-2">
-                    {activeStreamer?.avatarUrl ? (
+                  <div className="text-center space-y-4 w-full px-4">
+                    {/* Avatar skeleton */}
+                    {loading ? (
+                      <div className="flex justify-center">
+                        <Skeleton className="w-16 h-16 rounded-full" />
+                      </div>
+                    ) : activeStreamer?.avatarUrl ? (
                       <img
                         src={activeStreamer.avatarUrl}
                         alt={activeStreamer.name}
@@ -621,13 +627,25 @@ export function FloatingMiniplayer({ className, onClose, onOpenTwitch }: Omit<Mi
                         📺
                       </div>
                     )}
-                    <div>
-                      <p className="font-medium">{activeStreamer?.name || 'Miniplayer'}</p>
-                      <p className="text-sm">
-                        {streamers.length === 0
-                          ? 'Nenhum streamer disponível'
-                          : activeStreamer?.isOnline ? 'Carregando...' : 'Offline'}
-                      </p>
+                    
+                    <div className="space-y-2">
+                      {/* Nome skeleton */}
+                      {loading ? (
+                        <Skeleton className="h-5 w-32 mx-auto" />
+                      ) : (
+                        <p className="font-medium">{activeStreamer?.name || 'Miniplayer'}</p>
+                      )}
+                      
+                      {/* Status skeleton */}
+                      {loading ? (
+                        <Skeleton className="h-4 w-24 mx-auto" />
+                      ) : (
+                        <p className="text-sm">
+                          {streamers.length === 0
+                            ? 'Nenhum streamer disponível'
+                            : activeStreamer?.isOnline ? 'Carregando...' : 'Offline'}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

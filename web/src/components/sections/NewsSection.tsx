@@ -8,7 +8,6 @@ import { Separator } from "@/components/ui/separator"
 import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
 import { NewsGrid } from "@/components/news/NewsGrid"
 import { NewsCardSkeleton } from "@/components/news/NewsCardSkeleton"
-import { NewsCardSkeleton } from "@/components/news/NewsCard"
 
 type NewsDoc = {
   id: string

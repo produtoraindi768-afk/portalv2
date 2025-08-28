@@ -63,7 +63,7 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   const [selectedStreamer, setSelectedStreamer] = useState<StreamerForMiniplayer | null>(null)
   const [hasAutoShown, setHasAutoShown] = useState(true) // Desabilitar auto-show permanentemente
   const [streamers, setStreamers] = useState<StreamerForMiniplayer[]>([])
-  const [loading, setLoading] = useState(false) // Não precisa loading se não vai auto-mostrar
+  const [loading, setLoading] = useState(true) // Iniciar como loading até buscar os streamers
   const [isMinimizedState, setIsMinimizedState] = useState(false) // Controlar a minimização
 
   // Novo estado para coordenação de players
@@ -190,12 +190,13 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
   // Buscar streamers desabilitado - miniplayer controlado apenas pela StreamersSection
   useEffect(() => {
     // Auto-show desabilitado - player flutuante apenas sob demanda
-    setLoading(false)
+    // setLoading(false) - manter o estado de loading real durante a busca
   }, [])
     
   useEffect(() => {
     const fetchFeaturedStreamers = async () => {
       try {
+        setLoading(true)
         const db = getClientFirestore()
         if (!db) return
         
@@ -245,6 +246,8 @@ export function MiniplPlayerProvider({ children }: MiniplPlayerProviderProps = {
         }
       } catch (err) {
         console.warn('Erro ao buscar streamers em destaque:', err)
+      } finally {
+        setLoading(false)
       }
     }
     
