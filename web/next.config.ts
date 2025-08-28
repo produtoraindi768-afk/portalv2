@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+﻿import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Output configuration for better performance
@@ -51,28 +51,28 @@ const nextConfig: NextConfig = {
           maxSize: 200000, // Reduced for better loading
           cacheGroups: {
             vendor: {
-              test: /[\\/]node_modules[\\/]/,
+              test: /[\\\\/]node_modules[\\\\/]/,
               name: 'vendors',
               priority: 10,
               chunks: 'all',
               enforce: true,
             },
             firebase: {
-              test: /[\\/]node_modules[\\/](firebase|@firebase)[\\/]/,
+              test: /[\\\\/]node_modules[\\\\/](firebase|@firebase)[\\\\/]/,
               name: 'firebase',
               priority: 15,
               chunks: 'all',
               enforce: true,
             },
             animations: {
-              test: /[\\/]node_modules[\\/](gsap|motion|framer-motion)[\\/]/,
+              test: /[\\\\/]node_modules[\\\\/](gsap|motion|framer-motion)[\\\\/]/,
               name: 'animations',
               priority: 20,
               chunks: 'all',
               enforce: true,
             },
             ui: {
-              test: /[\\/]node_modules[\\/](@radix-ui)[\\/]/,
+              test: /[\\\\/]node_modules[\\\\/](@radix-ui)[\\\\/]/,
               name: 'ui',
               priority: 12,
               chunks: 'all',
@@ -146,17 +146,18 @@ const nextConfig: NextConfig = {
   // External packages for server components
   serverExternalPackages: ['react-router-dom', 'gsap'],
 
-  // Otimizações experimentais
-  experimental: {
-    // Modern build optimizations
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  // Configuração do Turbopack (movido de experimental.turbo)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
+  },
+
+  // Otimizações experimentais
+  experimental: {
     // Enable when CSS optimization issue is resolved
     // optimizeCss: true,
     // Server actions for better API performance
