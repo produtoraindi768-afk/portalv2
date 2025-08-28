@@ -6,6 +6,7 @@ import { collection, getDocs, orderBy, query, where } from "firebase/firestore"
 import { getClientFirestore } from "@/lib/safeFirestore"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useHeaderHeight } from "@/contexts/HeaderHeightContext"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type TeamInfo = {
   id?: string
@@ -136,8 +137,24 @@ export function HeaderFeaturedMatchesTab() {
     return () => clearTimeout(timeoutId)
   }, [items.length, setFeaturedMatchesHeight, isLoading])
 
-  // Não renderizar nada se não há partidas ou ainda está carregando
-  if (isLoading || items.length === 0) {
+  // Skeleton durante loading seguindo design system padronizado
+  if (isLoading) {
+    return (
+      <div
+        ref={containerRef}
+        className="border-b bg-background text-card-foreground relative z-[60] py-4"
+      >
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-center px-3 lg:px-6">
+          <div className="flex w-full items-stretch justify-center gap-4">
+            <FeaturedMatchCardSkeleton />
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
+  // Não renderizar nada se não há partidas após carregar
+  if (items.length === 0) {
     return null
   }
 
@@ -319,6 +336,71 @@ function limitAndSortLiveFirst(items: MatchDoc[]): MatchDoc[] {
   const MAX = 3
   const sorted = [...items].sort((a, b) => Number(b.isLive) - Number(a.isLive))
   return sorted.slice(0, MAX)
+}
+
+// Skeleton Component seguindo o design system padronizado
+function FeaturedMatchCardSkeleton() {
+  return (
+    <div className="relative min-w-[700px] max-w-[900px] w-full">
+      {/* Card principal skeleton */}
+      <div className="relative bg-card/95 backdrop-blur-sm rounded-lg border-2 border-border shadow-lg p-6">
+        
+        {/* Header com dia da semana skeleton */}
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <Skeleton className="h-6 w-20 rounded-md" />
+        </div>
+
+        {/* Informações de stream skeleton */}
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-16" />
+            <div className="flex gap-1">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="w-4 h-4 rounded-sm" />
+              ))}
+            </div>
+          </div>
+          <div className="text-right">
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+
+        {/* Layout principal da partida skeleton */}
+        <div className="flex items-center justify-between gap-8">
+
+          {/* Time 1 skeleton */}
+          <div className="flex items-center gap-4 flex-1">
+            <div className="relative">
+              <div className="w-20 h-20 border-2 border-border rounded-lg p-2 bg-muted/50 flex items-center justify-center">
+                <Skeleton className="w-full h-full rounded-md" />
+              </div>
+            </div>
+            <div className="text-left">
+              <Skeleton className="h-6 w-32" />
+            </div>
+          </div>
+
+          {/* VS e horário central skeleton */}
+          <div className="flex flex-col items-center gap-3 min-w-[140px]">
+            <Skeleton className="h-8 w-12" />
+            <Skeleton className="h-10 w-32 rounded-md" />
+          </div>
+
+          {/* Time 2 skeleton */}
+          <div className="flex items-center gap-4 flex-1 flex-row-reverse">
+            <div className="relative">
+              <div className="w-20 h-20 border-2 border-border rounded-lg p-2 bg-muted/50 flex items-center justify-center">
+                <Skeleton className="w-full h-full rounded-md" />
+              </div>
+            </div>
+            <div className="text-right">
+              <Skeleton className="h-6 w-28" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 

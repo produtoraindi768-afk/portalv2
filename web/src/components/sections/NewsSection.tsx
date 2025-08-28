@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
 import { NewsGrid } from "@/components/news/NewsGrid"
+import { NewsCardSkeleton } from "@/components/news/NewsCardSkeleton"
+import { NewsCardSkeleton } from "@/components/news/NewsCard"
 
 type NewsDoc = {
   id: string
@@ -41,6 +43,7 @@ export function NewsSection({
   onMeta?: (meta: { categories: string[]; tags: string[] }) => void
 }) {
   const [items, setItems] = useState<NewsDoc[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [missingConfig, setMissingConfig] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState<number>(enablePagination ? pageSize : Number.POSITIVE_INFINITY)
@@ -49,10 +52,12 @@ export function NewsSection({
     const db = getClientFirestore()
     if (!db) {
       setMissingConfig(true)
+      setIsLoading(false)
       return
     }
     ;(async () => {
       try {
+        setIsLoading(true)
         // Consulta compatível com regras sem exigir índice composto
         const snap = await getDocs(
           query(collection(db, "news"), where("status", "==", "published"))
@@ -93,6 +98,8 @@ export function NewsSection({
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Erro ao carregar notícias"
         setErrorMsg(msg)
+      } finally {
+        setIsLoading(false)
       }
     })()
   }, [])
@@ -170,7 +177,14 @@ export function NewsSection({
             </>
           )}
 
-          {filteredItems.length === 0 ? (
+          {isLoading ? (
+            // Skeleton Loading State seguindo o design system
+            <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+              {Array.from({ length: limit || pageSize || 6 }).map((_, i) => (
+                <NewsCardSkeleton key={i} variant="default" />
+              ))}
+            </div>
+          ) : filteredItems.length === 0 ? (
             <div className="text-center py-12 sm:py-16">
               <Typography variant="h3" className="text-muted-foreground mb-3 sm:mb-4">
                 {missingConfig

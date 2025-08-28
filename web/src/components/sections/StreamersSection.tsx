@@ -13,6 +13,7 @@ import { twitchStatusService } from "@/lib/twitch-status"
 import { cn } from "@/lib/utils"
 import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type StreamerDoc = {
   id: string
@@ -819,6 +820,9 @@ export function StreamersSection() {
       if (featuredIndex !== -1) {
         setSelectedIndex(featuredIndex)
       }
+      
+      // Finalizar loading
+      setIsLoading(false)
     }
 
     loadStreamers()
@@ -1502,6 +1506,45 @@ export function StreamersSection() {
     }
   }
 
+  // Skeleton enquanto carrega streamers
+  if (isLoading) {
+    return (
+      <div 
+        className={cn(
+          "relative w-full transition-all duration-300",
+          "h-60 sm:h-72 md:h-80 lg:h-96 xl:h-[480px]"
+        )}
+      >
+        {/* Skeleton do player principal */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-full max-w-4xl mx-auto px-4">
+            <Skeleton className="w-full h-60 sm:h-72 md:h-80 lg:h-96 xl:h-[405px] rounded-xl" />
+            
+            {/* Skeleton dos controles de navegação */}
+            <Skeleton className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full" />
+            <Skeleton className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full" />
+          </div>
+        </div>
+        
+        {/* Skeleton dos previews laterais */}
+        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+          <Skeleton className="w-24 h-14 sm:w-32 sm:h-18 md:w-40 md:h-24 rounded-lg opacity-60" />
+        </div>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <Skeleton className="w-24 h-14 sm:w-32 sm:h-18 md:w-40 md:h-24 rounded-lg opacity-60" />
+        </div>
+        
+        {/* Skeleton de informações do streamer */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <Skeleton className="w-8 h-8 rounded-full" />
+          <Skeleton className="w-32 h-4 rounded" />
+          <Skeleton className="w-20 h-3 rounded" />
+        </div>
+      </div>
+    )
+  }
+  
+  // Se não há streamers após carregar, não mostrar nada
   if (streamers.length === 0) {
     return null
   }

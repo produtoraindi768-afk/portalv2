@@ -5,6 +5,7 @@ import { EpicProfileCard } from "@/components/profile/EpicProfileCard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Info, LogIn } from "lucide-react"
 import Link from "next/link"
 

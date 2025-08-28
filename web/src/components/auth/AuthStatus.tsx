@@ -8,6 +8,7 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function AuthStatus() {
   const { user, userData, loading, isAuthenticated } = useAuth()
@@ -15,8 +16,10 @@ export function AuthStatus() {
   if (loading) {
     return (
       <div className="flex items-center gap-2">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <span className="text-sm text-muted-foreground">Carregando...</span>
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <div className="hidden sm:block">
+          <Skeleton className="h-4 w-20" />
+        </div>
       </div>
     )
   }

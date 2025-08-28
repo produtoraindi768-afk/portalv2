@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { CalendarDays, MapPin, Shield, Trophy, Target, TrendingUp, Users, ExternalLink } from 'lucide-react'
 import { PageLayout, ContentWrapper, Typography } from '@/components/layout'
 
@@ -94,10 +95,91 @@ export function PlayerProfile({ username: propUsername }: PlayerProfileProps = {
 
   if (isLoading) {
     return (
-      <PageLayout pattern="default">
-        <div className="text-center py-12">
-          <Typography variant="body-lg">Carregando perfil...</Typography>
-        </div>
+      <PageLayout pattern="default" showHeader={false}>
+        <ContentWrapper layout="stack" gap="loose">
+          {/* Profile Header Skeleton */}
+          <div className="relative">
+            <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-xl p-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                {/* Avatar Skeleton */}
+                <Skeleton className="h-24 w-24 md:h-32 md:w-32 rounded-full border-4 border-background" />
+                
+                {/* Profile Info Skeleton */}
+                <div className="flex-1 space-y-4">
+                  <div className="flex flex-col md:flex-row md:items-center gap-3">
+                    <Skeleton className="h-8 w-48" />
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-6 w-24" />
+                      <Skeleton className="h-6 w-16" />
+                    </div>
+                  </div>
+                  
+                  <Skeleton className="h-5 w-96 max-w-full" />
+                  
+                  {/* Social Links Skeleton */}
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-8 w-24" />
+                    <Skeleton className="h-8 w-20" />
+                  </div>
+                  
+                  <Skeleton className="h-4 w-40" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Navigation Tabs Skeleton */}
+          <div className="space-y-6">
+            <div className="grid w-full grid-cols-4 gap-2">
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+            </div>
+            
+            {/* Tab Content Skeleton */}
+            <div className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-4" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-8 w-16" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Content Cards */}
+              <div className="grid gap-6 md:grid-cols-2">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardHeader>
+                      <Skeleton className="h-6 w-32" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {Array.from({ length: 3 }).map((_, j) => (
+                        <div key={j} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-24" />
+                          </div>
+                          <Skeleton className="h-6 w-16" />
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </ContentWrapper>
       </PageLayout>
     )
   }

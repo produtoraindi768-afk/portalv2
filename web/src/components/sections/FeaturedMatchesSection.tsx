@@ -142,20 +142,28 @@ export function FeaturedMatchesSection() {
               {isLoading && hasAttemptedLoad && (
                 <>
                   {Array.from({ length: 3 }).map((_, idx) => (
-                    <div key={idx} className="rounded-xl border p-4">
+                    <div key={idx} className="bg-card text-card-foreground rounded-xl border p-4">
+                      {/* Header skeleton com espaçamento consistente */}
                       <div className="flex items-center justify-between gap-3">
-                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-4 w-32" />
                         <Skeleton className="h-4 w-20" />
                       </div>
+                      
+                      {/* Teams skeleton com layout idêntico ao real */}
                       <div className="mt-4 space-y-3">
                         <div className="flex items-center gap-3">
                           <Skeleton className="h-8 w-8 rounded-full" />
-                          <Skeleton className="h-4 w-40" />
+                          <Skeleton className="h-4 w-24" />
                         </div>
                         <div className="flex items-center gap-3">
                           <Skeleton className="h-8 w-8 rounded-full" />
-                          <Skeleton className="h-4 w-36" />
+                          <Skeleton className="h-4 w-28" />
                         </div>
+                      </div>
+                      
+                      {/* Footer skeleton */}
+                      <div className="mt-4">
+                        <Skeleton className="h-3 w-20" />
                       </div>
                     </div>
                   ))}

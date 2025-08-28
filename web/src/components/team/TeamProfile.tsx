@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
 import { CalendarDays, MapPin, Trophy, Users, ExternalLink, Crown, Shield, Mail } from 'lucide-react'
 import { PageLayout, ContentWrapper, Typography } from '@/components/layout'
 
@@ -152,10 +153,116 @@ export function TeamProfile({ teamTag: propTeamTag }: TeamProfileProps = {}) {
 
   if (isLoading) {
     return (
-      <PageLayout pattern="default">
-        <div className="text-center py-12">
-          <Typography variant="body-lg">Carregando equipe...</Typography>
-        </div>
+      <PageLayout pattern="default" showHeader={false}>
+        <ContentWrapper layout="stack" gap="loose">
+          {/* Team Banner Skeleton */}
+          <div className="relative">
+            <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-xl p-8">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+                {/* Team Logo Skeleton */}
+                <Skeleton className="h-32 w-32 md:h-40 md:w-40 rounded-full border-4 border-background" />
+
+                {/* Team Info Skeleton */}
+                <div className="flex-1 space-y-4">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <Skeleton className="h-10 w-64" />
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-16" />
+                      <Skeleton className="h-8 w-20" />
+                    </div>
+                  </div>
+
+                  <Skeleton className="h-6 w-96 max-w-full" />
+
+                  {/* Contact Info Skeleton */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    {Array.from({ length: 2 }).map((_, i) => (
+                      <Skeleton key={i} className="h-10 w-32" />
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-6 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4" />
+                      <Skeleton className="h-4 w-28" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation Tabs Skeleton */}
+          <div className="space-y-6">
+            <div className="grid w-full grid-cols-4 gap-2">
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+            </div>
+
+            {/* Tab Content Skeleton */}
+            <div className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-4" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-8 w-20" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Content Grid */}
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Team Description Card */}
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-32" />
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-4 w-4/5" />
+                  </CardContent>
+                </Card>
+
+                {/* Achievements Card */}
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-28" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-6 w-6" />
+                          <div className="space-y-1">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-24" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </ContentWrapper>
       </PageLayout>
     )
   }
