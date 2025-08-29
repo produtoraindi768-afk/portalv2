@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { firestoreHelpers } from '@/lib/firestore-helpers'
 import { TournamentCard } from '@/components/tournaments/TournamentCard'
@@ -514,19 +513,5 @@ async function TournamentsContent() {
 }
 
 export default function TournamentsPage() {
-  return (
-    <Suspense fallback={
-      <PageLayout 
-        pattern="wide" 
-        title="Campeonatos"
-        description="Confira todos os campeonatos e torneios disponíveis"
-      >
-        <ContentWrapper layout="grid-4" gap="normal">
-          <GridSkeleton items={8} />
-        </ContentWrapper>
-      </PageLayout>
-    }>
-      <TournamentsContent />
-    </Suspense>
-  )
+  return <TournamentsContent />
 }
