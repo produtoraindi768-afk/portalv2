@@ -3,17 +3,7 @@
 import { Suspense, lazy } from "react"
 import { Separator } from "@/components/ui/separator"
 import { SectionWrapper, PageWrapper } from "@/components/layout"
-import dynamic from "next/dynamic"
-import SimpleBackground from "@/components/fallback/SimpleBackground"
-
-// Dynamically import StarsBackground with fallback
-const StarsBackground = dynamic(
-  () => import("@/components/animate-ui/backgrounds/stars").then(mod => ({ default: mod.StarsBackground })),
-  { 
-    ssr: false,
-    loading: () => <SimpleBackground className="relative min-h-screen"><div /></SimpleBackground>
-  }
-)
+import { StarsBackground } from "@/components/animate-ui/backgrounds/stars"
 
 // Lazy-loaded components for better performance
 const AppleHeroSection = lazy(() => import("@/components/sections/AppleHeroSection"))
@@ -48,10 +38,6 @@ const NewsLoading = () => (
       ))}
     </div>
   </div>
-)
-
-const StarsLoading = () => (
-  <div className="relative min-h-screen bg-background" />
 )
 
 export default function Home() {

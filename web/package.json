@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "analyze": "node scripts/analyze-bundle.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "seed-data": "tsx src/scripts/seed-firebase.ts",

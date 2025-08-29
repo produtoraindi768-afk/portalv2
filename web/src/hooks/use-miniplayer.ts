@@ -4,7 +4,6 @@ import { useCallback, useEffect, useReducer, useMemo, useState, useRef } from 'r
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { getClientFirestore } from '@/lib/safeFirestore'
 import { twitchStatusService } from '@/lib/twitch-status'
-import { cachedFirebaseUtils, requestCache } from '@/lib/request-cache'
 import { useIsMobile } from './use-mobile'
 import type {
   MiniplPlayerState,
@@ -157,8 +156,20 @@ export function useMiniplayer(): UseMiniplPlayerReturn {
       setLoading(true)
       setError(null)
 
-      // Usar sistema de cache para reduzir requests
-      const cachedStreamers = await cachedFirebaseUtils.getFeaturedStreamers()
+      // Buscar streamers diretamente do Firebase
+      const db = getClientFirestore()
+      if (!db) throw new Error('Firestore not available')
+      
+      const streamersQuery = query(
+        collection(db, 'streamers'),
+        where('isFeatured', '==', true)
+      )
+      
+      const snapshot = await getDocs(streamersQuery)
+      const cachedStreamers = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
       
       const processedStreamers: StreamerForMiniplayer[] = cachedStreamers
         .map((data: any) => {
