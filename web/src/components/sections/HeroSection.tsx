@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
+import { formatNewsTitle } from "@/lib/text-utils"
 
 type NewsDoc = {
   id: string
@@ -124,7 +125,7 @@ export default function HeroSection() {
                 href={featured.slug ? `/noticias/${featured.slug}` : `#`}
                 className="hover:text-primary transition-colors duration-200"
               >
-                {featured.title}
+                {formatNewsTitle(featured.title, 'featured')}
               </Link>
             </Typography>
             <Typography 

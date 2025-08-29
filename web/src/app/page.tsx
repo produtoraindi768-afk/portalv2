@@ -50,7 +50,7 @@ export default function Home() {
         {/* News Section - TERCEIRA SEÇÃO - espaçamento compacto */}
         <SectionWrapper spacing="compact" background="transparent">
           <PageWrapper maxWidth="wide" paddingY="normal">
-            <NewsSection limit={3} showHeader={false} />
+            <NewsSection limit={6} showHeader={false} />
           </PageWrapper>
         </SectionWrapper>
         

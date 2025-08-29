@@ -7,10 +7,11 @@ import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { RippleButton } from '@/components/animate-ui/buttons/ripple'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar'
 import { Badge } from '@/components/ui/badge'
 
 import { AspectRatio } from '@/components/ui/aspect-ratio'
-// import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { SkeletonPlayer, SkeletonStreamerCard } from '@/components/ui/skeleton'
 import { useMiniplPlayerContext } from '@/components/miniplayer/MiniplPlayerProvider'
@@ -24,7 +25,8 @@ import {
   ChevronRight,
   Maximize2,
   Users,
-  Play
+  Play,
+  Zap
 } from 'lucide-react'
 
 interface UnifiedStreamWidgetProps {
@@ -513,34 +515,25 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                   {selectedStreamer && (
                     <div className="flex items-center gap-3">
                       {/* Avatar com indicador de status */}
-                      <div className="relative">
-                        {selectedStreamer.avatarUrl ? (
-                          <img
-                            src={selectedStreamer.avatarUrl}
-                            alt={selectedStreamer.name}
-                            className="w-8 h-8 rounded-full object-cover border border-background/50"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center border border-border/20">
-                            <span className="text-xs font-light">
-                              {selectedStreamer.name?.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                        {/* Indicador verde para ao vivo */}
-                        {getStreamerLiveStatus(selectedStreamer) && (
-                          <div className="absolute -bottom-0.5 -right-0.5 z-10 w-2.5 h-2.5 bg-green-500 rounded-full border border-background"></div>
-                        )}
-                      </div>
+                      <OptimizedAvatar
+                        src={selectedStreamer.avatarUrl}
+                        alt={selectedStreamer.name}
+                        size="md"
+                        showOnlineIndicator={true}
+                        isOnline={getStreamerLiveStatus(selectedStreamer)}
+                        className="w-10 h-10"
+                      />
                       
                       {/* Layout em coluna para informações empilhadas */}
                       <div className="flex flex-col">
-                        <span className="font-medium text-foreground text-sm leading-tight">
+                        <span className="font-medium text-foreground text-base leading-tight">
                           {selectedStreamer.name}
                         </span>
-                        <span className="text-xs text-muted-foreground font-light">
-                          Ao vivo
-                        </span>
+                        {getStreamerLiveStatus(selectedStreamer) && (
+                          <span className="text-xs text-muted-foreground font-light">
+                            Ao vivo
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -585,13 +578,13 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
             </div>
 
             {/* Lista de Streamers - Responsivo */}
-            <div className="w-full lg:w-[20%] lg:border-l border-t lg:border-t-0 border-border/20 backdrop-blur-[8px] flex flex-col relative rounded-b-xl lg:rounded-b-none lg:rounded-r-xl max-h-[300px] lg:max-h-[600px] order-2 min-w-0">
+            <div className="w-full lg:w-[25%] lg:border-l border-t lg:border-t-0 border-border/20 backdrop-blur-[8px] flex flex-col relative rounded-b-xl lg:rounded-b-none lg:rounded-r-xl max-h-[300px] lg:max-h-[600px] order-2 min-w-0">
               {/* Scroll container customizado para mobile com drag */}
               <div className="lg:hidden relative">
-                <div className="p-3 border-b border-border/20 backdrop-blur-[8px]">
+                <div className="px-3 py-2.5 border-b border-border/20 backdrop-blur-[8px]">
                   <div className="flex items-center justify-between">
                     <Typography variant="body-sm" className="font-medium text-muted-foreground">
-                      Streamers Online
+                      Team Streamers
                     </Typography>
                     <Badge variant="secondary" className="text-xs">
                       {streamers.length}
@@ -617,48 +610,80 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                   >
-                    <div className="flex gap-2 px-2 py-1 min-w-max">
+                    <div className="flex gap-2 px-3 py-3 min-w-max">
                       {streamers.map((streamer, index) => (
                         <div key={streamer.id} className="relative group flex-shrink-0">
-                          <button
-                            onClick={() => !isDragging && goToStream(streamer.id)}
-                            className={cn(
-                              "max-w-[120px] min-w-[100px] text-left p-1.5 rounded-lg border transition-all duration-500 ease-out",
-                              "hover:bg-muted/60 hover:shadow-lg apple-hover",
-                              selectedStreamerId === streamer.id
-                                ? "bg-primary/15 border-primary/30 shadow-md backdrop-blur-[8px]"
-                                : "bg-background/60 border-border/20 hover:border-border/40 backdrop-blur-[8px]"
-                            )}
-                          >
-                            <div className="flex flex-col items-center gap-1.5">
-                              <div className="relative flex-shrink-0">
-                                {streamer.avatarUrl ? (
-                                  <img
+                          <HoverCard>
+                            <HoverCardTrigger asChild>
+                              <button
+                                onClick={() => !isDragging && goToStream(streamer.id)}
+                                className={cn(
+                                  "max-w-[110px] min-w-[90px] text-left p-2 rounded-lg border transition-all duration-500 ease-out",
+                                  "hover:bg-muted/60 hover:shadow-lg apple-hover",
+                                  selectedStreamerId === streamer.id
+                                    ? "bg-primary/15 border-primary/30 shadow-md backdrop-blur-[8px]"
+                                    : "bg-background/60 border-border/20 hover:border-border/40 backdrop-blur-[8px]"
+                                )}
+                              >
+                                <div className="flex flex-col items-center gap-2">
+                                  <OptimizedAvatar
                                     src={streamer.avatarUrl}
                                     alt={streamer.name}
-                                    className="w-6 h-6 rounded-full object-cover border border-background/50"
+                                    size="sm"
+                                    showOnlineIndicator={true}
+                                    isOnline={getStreamerLiveStatus(streamer)}
+                                    className="w-7 h-7 flex-shrink-0"
                                   />
-                                ) : (
-                                  <div className="w-6 h-6 rounded-full bg-muted/60 flex items-center justify-center border border-border/20">
-                                    <span className="text-xs font-light">
-                                      {streamer.name?.charAt(0).toUpperCase()}
-                                    </span>
+                                  
+                                  <div className="flex-1 min-w-0 text-center">
+                                    <div className="flex flex-col gap-0.5">
+                                      <span className="font-medium text-xs truncate tracking-tight leading-tight">
+                                        {streamer.name}
+                                      </span>
+                                    </div>
                                   </div>
-                                )}
-                                {getStreamerLiveStatus(streamer) && (
-                                  <div className="absolute -bottom-0.5 -right-0.5 z-10 w-2 h-2 bg-chart-2 rounded-full border border-background"></div>
-                                )}
-                              </div>
-                              
-                              <div className="flex-1 min-w-0 text-center">
-                                <div className="flex flex-col gap-0.5">
-                                  <span className="font-light text-xs truncate tracking-tight leading-tight">
-                                    {streamer.name}
-                                  </span>
+                                </div>
+                              </button>
+                            </HoverCardTrigger>
+                            <HoverCardContent side="top" className="w-48 p-2">
+                              <div className="flex gap-2">
+                                <OptimizedAvatar
+                                  src={streamer.avatarUrl}
+                                  alt={streamer.name}
+                                  size="sm"
+                                  showOnlineIndicator={true}
+                                  isOnline={getStreamerLiveStatus(streamer)}
+                                  className="w-8 h-8"
+                                />
+                                <div className="flex-1 min-w-0 space-y-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <h4 className="font-medium text-sm truncate">{streamer.name}</h4>
+                                    {streamer.isFeatured && (
+                                      <Badge variant="outline" className="text-xs px-1.5 py-0 flex-shrink-0 flex items-center gap-1">
+                                        <Zap className="w-3 h-3 text-primary" />
+                                        <span>SZ</span>
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  
+                                  {streamer.category && (
+                                    <Badge variant="outline" className="text-xs px-1.5 py-0">
+                                      {streamer.category}
+                                    </Badge>
+                                  )}
+                                  
+                                  {streamer.bio && (
+                                    <>
+                                      <Separator className="my-2" />
+                                      <p className="text-xs text-muted-foreground leading-relaxed">
+                                        {streamer.bio}
+                                      </p>
+                                    </>
+                                  )}
                                 </div>
                               </div>
-                            </div>
-                          </button>
+                            </HoverCardContent>
+                          </HoverCard>
                         </div>
                       ))}
                     </div>
@@ -678,7 +703,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                 <div className="p-3 border-b border-border/20 backdrop-blur-[8px] lg:rounded-tr-xl flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <Typography variant="body-sm" className="font-medium text-muted-foreground">
-                      Streamers Online
+                      Team Streamers
                     </Typography>
                     <Badge variant="secondary" className="text-xs">
                       {streamers.length}
@@ -688,48 +713,80 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
 
                 <div className="flex-1 relative rounded-br-3xl">
                   <ScrollArea className="h-full max-h-[520px] rounded-br-3xl">
-                    <div className="p-2 pb-0 space-y-1 rounded-br-3xl">
+                    <div className="p-4 pr-6 pb-0 space-y-2 rounded-br-3xl">
                       {streamers.map((streamer, index) => (
                         <div key={streamer.id} className="relative group">
-                          <button
-                            onClick={() => goToStream(streamer.id)}
-                            className={cn(
-                              "w-full text-left p-3 rounded-xl border transition-all duration-500 ease-out",
-                              "hover:bg-muted/60 hover:shadow-lg apple-hover",
-                              selectedStreamerId === streamer.id
-                                ? "bg-primary/15 border-primary/30 shadow-md backdrop-blur-[8px]"
-                                : "bg-background/60 border-border/20 hover:border-border/40 backdrop-blur-[8px]"
-                            )}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="relative">
-                                {streamer.avatarUrl ? (
-                                  <img
+                          <HoverCard>
+                            <HoverCardTrigger asChild>
+                              <button
+                                onClick={() => goToStream(streamer.id)}
+                                className={cn(
+                                  "w-full text-left py-3 px-4 rounded-md border transition-all duration-500 ease-out",
+                                  "hover:bg-muted/60 hover:shadow-lg apple-hover",
+                                  selectedStreamerId === streamer.id
+                                    ? "bg-primary/15 border-primary/30 shadow-md backdrop-blur-[8px]"
+                                    : "bg-background/60 border-border/20 hover:border-border/40 backdrop-blur-[8px]"
+                                )}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <OptimizedAvatar
                                     src={streamer.avatarUrl}
                                     alt={streamer.name}
-                                    className="w-8 h-8 rounded-full object-cover border border-background/50"
+                                    size="md"
+                                    showOnlineIndicator={true}
+                                    isOnline={getStreamerLiveStatus(streamer)}
+                                    className="w-10 h-10"
                                   />
-                                ) : (
-                                  <div className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center border border-border/20">
-                                    <span className="text-xs font-light">
-                                      {streamer.name?.charAt(0).toUpperCase()}
-                                    </span>
+                                  
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1">
+                                      <span className="font-light text-base truncate tracking-tight">
+                                        {streamer.name}
+                                      </span>
+                                    </div>
                                   </div>
-                                )}
-                                {getStreamerLiveStatus(streamer) && (
-                                  <div className="absolute -bottom-0.5 -right-0.5 z-10 w-2.5 h-2.5 bg-chart-2 rounded-full border border-background"></div>
-                                )}
-                              </div>
-                              
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1">
-                                  <span className="font-light text-sm truncate tracking-tight">
-                                    {streamer.name}
-                                  </span>
+                                </div>
+                              </button>
+                            </HoverCardTrigger>
+                            <HoverCardContent side="left" className="w-56 p-2">
+                              <div className="flex gap-2.5">
+                                <OptimizedAvatar
+                                  src={streamer.avatarUrl}
+                                  alt={streamer.name}
+                                  size="md"
+                                  showOnlineIndicator={true}
+                                  isOnline={getStreamerLiveStatus(streamer)}
+                                  className="w-10 h-10"
+                                />
+                                <div className="flex-1 min-w-0 space-y-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <h4 className="font-medium text-sm truncate">{streamer.name}</h4>
+                                    {streamer.isFeatured && (
+                                      <Badge variant="outline" className="text-xs px-1.5 py-0 flex-shrink-0 flex items-center gap-1">
+                                        <Zap className="w-3 h-3 text-primary" />
+                                        <span>SZ</span>
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  
+                                  {streamer.category && (
+                                    <Badge variant="outline" className="text-xs px-1.5 py-0">
+                                      {streamer.category}
+                                    </Badge>
+                                  )}
+                                  
+                                  {streamer.bio && (
+                                    <>
+                                      <Separator className="my-2" />
+                                      <p className="text-xs text-muted-foreground leading-relaxed">
+                                        {streamer.bio}
+                                      </p>
+                                    </>
+                                  )}
                                 </div>
                               </div>
-                            </div>
-                          </button>
+                            </HoverCardContent>
+                          </HoverCard>
                         </div>
                       ))}
                     </div>

@@ -19,6 +19,7 @@ export type StreamerDoc = {
   viewerCount?: number
   language?: string
   twitchChannel?: string
+  bio?: string
 }
 
 export function useStreamers() {
@@ -60,7 +61,8 @@ export function useStreamers() {
             lastStatusUpdate: typeof raw.lastStatusUpdate === "string" ? raw.lastStatusUpdate : undefined,
             viewerCount: typeof raw.viewerCount === "number" ? raw.viewerCount : Math.floor(Math.random() * 500) + 50,
             language: typeof raw.language === "string" ? raw.language : "Português",
-            twitchChannel
+            twitchChannel,
+            bio: typeof raw.bio === "string" ? raw.bio : undefined
           }
         })
         

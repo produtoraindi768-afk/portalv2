@@ -56,15 +56,16 @@ export const OptimizedAvatar = memo<OptimizedAvatarProps>(({
   const avatarFallback = fallback || generateFallback(alt || 'U')
 
   return (
-    <div ref={ref} className="relative inline-block">
-      <Avatar 
-        className={cn(
-          sizeClasses[size],
-          'transition-all duration-300',
-          isLoading && 'animate-pulse bg-muted',
-          className
-        )}
-      >
+    <div ref={ref} className="inline-block">
+      <div className="relative">
+        <Avatar 
+          className={cn(
+            sizeClasses[size],
+            'transition-all duration-300',
+            isLoading && 'animate-pulse bg-muted',
+            className
+          )}
+        >
         {finalSrc && (
           <AvatarImage
             src={finalSrc}
@@ -88,24 +89,25 @@ export const OptimizedAvatar = memo<OptimizedAvatarProps>(({
         </AvatarFallback>
       </Avatar>
 
-      {/* Indicador de status online */}
-      {showOnlineIndicator && (
-        <div 
-          className={cn(
-            'absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-background',
-            'transition-all duration-300',
-            isOnline ? 'bg-green-500' : 'bg-muted',
-            size === 'sm' && 'w-3 h-3',
-            size === 'md' && 'w-4 h-4',
-            size === 'lg' && 'w-5 h-5',
-            size === 'xl' && 'w-6 h-6'
-          )}
-        >
-          {isOnline && (
-            <div className="w-full h-full rounded-full bg-green-400 animate-ping opacity-75" />
-          )}
-        </div>
-      )}
+        {/* Indicador de status online */}
+        {showOnlineIndicator && (
+          <div 
+            className={cn(
+              'absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-background',
+              'transition-all duration-300',
+              isOnline ? 'bg-chart-2' : 'bg-muted',
+              size === 'sm' && 'w-3 h-3',
+              size === 'md' && 'w-4 h-4',
+              size === 'lg' && 'w-5 h-5',
+              size === 'xl' && 'w-6 h-6'
+            )}
+          >
+            {isOnline && (
+              <div className="w-full h-full rounded-full bg-chart-2/60 animate-ping opacity-75" />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 })

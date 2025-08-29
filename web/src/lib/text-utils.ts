@@ -107,6 +107,45 @@ export function formatNewsExcerpt(excerpt: string | undefined, variant: NewsVari
  * @param variant - News card variant
  * @returns Formatted title
  */
+/**
+ * Applies intelligent capitalization to text
+ * Capitalizes important words while keeping articles, prepositions, and conjunctions lowercase
+ * @param text - Text to capitalize
+ * @returns Text with intelligent capitalization
+ */
+function applyIntelligentCapitalization(text: string): string {
+  // Words that should remain lowercase (except when first word)
+  const lowercaseWords = new Set([
+    // Articles
+    'a', 'an', 'the', 'o', 'a', 'os', 'as', 'um', 'uma', 'uns', 'umas',
+    // Prepositions
+    'at', 'by', 'for', 'in', 'of', 'on', 'to', 'up', 'and', 'as', 'but', 'or', 'nor',
+    'de', 'da', 'do', 'das', 'dos', 'em', 'na', 'no', 'nas', 'nos', 'para', 'por', 'com', 'sem',
+    // Conjunctions
+    'e', 'ou', 'mas', 'que', 'se', 'como', 'quando', 'onde', 'porque', 'porquê'
+  ])
+
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map((word, index) => {
+      // Always capitalize first word
+      if (index === 0) {
+        return word.charAt(0).toUpperCase() + word.slice(1)
+      }
+      
+      // Check if word should remain lowercase
+      const cleanWord = word.replace(/[^a-záàâãéêíóôõúç]/gi, '').toLowerCase()
+      if (lowercaseWords.has(cleanWord)) {
+        return word.toLowerCase()
+      }
+      
+      // Capitalize other words
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+}
+
 export function formatNewsTitle(title: string | undefined, variant: NewsVariant): string {
   if (!title) return 'Sem título'
   
@@ -118,8 +157,8 @@ export function formatNewsTitle(title: string | undefined, variant: NewsVariant)
     preserveWords: true
   })
   
-  // Capitalize first letter of each sentence
-  return truncated.replace(/\b\w/g, char => char.toUpperCase())
+  // Apply intelligent capitalization
+  return applyIntelligentCapitalization(truncated)
 }
 
 /**

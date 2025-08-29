@@ -201,88 +201,13 @@ export function NewsSection({
           </Typography>
         </div>
       ) : (
-        // News Grid Apple-style
-        <div className="grid gap-8 lg:gap-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-          {displayItems.map((item, index) => (
-            <article 
-              key={item.id} 
-              className="group cursor-pointer transform transition-all duration-500 ease-out hover:translate-y-[-4px] hover:scale-[1.02]"
-            >
-              <Link 
-                href={item.slug ? `/noticias/${item.slug}` : `#`}
-                className="block space-y-4 sm:space-y-6"
-              >
-                {/* Image Apple-style */}
-                <div className="relative overflow-hidden rounded-2xl bg-muted/30">
-                  {item.featuredImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.featuredImage}
-                      alt={item.title || "Imagem da notícia"}
-                      className="aspect-[16/10] w-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="aspect-[16/10] w-full flex items-center justify-center border-2 border-dashed border-muted-foreground/20">
-                      <Typography variant="muted" className="font-light">
-                        Sem imagem
-                      </Typography>
-                    </div>
-                  )}
-                  
-                  {/* Apple-style subtle overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                </div>
-
-                {/* Content Apple-style */}
-                <div className="space-y-3 sm:space-y-4">
-                  {/* Category Badge */}
-                  {item.category && (
-                    <Badge 
-                      variant="secondary" 
-                      className="rounded-full px-3 py-1 text-xs font-light tracking-wide hover:bg-secondary/80 transition-colors duration-300"
-                    >
-                      {item.category}
-                    </Badge>
-                  )}
-
-                  {/* Title Apple-style */}
-                  <Typography 
-                    variant="h3" 
-                    className="font-medium tracking-tight leading-tight text-base sm:text-lg lg:text-xl group-hover:text-primary transition-colors duration-300"
-                    maxWidth="none"
-                  >
-                    {item.title}
-                  </Typography>
-
-                  {/* Excerpt Apple-style */}
-                  {item.excerpt && (
-                    <Typography 
-                      variant="body" 
-                      className="font-light leading-relaxed text-muted-foreground line-clamp-2 text-sm sm:text-base"
-                      maxWidth="none"
-                    >
-                      {item.excerpt}
-                    </Typography>
-                  )}
-
-                  {/* Date Apple-style */}
-                  {item.publishDate && (
-                    <Typography 
-                      variant="caption" 
-                      className="font-light text-muted-foreground/70 tracking-wide"
-                    >
-                      {new Date(item.publishDate).toLocaleDateString('pt-BR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </Typography>
-                  )}
-                </div>
-              </Link>
-            </article>
-          ))}
-        </div>
+        // Use NewsGrid component for consistent responsive behavior
+        <NewsGrid 
+          articles={displayItems}
+          showFilters={false}
+          showSearch={false}
+          showSorting={false}
+        />
       )}
 
       {/* Load More Button Apple-style */}

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
+import { formatNewsTitle } from "@/lib/text-utils"
 
 type NewsDoc = {
   id: string
@@ -111,13 +112,13 @@ export default function AppleHeroSection() {
         <div className="relative z-10 py-4 sm:py-6 lg:py-8">
           <ContentWrapper layout="grid-2" gap="normal" align="center" className="lg:gap-12">
             {/* Content Column - Apple-inspired typography and spacing */}
-            <ContentWrapper layout="stack" gap="normal" className="order-2 lg:order-1 text-center lg:text-left">
+            <ContentWrapper layout="stack" gap="normal" className="order-2 sm:order-1 text-left">
               {/* Category Badge - Apple minimal style aligned with theme variables */}
               {featured.category && (
-                <div className="flex justify-center lg:justify-start">
+                <div className="flex justify-start">
                   <Badge 
-                    variant="secondary" 
-                    className="rounded-full px-4 py-2 text-sm font-light tracking-wide hover:bg-secondary/80 transition-colors duration-300"
+                    variant="secondary"
+                    className="rounded-full font-light tracking-wide"
                   >
                     {featured.category}
                   </Badge>
@@ -136,7 +137,7 @@ export default function AppleHeroSection() {
                     className="group inline-block transition-all duration-500 ease-out hover:text-primary"
                   >
                     <span className="block transform transition-transform duration-500 ease-out group-hover:translate-y-[-2px]">
-                      {featured.title}
+                      {formatNewsTitle(featured.title, 'featured')}
                     </span>
                     
                     {/* Apple-style underline animation */}
@@ -147,7 +148,7 @@ export default function AppleHeroSection() {
                 {/* Excerpt - Apple elegant body text */}
                 <Typography 
                   variant="body-lg" 
-                  className="text-balance font-light leading-relaxed text-muted-foreground max-w-xl mx-auto lg:mx-0 text-base lg:text-lg line-clamp-3"
+                  className="text-balance font-light leading-relaxed text-muted-foreground max-w-xl text-base lg:text-lg line-clamp-3"
                   maxWidth="none"
                 >
                   {featured.excerpt}
@@ -155,12 +156,12 @@ export default function AppleHeroSection() {
               </div>
               
               {/* Apple-style minimal separator */}
-              <div className="flex justify-center lg:justify-start py-2">
+              <div className="flex justify-start py-2">
                 <Separator className="bg-gradient-to-r from-border/20 via-border/60 to-border/20 max-w-16" />
               </div>
               
               {/* CTA Button - Apple refined style */}
-              <div className="flex justify-center lg:justify-start">
+              <div className="flex justify-start">
                 <Button 
                   size="lg" 
                   asChild
@@ -184,7 +185,7 @@ export default function AppleHeroSection() {
             </ContentWrapper>
             
             {/* Image Column - Apple-inspired presentation */}
-            <div className="order-1 lg:order-2">
+            <div className="order-1 sm:order-2">
               <Link
                 href={featured.slug ? `/noticias/${featured.slug}` : `#`}
                 aria-label={featured.title}

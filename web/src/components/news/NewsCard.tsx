@@ -82,7 +82,7 @@ export function NewsCard({
     
     if (variant === 'compact') {
       return {
-        title: 'line-clamp-2',     // Keep compact minimal
+        title: 'line-clamp-4',     // Allow 4 lines for better title display
         excerpt: 'line-clamp-2'    // Keep compact minimal
       }
     }
@@ -101,57 +101,36 @@ export function NewsCard({
       <Link
         href={article.slug ? `/noticias/${article.slug}` : '#'}
         className={cn(
-          "group block p-4 rounded-lg border border-border/50 hover:border-primary/30 transition-all duration-200 hover:shadow-md",
-          "h-20 sm:h-24 flex items-center", // Fixed height for compact cards
+          "group block p-2 rounded-lg border-b border-border/20 transition-colors duration-200",
+          "h-24 flex items-center gap-3",
           isRecent && "bg-gradient-to-r from-primary/5 to-transparent",
           className
         )}
       >
-        <div className="flex gap-4">
-          {article.featuredImage && (
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
-              <img
-                src={article.featuredImage}
-                alt={article.title || 'News image'}
-                className="w-full h-full rounded-lg object-cover"
-              />
-              {isNew && (
-                <div className="absolute -top-1 -right-1">
-                  <Badge variant="destructive" className="text-xs px-1 py-0">
-                    Nova
-                  </Badge>
-                </div>
-              )}
-            </div>
-          )}
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <Calendar className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">
-                {publishDate ? formatDateToBrazilian(article.publishDate) : 'Data não informada'}
-              </span>
-              {article.category && (
-                <Badge variant="outline" className={cn("text-xs", getCategoryColor(article.category))}>
-                  {article.category}
+        {article.featuredImage && (
+          <div className="relative w-36 h-20 flex-shrink-0">
+            <img
+              src={article.featuredImage}
+              alt={article.title || 'Imagem da notícia'}
+              className="w-full h-full rounded object-cover"
+            />
+            {isNew && (
+              <div className="absolute top-1 left-1">
+                <Badge variant="destructive" className="text-[9px] px-1.5 py-0.5 h-auto font-medium shadow-sm">
+                  Nova
                 </Badge>
-              )}
-            </div>
-            
-            <h3 className={cn(
-              "font-semibold text-xs sm:text-sm group-hover:text-primary transition-colors mb-1 leading-tight",
-              lineClamps.title
-            )}>
-              {formatNewsTitle(article.title, variant)}
-            </h3>
-            
-            <p className={cn(
-              "text-xs sm:text-xs text-muted-foreground leading-relaxed",
-              lineClamps.excerpt
-            )}>
-              {formatNewsExcerpt(article.excerpt, variant)}
-            </p>
+              </div>
+            )}
           </div>
+        )}
+        
+        <div className="flex-1 min-w-0">
+          <h3 className={cn(
+            "font-semibold text-sm group-hover:text-primary transition-colors leading-tight",
+            lineClamps.title
+          )}>
+            {formatNewsTitle(article.title, variant)}
+          </h3>
         </div>
       </Link>
     )

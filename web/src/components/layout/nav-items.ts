@@ -4,10 +4,10 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { title: "Home", href: "/#hero" },
+  { title: "Home", href: "/" },
   { title: "Notícias", href: "/noticias" },
   { title: "Partidas", href: "/partidas" },
-  { title: "Lives", href: "/#streamers" },
+  { title: "Lives", href: "/#streams" },
   { title: "Campeonatos", href: "/torneios" },
 ]
 

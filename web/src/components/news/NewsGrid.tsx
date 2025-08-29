@@ -300,25 +300,41 @@ export function NewsGrid({
         </div>
       )}
 
-      {/* Articles Grid with consistent heights */}
-      <ContentWrapper layout="grid-3" gap="loose" className="auto-rows-fr md:gap-spacious">
-        {displayArticles.map((article, index) => {
-          // First article gets featured treatment if marked as featured
-          const isFeaturedDisplay = article.isFeatured
-          
-          return (
-            <div 
-              key={article.id} 
-              className={isFeaturedDisplay ? "col-span-full md:col-span-2" : ""}
-            >
-              <NewsCard 
-                article={article}
-                variant={isFeaturedDisplay ? "featured" : "default"}
-                priority={index === 0}
-              />
-            </div>
-          )
-        })}
+      {/* Articles Grid with responsive layout */}
+      <div className="space-y-4 md:space-y-0">
+        {/* Mobile: Compact cards in single column */}
+        <div className="block md:hidden space-y-3">
+          {displayArticles.map((article, index) => (
+            <NewsCard 
+              key={article.id}
+              article={article}
+              variant="compact"
+              priority={index === 0}
+            />
+          ))}
+        </div>
+        
+        {/* Desktop: Grid layout */}
+        <ContentWrapper layout="grid-3" gap="loose" className="hidden md:grid auto-rows-fr md:gap-spacious">
+          {displayArticles.map((article, index) => {
+            // First article gets featured treatment if marked as featured
+            const isFeaturedDisplay = article.isFeatured
+            
+            return (
+              <div 
+                key={article.id} 
+                className={isFeaturedDisplay ? "col-span-full md:col-span-2" : ""}
+              >
+                <NewsCard 
+                  article={article}
+                  variant={isFeaturedDisplay ? "featured" : "default"}
+                  priority={index === 0}
+                />
+              </div>
+            )
+          })}
+        </ContentWrapper>
+      </div>
 
         {filteredAndSortedArticles.length === 0 && (
           <div className="col-span-full text-center py-12">
@@ -339,7 +355,6 @@ export function NewsGrid({
             )}
           </div>
         )}
-      </ContentWrapper>
 
       {/* Load more */}
       {hasMore && (

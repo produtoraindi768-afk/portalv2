@@ -228,6 +228,19 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+
+  /* Personalização da seleção de texto - Máximo Contraste */
+  ::selection {
+    background-color: hsl(var(--primary));
+    color: white;
+    text-shadow: 0 0 12px hsl(var(--primary) / 0.6);
+  }
+
+  ::-moz-selection {
+    background-color: hsl(var(--primary));
+    color: white;
+    text-shadow: 0 0 12px hsl(var(--primary) / 0.6);
+  }
 }
 
 /* Animações customizadas para Loading Overlay aprimorado */

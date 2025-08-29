@@ -119,7 +119,7 @@ export function StreamPreview({
             )}
 
             <h4 className={cn(
-              "font-semibold text-sm text-foreground truncate max-w-[120px] transition-colors duration-300",
+              "font-semibold text-base text-foreground truncate max-w-[120px] transition-colors duration-300",
               isHovered && "text-primary"
             )}>
               {streamer.name}

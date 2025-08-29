@@ -153,7 +153,7 @@ export function StreamNavigation({
               )}
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">{selectedStreamer.name}</span>
+                  <span className="font-semibold text-base">{selectedStreamer.name}</span>
                   {selectedStreamer.isOnline && (
                     <Badge variant="outline" className="text-xs px-2 py-0 bg-green-500/10 text-green-500 border-green-500/20">
                       LIVE
