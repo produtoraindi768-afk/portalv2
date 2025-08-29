@@ -36,7 +36,7 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-80 bg-black/20 backdrop-blur-sm",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[110] bg-black/20 backdrop-blur-sm",
         className
       )}
       {...props}
@@ -58,7 +58,7 @@ function SheetContent({
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-80 flex flex-col gap-4 shadow-2xl transition-all ease-out data-[state=closed]:duration-200 data-[state=open]:duration-400",
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-[110] flex flex-col gap-4 shadow-2xl transition-all ease-out data-[state=closed]:duration-200 data-[state=open]:duration-400",
           side === "right" &&
             "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-full border-l",
           side === "left" &&

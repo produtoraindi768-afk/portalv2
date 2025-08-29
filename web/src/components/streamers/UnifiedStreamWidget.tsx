@@ -508,11 +508,12 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                   </div>
                 </AspectRatio>
 
-                {/* Controles do Player - Estilo YouTube otimizado */}
-                <div className="flex items-center justify-between mt-4 px-4">
-                  {/* Info do Streamer com Avatar - Lado Esquerdo */}
+                {/* Barra de Controles Estilo YouTube */}
+                <div className="flex items-center justify-between mt-4 px-4 py-2">
+                  {/* 👤 Seção Esquerda - Info do Streamer */}
                   {selectedStreamer && (
                     <div className="flex items-center gap-3">
+                      {/* Avatar com indicador de status */}
                       <div className="relative">
                         {selectedStreamer.avatarUrl ? (
                           <img
@@ -527,20 +528,27 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                             </span>
                           </div>
                         )}
+                        {/* Indicador verde para ao vivo */}
                         {getStreamerLiveStatus(selectedStreamer) && (
-                          <div className="absolute -bottom-0.5 -right-0.5 z-10 w-2.5 h-2.5 bg-chart-2 rounded-full border border-background"></div>
+                          <div className="absolute -bottom-0.5 -right-0.5 z-10 w-2.5 h-2.5 bg-green-500 rounded-full border border-background"></div>
                         )}
                       </div>
+                      
+                      {/* Layout em coluna para informações empilhadas */}
                       <div className="flex flex-col">
-                        <span className="font-medium text-foreground text-sm leading-tight">{selectedStreamer.name}</span>
-                        <span className="text-xs text-muted-foreground font-light">Ao vivo</span>
+                        <span className="font-medium text-foreground text-sm leading-tight">
+                          {selectedStreamer.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-light">
+                          Ao vivo
+                        </span>
                       </div>
                     </div>
                   )}
 
-                  {/* Controles - Lado Direito */}
+                  {/* 🎮 Seção Direita - Controles */}
                   <div className="flex items-center gap-3">
-                    {/* Navegação de Streams */}
+                    {/* Navegação: Setas prev/next agrupadas */}
                     <div className="flex items-center gap-2">
                       <RippleButton
                         onClick={prevStream}
@@ -563,7 +571,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                       </RippleButton>
                     </div>
 
-                    {/* Controle de Fullscreen */}
+                    {/* Fullscreen: Botão separado para destaque */}
                     <RippleButton
                       onClick={handleFullscreen}
                       variant="ghost"
