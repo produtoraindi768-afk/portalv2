@@ -9,6 +9,7 @@ import { HeaderHeightProvider } from "@/contexts/HeaderHeightContext"
 import { Toaster } from "@/components/ui/toaster"
 import { Inter } from "next/font/google"
 import ClientProviders from "@/components/providers/ClientProviders"
+import Script from "next/script"
 import type { Metadata } from "next"
 
 const inter = Inter({
@@ -68,6 +69,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" sizes="180x180" href="/faviconsz.png" />
       </head>
       <body className="min-h-svh flex flex-col">
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4101364659538880"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <PermissionsProvider suppressWarnings={true}>
           <HeaderHeightProvider>
             <MiniplPlayerProvider>
