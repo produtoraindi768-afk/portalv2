@@ -48,14 +48,14 @@ export function StreamersSideLayout({
             <AppleStreamerInfo
               streamer={leftStreamer}
               position="center"
-              className="transform transition-all duration-500 ease-out hover:scale-105 scale-75"
+              className="transform transition-all duration-500 ease-out scale-75"
             />
           )}
           {rightStreamer && (
             <AppleStreamerInfo
               streamer={rightStreamer}
               position="center"
-              className="transform transition-all duration-500 ease-out hover:scale-105 scale-75"
+              className="transform transition-all duration-500 ease-out scale-75"
             />
           )}
         </div>

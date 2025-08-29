@@ -59,7 +59,7 @@ export function AppleStreamerInfo({ streamer, className, position = 'center' }: 
       // Apple-style glass morphism
       "bg-background/80 backdrop-blur-xl border border-border/20 rounded-2xl",
       // Apple-style shadow and hover effects  
-      "shadow-lg hover:shadow-xl transition-all duration-500 ease-out hover:scale-105",
+      "shadow-lg hover:shadow-xl transition-all duration-500 ease-out",
       // Layout
       "px-6 py-4",
       className

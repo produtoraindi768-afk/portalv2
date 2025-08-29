@@ -46,7 +46,7 @@ export function StreamNavigation({
               "w-10 h-10 sm:w-12 sm:h-12",
               isTransitioning 
                 ? "bg-background/40 cursor-not-allowed opacity-50 scale-90" 
-                : "bg-background/80 hover:bg-background hover:scale-110 active:scale-95 hover:border-primary/50"
+                : "bg-background/80 hover:bg-background active:scale-95 hover:border-primary/50"
             )}
           >
             <ChevronLeft className={cn(
@@ -75,7 +75,7 @@ export function StreamNavigation({
               "w-10 h-10 sm:w-12 sm:h-12",
               isTransitioning 
                 ? "bg-background/40 cursor-not-allowed opacity-50 scale-90" 
-                : "bg-background/80 hover:bg-background hover:scale-110 active:scale-95 hover:border-primary/50"
+                : "bg-background/80 hover:bg-background active:scale-95 hover:border-primary/50"
             )}
           >
             <ChevronRight className={cn(

@@ -447,7 +447,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
           ref={widgetRef}
           className={cn(
             "relative w-full max-w-6xl mx-auto",
-            "bg-background/85 backdrop-blur-[24px] border border-border/30 rounded-3xl overflow-visible",
+            "bg-background/85 backdrop-blur-[24px] border border-border/30 rounded-3xl overflow-hidden",
             "shadow-2xl shadow-black/10",
             "transition-all duration-700 ease-out",
             "apple-glass", // Classe Apple conforme especificação
@@ -509,7 +509,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                 </AspectRatio>
 
                 {/* Barra de Controles Estilo YouTube */}
-                <div className="flex items-center justify-between mt-4 px-4 py-2">
+                <div className="flex items-center justify-between mt-4 px-4 py-2 overflow-hidden">
                   {/* 👤 Seção Esquerda - Info do Streamer */}
                   {selectedStreamer && (
                     <div className="flex items-center gap-3">
@@ -555,7 +555,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                         disabled={streamers.length <= 1}
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-9 p-0 rounded-full bg-background/80 backdrop-blur-[16px] border border-border/30 transition-all duration-300 hover:scale-110 hover:bg-background hover:shadow-lg apple-hover"
+                        className="h-9 w-9 p-0 rounded-full bg-background/80 backdrop-blur-[16px] border border-border/30 transition-all duration-300 hover:bg-background hover:shadow-lg apple-hover"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </RippleButton>
@@ -565,7 +565,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                         disabled={streamers.length <= 1}
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-9 p-0 rounded-full bg-background/80 backdrop-blur-[16px] border border-border/30 transition-all duration-300 hover:scale-110 hover:bg-background hover:shadow-lg apple-hover"
+                        className="h-9 w-9 p-0 rounded-full bg-background/80 backdrop-blur-[16px] border border-border/30 transition-all duration-300 hover:bg-background hover:shadow-lg apple-hover"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </RippleButton>
@@ -576,7 +576,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                       onClick={handleFullscreen}
                       variant="ghost"
                       size="sm"
-                      className="h-9 w-9 p-0 rounded-full bg-background/80 backdrop-blur-[16px] border border-border/30 transition-all duration-300 hover:scale-110 hover:bg-background hover:shadow-lg apple-hover"
+                      className="h-9 w-9 p-0 rounded-full bg-background/80 backdrop-blur-[16px] border border-border/30 transition-all duration-300 hover:bg-background hover:shadow-lg apple-hover"
                     >
                       <Maximize2 className="w-4 h-4" />
                     </RippleButton>
@@ -586,9 +586,9 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
             </div>
 
             {/* Lista de Streamers - Responsivo */}
-            <div className="w-full lg:w-[20%] lg:border-l border-t lg:border-t-0 border-border/20 bg-gradient-to-b from-muted/5 via-muted/10 to-muted/20 backdrop-blur-[8px] flex flex-col relative rounded-b-xl lg:rounded-b-none lg:rounded-r-xl overflow-hidden max-h-[300px] lg:max-h-[600px] order-2">
+            <div className="w-full lg:w-[20%] lg:border-l border-t lg:border-t-0 border-border/20 bg-gradient-to-b from-muted/5 via-muted/10 to-muted/20 backdrop-blur-[8px] flex flex-col relative rounded-b-xl lg:rounded-b-none lg:rounded-r-xl overflow-hidden max-h-[300px] lg:max-h-[600px] order-2 min-w-0">
               {/* Scroll container customizado para mobile com drag */}
-              <div className="lg:hidden">
+              <div className="lg:hidden relative overflow-hidden">
                 <div className="p-3 border-b border-border/20 bg-background/40 backdrop-blur-[8px]">
                   <div className="flex items-center justify-between">
                     <Typography variant="body-sm" className="font-medium text-muted-foreground">
@@ -603,9 +603,10 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                 <div 
                   ref={scrollContainerRef}
                   className={cn(
-                    "overflow-x-auto overflow-y-visible",
+                    "overflow-x-auto overflow-y-hidden relative",
                     "cursor-grab active:cursor-grabbing",
                     "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+                    "mx-0 contain-layout",
                     isDragging && "select-none"
                   )}
                   onMouseDown={handleMouseDown}
@@ -616,14 +617,14 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 >
-                  <div className="flex gap-2 p-2 pt-1 pb-3">
+                  <div className="flex gap-2 px-2 py-1 min-w-max">
                     {streamers.map((streamer, index) => (
                       <div key={streamer.id} className="relative group flex-shrink-0">
                         <button
                           onClick={() => !isDragging && goToStream(streamer.id)}
                           className={cn(
-                            "w-[120px] text-left p-1.5 rounded-lg border transition-all duration-500 ease-out",
-                            "hover:bg-muted/60 hover:translate-y-[-3px] hover:shadow-lg apple-hover",
+                            "max-w-[120px] min-w-[100px] text-left p-1.5 rounded-lg border transition-all duration-500 ease-out",
+                            "hover:bg-muted/60 hover:shadow-lg apple-hover",
                             selectedStreamerId === streamer.id
                               ? "bg-primary/15 border-primary/30 shadow-md backdrop-blur-[8px]"
                               : "bg-background/60 border-border/20 hover:border-border/40 backdrop-blur-[8px]"
@@ -661,11 +662,14 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                       </div>
                     ))}
                   </div>
+                  
+                  {/* Gradiente inferior para mobile - apenas na sidebar */}
+                  <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-background/90 to-transparent z-10 pointer-events-none rounded-b-xl overflow-hidden" />
                 </div>
               </div>
 
               {/* Layout desktop com ScrollArea corrigido */}
-              <div className="hidden lg:flex lg:flex-col lg:h-full">
+              <div className="hidden lg:flex lg:flex-col lg:h-full relative">
                 <div className="p-3 border-b border-border/20 bg-background/40 backdrop-blur-[8px] lg:rounded-tr-xl flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <Typography variant="body-sm" className="font-medium text-muted-foreground">
@@ -677,8 +681,8 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-hidden">
-                  <ScrollArea className="h-full max-h-[520px]">
+                <div className="flex-1 overflow-hidden relative">
+                  <ScrollArea className="h-full max-h-[520px] overflow-hidden">
                     <div className="p-2 space-y-1">
                       {streamers.map((streamer, index) => (
                         <div key={streamer.id} className="relative group">
@@ -686,7 +690,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                             onClick={() => goToStream(streamer.id)}
                             className={cn(
                               "w-full text-left p-3 rounded-xl border transition-all duration-500 ease-out",
-                              "hover:bg-muted/60 hover:translate-y-[-2px] hover:shadow-lg apple-hover",
+                              "hover:bg-muted/60 hover:shadow-lg apple-hover",
                               selectedStreamerId === streamer.id
                                 ? "bg-primary/15 border-primary/30 shadow-md backdrop-blur-[8px]"
                                 : "bg-background/60 border-border/20 hover:border-border/40 backdrop-blur-[8px]"
@@ -725,11 +729,11 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                       ))}
                     </div>
                   </ScrollArea>
+                  
+                  {/* Gradiente inferior para suavizar - apenas na sidebar */}
+                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/90 to-transparent z-10 pointer-events-none lg:rounded-br-xl overflow-hidden" />
                 </div>
               </div>
-
-              {/* Gradiente inferior para suavizar - com bordas arredondadas */}
-              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/90 to-transparent z-10 pointer-events-none rounded-b-xl lg:rounded-b-none lg:rounded-br-xl" />
             </div>
           </div>
         </div>
