@@ -110,12 +110,12 @@ export default function AppleHeroSection() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" fullWidth>
-      <PageWrapper maxWidth="standard" paddingY="compact">
+      <PageWrapper maxWidth="standard" paddingY="compact" paddingX="none" className="px-2 sm:px-3 md:px-4 lg:px-6">
         {/* Hero Container com layout responsivo */}
         <div className="relative z-10 py-2 sm:py-3 lg:py-4">
           {/* Layout Mobile: Card único unificado (< md) */}
-          <div className="block md:hidden">
-            <div className="relative flex max-w-sm mx-auto flex-col overflow-hidden rounded-2xl bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-500 ease-out">
+          <div className="block md:hidden px-2 sm:px-3 md:px-4 lg:px-6">
+            <div className="relative flex w-full flex-col overflow-hidden rounded-2xl bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-500 ease-out">
               {/* Imagem no topo do card */}
               <div className="relative m-0 overflow-hidden text-foreground bg-transparent rounded-none shadow-none bg-clip-border">
                 <Link
@@ -157,8 +157,8 @@ export default function AppleHeroSection() {
                 
                 {/* Title */}
                 <Typography 
-                  variant="h4" 
-                  className="block font-sans text-base antialiased font-medium leading-snug tracking-normal text-foreground mb-2"
+                  variant="h2" 
+                  className="block font-sans text-lg antialiased font-semibold leading-snug tracking-normal text-foreground mb-2"
                   maxWidth="none"
                 >
                   <Link
@@ -193,8 +193,8 @@ export default function AppleHeroSection() {
                 {/* Title - Apple-inspired refined typography */}
                 <div className="space-y-2 mt-1">
                   <Typography 
-                    variant="hero" 
-                    className="text-balance font-medium tracking-tight leading-[1.2] text-xl md:text-2xl lg:text-3xl xl:text-4xl"
+                    variant="h1" 
+                    className="text-balance font-semibold tracking-tight leading-[1.2] text-xl md:text-2xl lg:text-3xl xl:text-4xl"
                     maxWidth="none"
                   >
                     <Link

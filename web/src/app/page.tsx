@@ -32,7 +32,7 @@ export default function Home() {
         {/* Unified Stream Widget - SEGUNDA SEÇÃO - streams em destaque */}
         <section id="streams">
           <SectionWrapper spacing="normal" background="transparent">
-            <PageWrapper maxWidth="wide" paddingY="compact" paddingX="normal" className="px-1 sm:px-3 md:px-4 lg:px-6">
+            <PageWrapper maxWidth="wide" paddingY="compact" paddingX="none" className="px-2 sm:px-3 md:px-4 lg:px-6">
               <UnifiedStreamWidget />
             </PageWrapper>
           </SectionWrapper>
@@ -49,7 +49,7 @@ export default function Home() {
         
         {/* News Section - TERCEIRA SEÇÃO - espaçamento compacto */}
         <SectionWrapper spacing="compact" background="transparent">
-          <PageWrapper maxWidth="wide" paddingY="normal">
+          <PageWrapper maxWidth="wide" paddingY="normal" paddingX="none" className="px-2 sm:px-3 md:px-4 lg:px-6">
             <NewsSection limit={6} showHeader={false} hideDescriptions={true} />
           </PageWrapper>
         </SectionWrapper>

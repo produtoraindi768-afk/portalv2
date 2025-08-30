@@ -103,13 +103,13 @@ export function HeaderFeaturedMatchesTab() {
         
         {/* Progressive Blur nas bordas laterais */}
         <ProgressiveBlurHorizontal 
-          className="absolute top-0 left-0 bottom-0 z-20 pointer-events-none" 
+          className="absolute top-0 left-0 bottom-0 z-[70] pointer-events-none" 
           position="left" 
           width="60px md:120px"
           blurLevels={[12, 8, 6, 4, 2, 0]}
         />
         <ProgressiveBlurHorizontal 
-          className="absolute top-0 right-0 bottom-0 z-20 pointer-events-none" 
+          className="absolute top-0 right-0 bottom-0 z-[70] pointer-events-none" 
           position="right" 
           width="60px md:120px"
           blurLevels={[0, 2, 4, 6, 8, 12]}
