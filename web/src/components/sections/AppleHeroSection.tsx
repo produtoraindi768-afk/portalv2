@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { SectionWrapper, PageWrapper, ContentWrapper } from "@/components/layout"
 import { Typography } from "@/components/ui/typography"
+import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react"
 import { formatNewsTitle } from '@/lib/text-utils'
 
 
@@ -156,7 +158,7 @@ export default function AppleHeroSection() {
                 {/* Title */}
                 <Typography 
                   variant="h4" 
-                  className="block font-sans text-lg antialiased font-medium leading-snug tracking-normal text-foreground mb-2"
+                  className="block font-sans text-base antialiased font-medium leading-snug tracking-normal text-foreground mb-2"
                   maxWidth="none"
                 >
                   <Link
@@ -192,7 +194,7 @@ export default function AppleHeroSection() {
                 <div className="space-y-2 mt-1">
                   <Typography 
                     variant="hero" 
-                    className="text-balance font-medium tracking-tight leading-[1.2] text-2xl md:text-3xl lg:text-4xl xl:text-5xl"
+                    className="text-balance font-medium tracking-tight leading-[1.2] text-xl md:text-2xl lg:text-3xl xl:text-4xl"
                     maxWidth="none"
                   >
                     <Link
@@ -211,48 +213,61 @@ export default function AppleHeroSection() {
 
                 {/* Description/Excerpt - Added for desktop version */}
                 {featured.excerpt && (
-                  <div className="mt-3">
+                  <div className="mt-0 space-y-3">
                     <Typography 
                       variant="body" 
-                      className="text-balance text-muted-foreground leading-relaxed max-w-md"
+                      className="text-sm sm:text-base text-balance text-muted-foreground leading-relaxed max-w-md line-clamp-4"
                       maxWidth="none"
                     >
                       {featured.excerpt}
                     </Typography>
+                    
+                    {/* Read More Button */}
+                    <Button 
+                      variant="link" 
+                      size="sm"
+                      className="h-auto p-0 pl-0 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors justify-start"
+                      asChild
+                    >
+                      <Link href={featured.slug ? `/noticias/${featured.slug}` : `#`} className="flex items-center">
+                        Leia Mais
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                      </Link>
+                    </Button>
                   </div>
                 )}
 
               </ContentWrapper>
               
               {/* Image Column - Apple-inspired presentation */}
-              <div className="order-1 md:order-2">
+              <div className="order-1 md:order-2 w-full">
                 <Link
                   href={featured.slug ? `/noticias/${featured.slug}` : `#`}
                   aria-label={featured.title}
                   className="group block transition-all duration-500 ease-out"
                 >
                   {featured.featuredImage ? (
-                    <div className="relative overflow-hidden rounded-3xl shadow-2xl group-hover:shadow-3xl transition-all duration-500 ease-out">
+                    <div className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl group-hover:shadow-3xl transition-all duration-500 ease-out">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <AspectRatio ratio={16 / 9}>
+                      <div className="aspect-[4/3] sm:aspect-[3/2] md:aspect-[16/10] lg:aspect-[16/9] xl:aspect-[5/3]">
                         <img
                           className="w-full h-full object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
                           src={featured.featuredImage}
                           alt={featured.title || "Capa da notícia"}
                         />
-                      </AspectRatio>
+                      </div>
                       
                       {/* Apple-style subtle overlay on hover */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     </div>
                   ) : (
-                    <AspectRatio ratio={16 / 9}>
-                      <div className="w-full h-full rounded-3xl border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center shadow-lg">
+                    <div className="aspect-[4/3] sm:aspect-[3/2] md:aspect-[16/10] lg:aspect-[16/9] xl:aspect-[5/3]">
+                      <div className="w-full h-full rounded-2xl md:rounded-3xl border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center shadow-lg">
                         <Typography variant="muted" className="font-medium">
                           Sem imagem
                         </Typography>
                       </div>
-                    </AspectRatio>
+                    </div>
                   )}
                 </Link>
               </div>

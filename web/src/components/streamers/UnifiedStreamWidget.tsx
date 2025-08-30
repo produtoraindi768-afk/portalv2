@@ -624,7 +624,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                                   "max-w-[110px] min-w-[90px] text-left p-2 rounded-lg border transition-all duration-500 ease-out",
                                   "hover:bg-muted/60 hover:shadow-lg apple-hover",
                                   selectedStreamerId === streamer.id
-                                    ? "bg-primary/15 border-primary/30 shadow-md backdrop-blur-[8px]"
+                                    ? "lg:bg-primary/15 lg:border-primary/30 bg-muted/60 border-border/40 shadow-lg backdrop-blur-[8px] scale-[1.02]"
                                     : "bg-background/60 border-border/20 hover:border-border/40 backdrop-blur-[8px]"
                                 )}
                               >
@@ -691,28 +691,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                       ))}
                     </div>
                   </div>
-                  
-                  {/* Progressive Blur laterais para suavizar o corte - Mobile */}
-                  <ProgressiveBlur 
-                    className="left-0 top-0 bottom-0 w-8" 
-                    position="both" 
-                    height="100%"
-                    blurLevels={[0.5, 1, 2, 4, 8]}
-                  />
-                  <ProgressiveBlur 
-                    className="right-0 top-0 bottom-0 w-8 rotate-180" 
-                    position="both" 
-                    height="100%"
-                    blurLevels={[0.5, 1, 2, 4, 8]}
-                  />
-                  
-                  {/* Progressive Blur inferior para mobile */}
-                  <ProgressiveBlur 
-                    className="bottom-0 left-0 right-0 rounded-b-xl" 
-                    position="bottom" 
-                    height="16px"
-                    blurLevels={[0.5, 1, 2, 4, 8, 16]}
-                  />
+
                 </div>
               </div>
 
