@@ -5,7 +5,7 @@ import { SectionWrapper, PageWrapper } from "@/components/layout"
 import { StarsBackground } from "@/components/animate-ui/backgrounds/stars"
 import AppleHeroSection from "@/components/sections/AppleHeroSection"
 import { NewsSection } from "@/components/sections/NewsSection"
-import { StreamersSection } from "@/components/sections/StreamersSectionImproved"
+import { UnifiedStreamWidget } from "@/components/streamers/UnifiedStreamWidget"
 
 export default function Home() {
   return (
@@ -15,13 +15,9 @@ export default function Home() {
       speed={60}
       factor={0.03}
     >
-        {/* Streamers Section - PRIMEIRA SEÇÃO - espaçamento mínimo do header */}
-        <section id="streams" className="pt-3 sm:pt-4 md:pt-6">
-          <SectionWrapper spacing="normal" background="transparent">
-          <PageWrapper maxWidth="wide" paddingY="compact" paddingX="normal" className="px-1 sm:px-3 md:px-4 lg:px-6">
-            <StreamersSection />
-          </PageWrapper>
-        </SectionWrapper>
+        {/* Hero Section - PRIMEIRA SEÇÃO - notícias em destaque */}
+        <section id="hero" className="pt-3 sm:pt-4 md:pt-6">
+          <AppleHeroSection />
         </section>
         
         {/* Separator Apple-style - espaçamento sutil */}
@@ -33,16 +29,20 @@ export default function Home() {
           </PageWrapper>
         </div>
         
-        {/* Hero Section - SEGUNDA SEÇÃO - agora são as notícias em destaque */}
-        <section id="hero">
-          <AppleHeroSection />
+        {/* Unified Stream Widget - SEGUNDA SEÇÃO - streams em destaque */}
+        <section id="streams">
+          <SectionWrapper spacing="normal" background="transparent">
+            <PageWrapper maxWidth="wide" paddingY="compact" paddingX="normal" className="px-1 sm:px-3 md:px-4 lg:px-6">
+              <UnifiedStreamWidget />
+            </PageWrapper>
+          </SectionWrapper>
         </section>
         
-        {/* Separator entre Hero e News - mais sutil */}
-        <div className="py-2 sm:py-3">
+        {/* Separator Apple-style - espaçamento sutil */}
+        <div className="py-3 sm:py-4">
           <PageWrapper maxWidth="wide" paddingY="none">
             <div className="flex justify-center">
-              <Separator className="bg-gradient-to-r from-transparent via-border/15 to-transparent max-w-sm" />
+              <Separator className="bg-gradient-to-r from-transparent via-border/20 to-transparent max-w-xs" />
             </div>
           </PageWrapper>
         </div>
