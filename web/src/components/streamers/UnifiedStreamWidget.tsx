@@ -500,10 +500,10 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                             <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse z-0" />
                             <Play className="relative w-16 h-16 text-primary/80 mx-auto z-10" />
                           </div>
-                          <Typography variant="h4" className="text-foreground font-light tracking-tight">
+                          <Typography variant="h4" className="text-foreground font-medium tracking-tight">
                             Stream indisponível
                           </Typography>
-                          <Typography variant="body" className="text-muted-foreground font-light">
+                          <Typography variant="body" className="text-muted-foreground font-medium">
                             Aguardando conexão...
                           </Typography>
                         </div>
@@ -533,7 +533,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                           {selectedStreamer.name}
                         </span>
                         {getStreamerLiveStatus(selectedStreamer) && (
-                          <span className="text-xs text-muted-foreground font-light">
+                          <span className="text-xs text-muted-foreground font-medium">
                             Ao vivo
                           </span>
                         )}
@@ -758,7 +758,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                                   
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-1">
-                                      <span className="font-light text-base truncate tracking-tight">
+                                      <span className="font-medium text-base truncate tracking-tight">
                                         {streamer.name}
                                       </span>
                                     </div>

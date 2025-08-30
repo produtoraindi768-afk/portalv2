@@ -93,7 +93,7 @@ export default function AppleHeroSection() {
       <SectionWrapper spacing="none" fullWidth>
         <PageWrapper maxWidth="standard" paddingY="hero">
           <div className="text-center py-12 lg:py-16">
-            <Typography variant="muted" className="font-light">
+            <Typography variant="muted" className="font-medium">
               {missingConfig
                 ? "Firebase não configurado. Defina as variáveis .env e adicione documentos em /news."
                 : errorMsg
@@ -130,7 +130,7 @@ export default function AppleHeroSection() {
                       />
                     ) : (
                       <div className="w-full h-full border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center">
-                        <Typography variant="muted" className="font-light">
+                        <Typography variant="muted" className="font-medium">
                           Sem imagem
                         </Typography>
                       </div>
@@ -146,7 +146,7 @@ export default function AppleHeroSection() {
                   <div className="flex justify-start mb-2">
                     <Badge 
                       variant="secondary"
-                      className="rounded-full font-light tracking-wide text-xs"
+                      className="rounded-full font-medium tracking-wide text-xs"
                     >
                       {featured.category}
                     </Badge>
@@ -156,7 +156,7 @@ export default function AppleHeroSection() {
                 {/* Title */}
                 <Typography 
                   variant="h4" 
-                  className="block font-sans text-lg antialiased font-normal leading-snug tracking-normal text-foreground mb-2"
+                  className="block font-sans text-lg antialiased font-medium leading-snug tracking-normal text-foreground mb-2"
                   maxWidth="none"
                 >
                   <Link
@@ -181,7 +181,7 @@ export default function AppleHeroSection() {
                   <div className="flex justify-start">
                     <Badge 
                       variant="secondary"
-                      className="rounded-full font-light tracking-wide"
+                      className="rounded-full font-medium tracking-wide"
                     >
                       {featured.category}
                     </Badge>
@@ -192,7 +192,7 @@ export default function AppleHeroSection() {
                 <div className="space-y-2 mt-1">
                   <Typography 
                     variant="hero" 
-                    className="text-balance font-light tracking-tight leading-[1.2] text-2xl md:text-3xl lg:text-4xl xl:text-5xl"
+                    className="text-balance font-medium tracking-tight leading-[1.2] text-2xl md:text-3xl lg:text-4xl xl:text-5xl"
                     maxWidth="none"
                   >
                     <Link
@@ -248,7 +248,7 @@ export default function AppleHeroSection() {
                   ) : (
                     <AspectRatio ratio={16 / 9}>
                       <div className="w-full h-full rounded-3xl border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center shadow-lg">
-                        <Typography variant="muted" className="font-light">
+                        <Typography variant="muted" className="font-medium">
                           Sem imagem
                         </Typography>
                       </div>

@@ -79,7 +79,7 @@ function StreamerCard({
                 className="object-cover"
               />
               <AvatarFallback className={cn(
-                "font-light text-foreground/80 bg-gradient-to-br from-muted/80 to-muted/60",
+                "font-medium text-foreground/80 bg-gradient-to-br from-muted/80 to-muted/60",
                 isSelected ? "text-base" : "text-sm"
               )}>
                 {streamer.name?.charAt(0).toUpperCase() || 'S'}
@@ -107,7 +107,7 @@ function StreamerCard({
         {/* Nome do streamer com tipografia Apple */}
         <div className="text-center space-y-1">
           <h3 className={cn(
-            "font-light tracking-tight transition-all duration-300 text-sm leading-tight",
+            "font-medium tracking-tight transition-all duration-300 text-sm leading-tight",
             "text-foreground/90 group-hover:text-primary",
             isSelected && "text-primary font-medium"
           )}>
@@ -160,10 +160,10 @@ function MainTwitchPlayer({ channel }: { channel: string | null }) {
               <Play className="relative w-20 h-20 text-primary/80 mx-auto" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-light tracking-tight text-foreground">
+              <h3 className="text-xl font-medium tracking-tight text-foreground">
                 Selecione um streamer
               </h3>
-              <p className="text-muted-foreground font-light text-sm">
+              <p className="text-muted-foreground font-medium text-sm">
                 Escolha um card abaixo para assistir à stream
               </p>
             </div>
@@ -282,10 +282,10 @@ export function StaticStreamersSection() {
               <Users className="relative w-24 h-24 text-muted-foreground/60 mx-auto" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-2xl font-light tracking-tight text-foreground">
+              <h3 className="text-2xl font-medium tracking-tight text-foreground">
                 Nenhum streamer online
               </h3>
-              <p className="text-muted-foreground font-light leading-relaxed">
+              <p className="text-muted-foreground font-medium leading-relaxed">
                 Não há streamers disponíveis no momento. Volte mais tarde para assistir às melhores streams da comunidade.
               </p>
             </div>
@@ -336,7 +336,7 @@ export function StaticStreamersSection() {
                         <div className="w-8 h-8 rounded-full bg-muted/20 mx-auto flex items-center justify-center">
                           <Users className="w-4 h-4 text-muted-foreground/40" />
                         </div>
-                        <div className="text-xs text-muted-foreground/50 font-light">
+                        <div className="text-xs text-muted-foreground/50 font-medium">
                           Slot {streamers.length + index + 1}
                         </div>
                       </div>
@@ -364,7 +364,7 @@ export function StaticStreamersSection() {
                     alt={selectedStreamer.name}
                     className="object-cover"
                   />
-                  <AvatarFallback className="text-xl font-light bg-gradient-to-br from-primary/20 to-primary/10">
+                  <AvatarFallback className="text-xl font-medium bg-gradient-to-br from-primary/20 to-primary/10">
                     {selectedStreamer.name?.charAt(0).toUpperCase() || 'S'}
                   </AvatarFallback>
                 </Avatar>
@@ -373,7 +373,7 @@ export function StaticStreamersSection() {
             
             {/* Nome com tipografia Apple premium */}
             <div className="space-y-3">
-              <h2 className="text-2xl font-light tracking-tight text-foreground">
+              <h2 className="text-2xl font-medium tracking-tight text-foreground">
                 {selectedStreamer.name}
               </h2>
               
@@ -387,7 +387,7 @@ export function StaticStreamersSection() {
             {selectedStreamer.isOnline && (
               <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-300">
                 <Dot className="w-4 h-4 text-green-500 animate-pulse mr-1" />
-                <span className="font-light">Transmitindo ao vivo</span>
+                <span className="font-medium">Transmitindo ao vivo</span>
               </Badge>
             )}
           </CardContent>

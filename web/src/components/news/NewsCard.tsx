@@ -121,7 +121,7 @@ export function NewsCard({
             </AspectRatio>
             {isNew && (
               <div className="absolute top-1 left-1">
-                <Badge variant="destructive" className="text-[9px] px-1.5 py-0.5 h-auto font-light shadow-sm">
+                <Badge variant="destructive" className="text-[9px] px-1.5 py-0.5 h-auto font-medium shadow-sm">
                   Nova
                 </Badge>
               </div>
@@ -131,7 +131,7 @@ export function NewsCard({
         
         <div className="flex-1 min-w-0">
           <h3 className={cn(
-            "font-normal text-sm group-hover:text-primary transition-colors leading-tight"
+            "font-medium text-sm group-hover:text-primary transition-colors leading-tight"
           )}>
             {formatNewsTitle(article.title, { applyCapitalization: true })}
           </h3>
@@ -276,7 +276,7 @@ export function NewsCard({
             </Badge>
           )}
           
-          <h4 className="text-lg font-normal leading-tight text-card-foreground hover:text-primary transition-colors duration-300 mb-3 min-h-[4.5rem]">
+          <h4 className="text-lg font-medium leading-tight text-card-foreground hover:text-primary transition-colors duration-300 mb-3 min-h-[4.5rem]">
             {formatNewsTitle(article.title, { applyCapitalization: true })}
           </h4>
           {!hideDescription && article.excerpt && (

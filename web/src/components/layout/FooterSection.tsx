@@ -18,13 +18,13 @@ export default function FooterSection() {
             </div>
           </div>
           <div>
-            <h3 className="text-base font-normal tracking-tight">Páginas</h3>
+            <h3 className="text-base font-medium tracking-tight">Páginas</h3>
             <div className="mt-6 flex flex-col items-start gap-4">
               {navItems.map((item) => (
                 <Link
                   key={item.title}
                   href={item.href}
-                  className="text-muted-foreground hover:text-foreground text-sm font-light transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
                 >
                   {item.title}
                 </Link>
@@ -32,32 +32,32 @@ export default function FooterSection() {
             </div>
           </div>
           <div>
-            <h3 className="text-base font-normal tracking-tight">Support</h3>
+            <h3 className="text-base font-medium tracking-tight">Support</h3>
             <div className="mt-6 flex flex-col items-start gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-light transition-colors">
+              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 Help center
               </a>
-              <Link href="/terms-of-service" className="text-muted-foreground hover:text-foreground text-sm font-light transition-colors">
+              <Link href="/terms-of-service" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 Termos de Serviço
               </Link>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-light transition-colors">
+              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 Legal
               </a>
-              <Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground text-sm font-light transition-colors">
+              <Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 Política de Privacidade
               </Link>
             </div>
           </div>
           <div>
-            <h3 className="text-base font-normal tracking-tight">Contact</h3>
+            <h3 className="text-base font-medium tracking-tight">Contact</h3>
             <div className="mt-6 flex flex-col items-start gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-light transition-colors">
+              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 contato@site.com
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-light transition-colors">
+              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 + 46 526 220 0459
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-light transition-colors">
+              <a href="#" className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
                 + 46 526 220 0459
               </a>
             </div>

@@ -44,7 +44,7 @@ const layoutClasses = {
 const gapClasses = {
   tight: "gap-3 sm:gap-4",
   normal: "gap-4 sm:gap-6",
-  compact: "gap-3 sm:gap-4",
+  compact: "gap-6",
   loose: "gap-6 sm:gap-8", 
   spacious: "gap-8 sm:gap-12"
 }

@@ -187,14 +187,14 @@ export function NewsSection({
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="text-center py-16 lg:py-24">
-          <Typography variant="h3" className="text-muted-foreground mb-4 font-light">
+          <Typography variant="h3" className="text-muted-foreground mb-4 font-medium">
             {missingConfig
               ? "Firebase não configurado"
               : errorMsg
               ? "Erro ao carregar notícias"
               : "Nenhuma notícia encontrada"}
           </Typography>
-          <Typography variant="muted" className="font-light">
+          <Typography variant="muted" className="font-medium">
             {missingConfig
               ? "Defina as variáveis .env e adicione documentos em /news."
               : errorMsg
@@ -220,7 +220,7 @@ export function NewsSection({
             variant="outline"
             size="lg"
             onClick={() => setVisibleCount(prev => prev + pageSize)}
-            className="group px-8 py-4 text-base font-light rounded-2xl border-border/30 hover:border-primary/50 hover:bg-muted/10 transition-all duration-300 hover:scale-[1.02]"
+            className="group px-8 py-4 text-base font-medium rounded-2xl border-border/30 hover:border-primary/50 hover:bg-muted/10 transition-all duration-300 hover:scale-[1.02]"
           >
             <span className="flex items-center gap-2">
               Carregar mais notícias

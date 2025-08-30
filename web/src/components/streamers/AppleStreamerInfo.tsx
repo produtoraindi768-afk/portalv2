@@ -107,7 +107,7 @@ export function AppleStreamerInfo({ streamer, className, position = 'center' }: 
             {streamer.category && (
               <Badge 
                 variant="secondary" 
-                className="rounded-full px-2 py-1 text-xs font-light tracking-wide bg-muted/40 border-0 hover:bg-primary/10 hover:text-primary transition-colors duration-300"
+                className="rounded-full px-2 py-1 text-xs font-medium tracking-wide bg-muted/40 border-0 hover:bg-primary/10 hover:text-primary transition-colors duration-300"
               >
                 {streamer.category}
               </Badge>
@@ -117,7 +117,7 @@ export function AppleStreamerInfo({ streamer, className, position = 'center' }: 
             {streamer.viewerCount && (
               <div className="flex items-center gap-1 text-muted-foreground">
                 <Eye className="w-3 h-3" />
-                <Typography variant="caption" className="font-light">
+                <Typography variant="caption" className="font-medium">
                   {streamer.viewerCount.toLocaleString()}
                 </Typography>
               </div>
@@ -133,7 +133,7 @@ export function AppleStreamerInfo({ streamer, className, position = 'center' }: 
         {/* Platform indicator */}
         <Typography 
           variant="caption" 
-          className="font-light text-muted-foreground/70 tracking-wide uppercase text-xs"
+          className="font-medium text-muted-foreground/70 tracking-wide uppercase text-xs"
         >
           {streamer.platform === 'twitch' ? 'Twitch' : streamer.platform || 'Plataforma'}
         </Typography>
