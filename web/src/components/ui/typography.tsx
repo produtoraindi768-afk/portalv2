@@ -4,20 +4,20 @@ import { ReactNode } from "react"
 interface TypographyProps {
   children: ReactNode
   /**
-   * Typography variant following a consistent scale
-   * - h1: 3xl/tight font-bold - Main page titles (balanced hierarchy)
-   * - h2: 2xl/tight font-bold - Section headings
-   * - h3: xl/tight font-semibold - Subsection headings
-   * - h4: lg font-semibold - Component headings
-   * - h5: base font-medium - Small headings
-   * - h6: sm font-medium - Smallest headings
-   * - hero: 4xl/tight font-bold - Special hero titles (larger impact)
-   * - body-lg: lg - Large body text
-   * - body: base - Standard body text (default)
-   * - body-sm: sm - Small body text
-   * - caption: xs - Caption/helper text
-   * - lead: lg text-muted-foreground - Lead paragraphs
-   * - muted: base text-muted-foreground - Muted text
+   * Typography variant following a consistent subtle scale
+   * - h1: 3xl/tight font-medium - Main page titles (subtle hierarchy)
+   * - h2: 2xl/tight font-medium - Section headings
+   * - h3: xl/tight font-normal - Subsection headings
+   * - h4: lg font-normal - Component headings
+   * - h5: base font-normal - Small headings
+   * - h6: sm font-normal - Smallest headings
+   * - hero: 4xl/tight font-light - Special hero titles (elegant impact)
+   * - body-lg: lg font-light - Large body text
+   * - body: base font-light - Standard body text (default)
+   * - body-sm: sm font-light - Small body text
+   * - caption: xs font-light - Caption/helper text
+   * - lead: lg font-light text-muted-foreground - Lead paragraphs
+   * - muted: base font-light text-muted-foreground - Muted text
    */
   variant?: 
     | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "hero"
@@ -39,19 +39,19 @@ interface TypographyProps {
 }
 
 const variantStyles = {
-  h1: "text-2xl/tight font-bold tracking-tight sm:text-3xl/tight md:text-4xl/tight",
-  h2: "text-xl/tight font-bold tracking-tight sm:text-2xl/tight md:text-3xl/tight", 
-  h3: "text-lg/tight font-semibold tracking-tight sm:text-xl/tight md:text-2xl/tight",
-  h4: "text-base font-semibold tracking-tight sm:text-lg md:text-xl",
-  h5: "text-sm font-medium tracking-tight sm:text-base md:text-lg",
-  h6: "text-xs font-medium tracking-tight sm:text-sm md:text-base",
-  hero: "text-3xl/tight font-bold tracking-tight sm:text-4xl/tight md:text-5xl/tight",
-  "body-lg": "text-base leading-relaxed sm:text-lg",
-  body: "text-sm leading-relaxed sm:text-base",
-  "body-sm": "text-xs leading-relaxed sm:text-sm", 
-  caption: "text-xs leading-normal text-muted-foreground",
-  lead: "text-base leading-relaxed text-muted-foreground sm:text-lg md:text-xl/relaxed",
-  muted: "text-sm leading-relaxed text-muted-foreground sm:text-base"
+  h1: "text-2xl/tight font-medium tracking-tight sm:text-3xl/tight md:text-4xl/tight",
+  h2: "text-xl/tight font-medium tracking-tight sm:text-2xl/tight md:text-3xl/tight", 
+  h3: "text-lg/tight font-normal tracking-tight sm:text-xl/tight md:text-2xl/tight",
+  h4: "text-base font-normal tracking-tight sm:text-lg md:text-xl",
+  h5: "text-sm font-normal tracking-tight sm:text-base md:text-lg",
+  h6: "text-xs font-normal tracking-tight sm:text-sm md:text-base",
+  hero: "text-3xl/tight font-light tracking-tight sm:text-4xl/tight md:text-5xl/tight",
+  "body-lg": "text-base leading-relaxed font-light sm:text-lg",
+  body: "text-sm leading-relaxed font-light sm:text-base",
+  "body-sm": "text-xs leading-relaxed font-light sm:text-sm", 
+  caption: "text-xs leading-normal text-muted-foreground font-light",
+  lead: "text-base leading-relaxed text-muted-foreground font-light sm:text-lg md:text-xl/relaxed",
+  muted: "text-sm leading-relaxed text-muted-foreground font-light sm:text-base"
 }
 
 const defaultTags = {

@@ -218,8 +218,25 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
 }
-
 
 @layer base {
   * {
@@ -259,7 +276,7 @@
       opacity: 0.6;
     }
   }
-  
+
   @keyframes shimmer {
     0% {
       transform: translateX(-100%) skewX(-12deg);
@@ -274,7 +291,7 @@
       opacity: 0;
     }
   }
-  
+
   @keyframes floating {
     0%, 100% {
       transform: translateY(0px) scale(1);
@@ -283,7 +300,7 @@
       transform: translateY(-10px) scale(1.05);
     }
   }
-  
+
   @keyframes pulse-soft {
     0%, 100% {
       opacity: 0.8;
@@ -294,19 +311,19 @@
       transform: scale(1.02);
     }
   }
-  
+
   .animate-loading-progress {
     animation: loading-progress 2s ease-in-out infinite;
   }
-  
+
   .animate-shimmer {
     animation: shimmer 3s ease-in-out infinite;
   }
-  
+
   .animate-floating {
     animation: floating 3s ease-in-out infinite;
   }
-  
+
   @keyframes transition-box-enter {
     0% {
       transform: scale(0.3) rotate(-10deg);
@@ -321,7 +338,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes transition-box-exit {
     0% {
       transform: scale(1) rotate(0deg);
@@ -332,15 +349,15 @@
       opacity: 0;
     }
   }
-  
+
   .animate-transition-box-enter {
     animation: transition-box-enter 0.4s ease-out forwards;
   }
-  
+
   .animate-transition-box-exit {
     animation: transition-box-exit 0.3s ease-in forwards;
   }
-  
+
   /* Apple-inspired animations */
   @keyframes slideInLeft {
     0% {
@@ -352,7 +369,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes fadeInUp {
     0% {
       transform: translateY(20px);
@@ -363,7 +380,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes scaleIn {
     0% {
       transform: scale(0.9);
@@ -374,7 +391,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes float {
     0%, 100% {
       transform: translateY(0px);
@@ -383,7 +400,7 @@
       transform: translateY(-6px);
     }
   }
-  
+
   @keyframes breathe {
     0%, 100% {
       transform: scale(1);
@@ -394,7 +411,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes gentle-bounce {
     0%, 100% {
       transform: translateY(0);
@@ -403,41 +420,41 @@
       transform: translateY(-2px);
     }
   }
-  
+
   .animate-slide-in-left {
     animation: slideInLeft 0.8s ease-out forwards;
   }
-  
+
   .animate-fade-in-up {
     animation: fadeInUp 0.6s ease-out forwards;
   }
-  
+
   .animate-scale-in {
     animation: scaleIn 0.5s ease-out forwards;
   }
-  
+
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
-  
+
   .animate-breathe {
     animation: breathe 4s ease-in-out infinite;
   }
-  
+
   .animate-gentle-bounce {
     animation: gentle-bounce 2s ease-in-out infinite;
   }
-  
+
   /* Apple-style hover effects */
   .apple-hover {
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
-  
+
   .apple-hover:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
-  
+
   /* Apple-style glass morphism */
   .apple-glass {
     background: rgba(255, 255, 255, 0.1);
@@ -445,20 +462,29 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
-  
+
   .dark .apple-glass {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
   /* Apple-style focus states */
   .apple-focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
   }
-  
+
   .apple-focus:focus-visible {
     outline: 2px solid hsl(var(--primary));
     outline-offset: 2px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

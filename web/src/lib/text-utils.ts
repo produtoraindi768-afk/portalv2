@@ -89,13 +89,45 @@ export function truncateText(
  * @param variant - News card variant
  * @returns Formatted excerpt
  */
-export function formatNewsExcerpt(excerpt: string | undefined, variant: NewsVariant): string {
+/**
+ * Formats news excerpt with intelligent text processing
+ * @param excerpt - The excerpt text
+ * @param options - Formatting options
+ * @returns Formatted excerpt
+ */
+export function formatNewsExcerpt(
+  excerpt: string | undefined, 
+  options: {
+    variant?: NewsVariant
+    maxLength?: number
+    applyCapitalization?: boolean
+  } = {}
+): string {
   if (!excerpt) return 'Sem descrição disponível'
   
-  const cleaned = excerpt.trim()
-  const maxLength = TEXT_LIMITS.news[variant]
+  const {
+    variant = 'default',
+    maxLength,
+    applyCapitalization = false // Usually excerpts should preserve original formatting
+  } = options
   
-  return truncateText(cleaned, maxLength, {
+  let processed = excerpt.trim()
+  
+  // Apply intelligent formatting if enabled
+  if (applyCapitalization) {
+    processed = formatTextContent(processed, {
+      applyCapitalization: true,
+      normalizeSpacing: true
+    })
+  } else {
+    // Just normalize spacing
+    processed = normalizeSpacing(processed)
+  }
+  
+  // Use provided maxLength or variant-based limit
+  const lengthLimit = maxLength || TEXT_LIMITS.news[variant]
+  
+  return truncateText(processed, lengthLimit, {
     preferSentenceEnd: true,
     preserveWords: true
   })
@@ -108,12 +140,63 @@ export function formatNewsExcerpt(excerpt: string | undefined, variant: NewsVari
  * @returns Formatted title
  */
 /**
+ * Detects if text contains emojis
+ * @param text - Text to check
+ * @returns True if text contains emojis
+ */
+function hasEmojis(text: string): boolean {
+  const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u
+  return emojiRegex.test(text)
+}
+
+/**
+ * Detects if text is mostly uppercase (more than 70% uppercase letters)
+ * @param text - Text to check
+ * @returns True if text is mostly uppercase
+ */
+function isMostlyUppercase(text: string): boolean {
+  const letters = text.replace(/[^a-zA-ZÀ-ÿ]/g, '')
+  if (letters.length === 0) return false
+  
+  const uppercaseCount = (text.match(/[A-ZÀ-Ÿ]/g) || []).length
+  return uppercaseCount / letters.length > 0.7
+}
+
+/**
+ * Normalizes excessive spacing and punctuation
+ * @param text - Text to normalize
+ * @returns Normalized text
+ */
+function normalizeSpacing(text: string): string {
+  return text
+    // Remove excessive spaces
+    .replace(/\s+/g, ' ')
+    // Remove excessive punctuation
+    .replace(/[!]{2,}/g, '!')
+    .replace(/[?]{2,}/g, '?')
+    .replace(/[.]{3,}/g, '...')
+    // Normalize quotes
+    .replace(/[""]/g, '"')
+    .replace(/['']/g, "'")
+    .trim()
+}
+
+/**
  * Applies intelligent capitalization to text
- * Capitalizes important words while keeping articles, prepositions, and conjunctions lowercase
+ * Handles uppercase text, emojis, and proper capitalization rules
  * @param text - Text to capitalize
  * @returns Text with intelligent capitalization
  */
 function applyIntelligentCapitalization(text: string): string {
+  // First normalize spacing and punctuation
+  let normalizedText = normalizeSpacing(text)
+  
+  // If text has emojis, preserve them and be more careful with capitalization
+  const containsEmojis = hasEmojis(normalizedText)
+  
+  // If text is mostly uppercase, convert to proper case
+  const isUppercase = isMostlyUppercase(normalizedText)
+  
   // Words that should remain lowercase (except when first word)
   const lowercaseWords = new Set([
     // Articles
@@ -122,43 +205,181 @@ function applyIntelligentCapitalization(text: string): string {
     'at', 'by', 'for', 'in', 'of', 'on', 'to', 'up', 'and', 'as', 'but', 'or', 'nor',
     'de', 'da', 'do', 'das', 'dos', 'em', 'na', 'no', 'nas', 'nos', 'para', 'por', 'com', 'sem',
     // Conjunctions
-    'e', 'ou', 'mas', 'que', 'se', 'como', 'quando', 'onde', 'porque', 'porquê'
+    'e', 'ou', 'mas', 'que', 'se', 'como', 'quando', 'onde', 'porque', 'porquê',
+    // Common gaming terms that should stay lowercase
+    'vs', 'x', 'vs.'
   ])
 
-  return text
-    .toLowerCase()
-    .split(' ')
+  // Very small words that should remain lowercase when isolated or in the middle
+  const verySmallWords = new Set([
+    'é', 'à', 'ao', 'ou', 'e', 'o', 'a', 'os', 'as', 'do', 'da', 'de', 'em', 'no', 'na', 'se', 'me', 'te', 'lhe', 'nos', 'vos', 'lhes'
+  ])
+  
+  // Gaming and tech terms that should maintain specific capitalization
+  const specialTerms = new Map([
+    ['fortnite', 'Fortnite'],
+    ['epic games', 'Epic Games'],
+    ['battle royale', 'Battle Royale'],
+    ['fps', 'FPS'],
+    ['moba', 'MOBA'],
+    ['mmorpg', 'MMORPG'],
+    ['rpg', 'RPG'],
+    ['rts', 'RTS'],
+    ['pc', 'PC'],
+    ['ps4', 'PS4'],
+    ['ps5', 'PS5'],
+    ['xbox', 'Xbox'],
+    ['nintendo', 'Nintendo'],
+    ['steam', 'Steam'],
+    ['twitch', 'Twitch'],
+    ['youtube', 'YouTube'],
+    ['discord', 'Discord']
+  ])
+
+  // If text is mostly uppercase, convert to lowercase first
+  if (isUppercase) {
+    normalizedText = normalizedText.toLowerCase()
+  }
+
+  const words = normalizedText.split(' ')
+  
+  // If it's just one very small word, keep it lowercase
+  if (words.length === 1) {
+    const cleanWord = words[0].replace(/[^a-záàâãéêíóôõúç]/gi, '').toLowerCase()
+    if (verySmallWords.has(cleanWord)) {
+      return normalizedText
+    }
+  }
+
+  return words
     .map((word, index) => {
-      // Always capitalize first word
+      // Preserve emojis
+      if (containsEmojis && hasEmojis(word)) {
+        return word
+      }
+      
+      const lowerWord = word.toLowerCase()
+      
+      // Check for special gaming/tech terms
+      for (const [term, proper] of specialTerms) {
+        if (lowerWord.includes(term)) {
+          return word.replace(new RegExp(term, 'gi'), proper)
+        }
+      }
+      
+      const cleanWord = word.replace(/[^a-záàâãéêíóôõúç]/gi, '').toLowerCase()
+      
+      // First word handling - ALWAYS capitalize the first word
       if (index === 0) {
-        return word.charAt(0).toUpperCase() + word.slice(1)
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
       }
       
       // Check if word should remain lowercase
-      const cleanWord = word.replace(/[^a-záàâãéêíóôõúç]/gi, '').toLowerCase()
-      if (lowercaseWords.has(cleanWord)) {
+      if (lowercaseWords.has(cleanWord) || verySmallWords.has(cleanWord)) {
         return word.toLowerCase()
       }
       
       // Capitalize other words
-      return word.charAt(0).toUpperCase() + word.slice(1)
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
     })
     .join(' ')
 }
 
-export function formatNewsTitle(title: string | undefined, variant: NewsVariant): string {
+/**
+ * Formats news title with intelligent text processing
+ * Handles uppercase text, emojis, and applies proper capitalization
+ * @param title - The title text
+ * @param options - Formatting options
+ * @returns Formatted title
+ */
+export function formatNewsTitle(
+  title: string | undefined, 
+  options: {
+    variant?: NewsVariant
+    preserveEmojis?: boolean
+    maxLength?: number
+    applyCapitalization?: boolean
+  } = {}
+): string {
   if (!title) return 'Sem título'
   
-  const cleaned = title.trim()
-  const maxLength = TEXT_LIMITS.titles[variant]
+  const {
+    variant = 'default',
+    preserveEmojis = true,
+    maxLength,
+    applyCapitalization = true
+  } = options
   
-  const truncated = truncateText(cleaned, maxLength, {
-    preferSentenceEnd: false,
-    preserveWords: true
-  })
+  let cleaned = title.trim()
   
-  // Apply intelligent capitalization
-  return applyIntelligentCapitalization(truncated)
+  // Apply intelligent capitalization if enabled
+  if (applyCapitalization) {
+    cleaned = applyIntelligentCapitalization(cleaned)
+  }
+  
+  // Use provided maxLength or variant-based limit
+  const lengthLimit = maxLength || TEXT_LIMITS.titles[variant]
+  
+  // Don't truncate if no length limit specified
+  if (!maxLength && variant) {
+    return cleaned
+  }
+  
+  if (lengthLimit && cleaned.length > lengthLimit) {
+    return truncateText(cleaned, lengthLimit, {
+      preferSentenceEnd: false,
+      preserveWords: true
+    })
+  }
+  
+  return cleaned
+}
+
+/**
+ * Formats any text content with intelligent processing
+ * @param text - Text to format
+ * @param options - Formatting options
+ * @returns Formatted text
+ */
+export function formatTextContent(
+  text: string | undefined,
+  options: {
+    maxLength?: number
+    applyCapitalization?: boolean
+    preserveEmojis?: boolean
+    normalizeSpacing?: boolean
+  } = {}
+): string {
+  if (!text) return ''
+  
+  const {
+    maxLength,
+    applyCapitalization = true,
+    preserveEmojis = true,
+    normalizeSpacing = true
+  } = options
+  
+  let processed = text.trim()
+  
+  // Normalize spacing if enabled
+  if (normalizeSpacing) {
+    processed = normalizeSpacing(processed)
+  }
+  
+  // Apply intelligent capitalization if enabled
+  if (applyCapitalization) {
+    processed = applyIntelligentCapitalization(processed)
+  }
+  
+  // Truncate if maxLength specified
+  if (maxLength && processed.length > maxLength) {
+    return truncateText(processed, maxLength, {
+      preferSentenceEnd: true,
+      preserveWords: true
+    })
+  }
+  
+  return processed
 }
 
 /**

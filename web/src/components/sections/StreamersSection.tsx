@@ -236,7 +236,7 @@ function PersistentTwitchPlayer({
               
               {/* Texto simples */}
               <div className="text-center">
-                <div className="text-sm font-medium text-foreground/80 animate-pulse">
+                <div className="text-sm font-light text-foreground/80 animate-pulse">
                   Carregando player...
                 </div>
               </div>

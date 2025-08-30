@@ -4,11 +4,12 @@ import { useEffect, useState } from "react"
 import { collection, getDocs, query, where, Timestamp } from "firebase/firestore"
 import { getClientFirestore } from "@/lib/safeFirestore"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { SectionWrapper, PageWrapper, ContentWrapper, Typography } from "@/components/layout"
-import { formatNewsTitle } from "@/lib/text-utils"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { SectionWrapper, PageWrapper, ContentWrapper } from "@/components/layout"
+import { Typography } from "@/components/ui/typography"
+import { formatNewsTitle } from '@/lib/text-utils'
+
 
 type NewsDoc = {
   id: string
@@ -107,112 +108,156 @@ export default function AppleHeroSection() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" fullWidth>
-      <PageWrapper maxWidth="standard" paddingY="normal">
-        {/* Hero Container com espaçamento Apple otimizado */}
-        <div className="relative z-10 py-4 sm:py-6 lg:py-8">
-          <ContentWrapper layout="grid-2" gap="normal" align="center" className="lg:gap-12">
-            {/* Content Column - Apple-inspired typography and spacing */}
-            <ContentWrapper layout="stack" gap="normal" className="order-2 sm:order-1 text-left">
-              {/* Category Badge - Apple minimal style aligned with theme variables */}
-              {featured.category && (
-                <div className="flex justify-start">
-                  <Badge 
-                    variant="secondary"
-                    className="rounded-full font-light tracking-wide"
-                  >
-                    {featured.category}
-                  </Badge>
-                </div>
-              )}
-
-              {/* Title - Apple-inspired refined typography */}
-              <div className="space-y-4">
+      <PageWrapper maxWidth="standard" paddingY="compact">
+        {/* Hero Container com layout responsivo */}
+        <div className="relative z-10 py-2 sm:py-3 lg:py-4">
+          {/* Layout Mobile: Card único unificado (< md) */}
+          <div className="block md:hidden">
+            <div className="relative flex max-w-sm mx-auto flex-col overflow-hidden rounded-2xl bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-500 ease-out">
+              {/* Imagem no topo do card */}
+              <div className="relative m-0 overflow-hidden text-foreground bg-transparent rounded-none shadow-none bg-clip-border">
+                <Link
+                  href={featured.slug ? `/noticias/${featured.slug}` : `#`}
+                  aria-label={featured.title}
+                  className="group block"
+                >
+                  <AspectRatio ratio={16 / 9}>
+                    {featured.featuredImage ? (
+                      <img
+                        className="w-full h-full object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
+                        src={featured.featuredImage}
+                        alt={featured.title || "Capa da notícia"}
+                      />
+                    ) : (
+                      <div className="w-full h-full border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center">
+                        <Typography variant="muted" className="font-light">
+                          Sem imagem
+                        </Typography>
+                      </div>
+                    )}
+                  </AspectRatio>
+                </Link>
+              </div>
+              
+              {/* Conteúdo do card */}
+              <div className="p-4">
+                {/* Category Badge */}
+                {featured.category && (
+                  <div className="flex justify-start mb-2">
+                    <Badge 
+                      variant="secondary"
+                      className="rounded-full font-light tracking-wide text-xs"
+                    >
+                      {featured.category}
+                    </Badge>
+                  </div>
+                )}
+                
+                {/* Title */}
                 <Typography 
-                  variant="hero" 
-                  className="text-balance font-light tracking-tight leading-[1.15] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl"
+                  variant="h4" 
+                  className="block font-sans text-lg antialiased font-normal leading-snug tracking-normal text-foreground mb-2"
                   maxWidth="none"
                 >
                   <Link
                     href={featured.slug ? `/noticias/${featured.slug}` : `#`}
-                    className="group inline-block transition-all duration-500 ease-out hover:text-primary"
+                    className="hover:text-primary transition-colors duration-300"
                   >
-                    <span className="block transform transition-transform duration-500 ease-out group-hover:translate-y-[-2px]">
-                      {formatNewsTitle(featured.title, 'featured')}
-                    </span>
-                    
-                    {/* Apple-style underline animation */}
-                    <div className="h-px bg-gradient-to-r from-primary/0 via-primary/60 to-primary/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out mt-2" />
+                    {formatNewsTitle(featured.title, { applyCapitalization: true })}
                   </Link>
                 </Typography>
+                
+              </div>
+            </div>
+          </div>
 
-                {/* Excerpt - Apple elegant body text */}
-                <Typography 
-                  variant="body-lg" 
-                  className="text-balance font-light leading-relaxed text-muted-foreground max-w-xl text-base lg:text-lg line-clamp-3"
-                  maxWidth="none"
-                >
-                  {featured.excerpt}
-                </Typography>
-              </div>
-              
-              {/* Apple-style minimal separator */}
-              <div className="flex justify-start py-2">
-                <Separator className="bg-gradient-to-r from-border/20 via-border/60 to-border/20 max-w-16" />
-              </div>
-              
-              {/* CTA Button - Apple refined style */}
-              <div className="flex justify-start">
-                <Button 
-                  size="lg" 
-                  asChild
-                  className="group px-8 py-4 text-base font-medium rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-[1.02] transition-all duration-300 ease-out shadow-lg hover:shadow-xl"
-                >
-                  <Link href={featured.slug ? `/noticias/${featured.slug}` : `#`}>
-                    <span className="flex items-center gap-2">
-                      Ler notícia
-                      <svg 
-                        className="size-4 transform transition-transform duration-300 group-hover:translate-x-1" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </span>
-                  </Link>
-                </Button>
-              </div>
-            </ContentWrapper>
-            
-            {/* Image Column - Apple-inspired presentation */}
-            <div className="order-1 sm:order-2">
-              <Link
-                href={featured.slug ? `/noticias/${featured.slug}` : `#`}
-                aria-label={featured.title}
-                className="group block transition-all duration-500 ease-out"
-              >
-                {featured.featuredImage ? (
-                  <div className="relative overflow-hidden rounded-3xl shadow-2xl group-hover:shadow-3xl transition-all duration-500 ease-out">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      className="aspect-[4/3] lg:aspect-[5/4] w-full object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
-                      src={featured.featuredImage}
-                      alt={featured.title || "Capa da notícia"}
-                    />
-                    
-                    {/* Apple-style subtle overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          {/* Layout Desktop: Grid 2 colunas (≥ md) */}
+          <div className="hidden md:block">
+            <ContentWrapper layout="grid-2" gap="normal" align="center" className="lg:gap-8">
+              {/* Content Column - Apple-inspired typography and spacing */}
+              <ContentWrapper layout="stack" gap="compact" className="order-2 md:order-1 text-left">
+                {/* Category Badge - Apple minimal style aligned with theme variables */}
+                {featured.category && (
+                  <div className="flex justify-start">
+                    <Badge 
+                      variant="secondary"
+                      className="rounded-full font-light tracking-wide"
+                    >
+                      {featured.category}
+                    </Badge>
                   </div>
-                ) : (
-                  <div className="aspect-[4/3] lg:aspect-[5/4] rounded-3xl border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center shadow-lg">
-                    <Typography variant="muted" className="font-light">
-                      Sem imagem
+                )}
+
+                {/* Title - Apple-inspired refined typography */}
+                <div className="space-y-2 mt-1">
+                  <Typography 
+                    variant="hero" 
+                    className="text-balance font-light tracking-tight leading-[1.2] text-2xl md:text-3xl lg:text-4xl xl:text-5xl"
+                    maxWidth="none"
+                  >
+                    <Link
+                      href={featured.slug ? `/noticias/${featured.slug}` : `#`}
+                      className="group inline-block transition-all duration-500 ease-out hover:text-primary"
+                    >
+                      <span className="block transform transition-transform duration-500 ease-out group-hover:translate-y-[-2px]">
+                        {formatNewsTitle(featured.title, { applyCapitalization: true })}
+                      </span>
+                      
+                      {/* Apple-style underline animation */}
+                      <div className="h-px bg-gradient-to-r from-primary/0 via-primary/60 to-primary/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out mt-2" />
+                    </Link>
+                  </Typography>
+                </div>
+
+                {/* Description/Excerpt - Added for desktop version */}
+                {featured.excerpt && (
+                  <div className="mt-3">
+                    <Typography 
+                      variant="body" 
+                      className="text-balance text-muted-foreground leading-relaxed max-w-md"
+                      maxWidth="none"
+                    >
+                      {featured.excerpt}
                     </Typography>
                   </div>
                 )}
-              </Link>
-            </div>
-          </ContentWrapper>
+
+              </ContentWrapper>
+              
+              {/* Image Column - Apple-inspired presentation */}
+              <div className="order-1 md:order-2">
+                <Link
+                  href={featured.slug ? `/noticias/${featured.slug}` : `#`}
+                  aria-label={featured.title}
+                  className="group block transition-all duration-500 ease-out"
+                >
+                  {featured.featuredImage ? (
+                    <div className="relative overflow-hidden rounded-3xl shadow-2xl group-hover:shadow-3xl transition-all duration-500 ease-out">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <AspectRatio ratio={16 / 9}>
+                        <img
+                          className="w-full h-full object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
+                          src={featured.featuredImage}
+                          alt={featured.title || "Capa da notícia"}
+                        />
+                      </AspectRatio>
+                      
+                      {/* Apple-style subtle overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    </div>
+                  ) : (
+                    <AspectRatio ratio={16 / 9}>
+                      <div className="w-full h-full rounded-3xl border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center shadow-lg">
+                        <Typography variant="muted" className="font-light">
+                          Sem imagem
+                        </Typography>
+                      </div>
+                    </AspectRatio>
+                  )}
+                </Link>
+              </div>
+            </ContentWrapper>
+          </div>
         </div>
       </PageWrapper>
     </SectionWrapper>

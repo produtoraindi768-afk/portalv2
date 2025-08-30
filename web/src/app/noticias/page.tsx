@@ -17,6 +17,7 @@ export default function NoticiasPage() {
         limit={undefined} // Mostrar todas as notícias
         showHeader={false} // Header já está no PageLayout
         excludeFeaturedFromList={false} // Incluir notícia em destaque na lista
+        hideDescriptions={true} // Ocultar descrições dos cards
       />
     </PageLayout>
   )

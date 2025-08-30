@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { ArrowRight, Share2 } from "lucide-react"
+import { formatNewsTitle } from '@/lib/text-utils'
 
 export interface NewsHeroProps {
   title: string
@@ -38,7 +39,7 @@ export default function NewsHero({
               ))}
             </div>
             <h1 className="mt-4 text-2xl/tight font-bold tracking-tight text-balance sm:text-3xl/tight lg:text-4xl/tight">
-              {title}
+              {formatNewsTitle(title, { applyCapitalization: true })}
             </h1>
             {excerpt ? (
               <p className="text-muted-foreground mx-auto mt-4 max-w-lg text-base/7 text-balance sm:text-lg/8">

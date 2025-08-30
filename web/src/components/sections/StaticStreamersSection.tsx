@@ -313,7 +313,7 @@ export function StaticStreamersSection() {
       {/* Cards dos streamers com ScrollArea otimizado */}
       <div className="w-full px-6"> {/* Padding lateral conforme especificação */}
         <ScrollArea className="w-full">
-          <div className="flex gap-6 pb-6"> {/* Gap maior para respiração */}
+          <div className="flex gap-6 pb-12"> {/* Gap maior para respiração com padding inferior generoso */}
             {streamers.map((streamer, index) => (
               <div key={streamer.id} className="flex-shrink-0 apple-hover"> {/* Classe Apple conforme especificação */}
                 <div className="w-20 sm:w-24 md:w-28"> {/* Tamanhos muito menores para cards compactos */}

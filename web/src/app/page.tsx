@@ -18,10 +18,10 @@ export default function Home() {
         {/* Streamers Section - PRIMEIRA SEÇÃO - espaçamento mínimo do header */}
         <section id="streams" className="pt-3 sm:pt-4 md:pt-6">
           <SectionWrapper spacing="normal" background="transparent">
-            <PageWrapper maxWidth="wide" paddingY="normal">
-              <StreamersSection />
-            </PageWrapper>
-          </SectionWrapper>
+          <PageWrapper maxWidth="wide" paddingY="compact" paddingX="normal" className="px-1 sm:px-3 md:px-4 lg:px-6">
+            <StreamersSection />
+          </PageWrapper>
+        </SectionWrapper>
         </section>
         
         {/* Separator Apple-style - espaçamento sutil */}
@@ -50,7 +50,7 @@ export default function Home() {
         {/* News Section - TERCEIRA SEÇÃO - espaçamento compacto */}
         <SectionWrapper spacing="compact" background="transparent">
           <PageWrapper maxWidth="wide" paddingY="normal">
-            <NewsSection limit={6} showHeader={false} />
+            <NewsSection limit={6} showHeader={false} hideDescriptions={true} />
           </PageWrapper>
         </SectionWrapper>
         

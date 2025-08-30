@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { Calendar, Clock, Eye, ArrowRight, Bookmark, Share2 } from 'lucide-react'
 import { formatDateToBrazilian } from '@/lib/date-utils'
-import { formatNewsTitle, formatNewsExcerpt, type NewsVariant } from '@/lib/text-utils'
+import { formatNewsExcerpt, formatNewsTitle, type NewsVariant } from '@/lib/text-utils'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
@@ -31,13 +32,15 @@ export interface NewsCardProps {
   priority?: boolean
   variant?: NewsVariant
   className?: string
+  hideDescription?: boolean // Nova prop para ocultar a descrição
 }
 
 export function NewsCard({ 
   article, 
   priority = false, 
   variant = 'default',
-  className 
+  className,
+  hideDescription = false
 }: NewsCardProps) {
   const publishDate = article.publishDate ? new Date(article.publishDate) : null
   const isRecent = publishDate && (Date.now() - publishDate.getTime()) < 24 * 60 * 60 * 1000 // 24 hours
@@ -55,19 +58,19 @@ export function NewsCard({
     }
   }
 
-  const getCategoryColor = (category?: string) => {
-    if (!category) return 'bg-muted/50 text-muted-foreground'
+  const getCategoryVariant = (category?: string): "default" | "secondary" | "destructive" | "outline" => {
+    if (!category) return 'secondary'
     
-    const colorMap: Record<string, string> = {
-      'esports': 'bg-destructive/10 text-destructive border-destructive/20',
-      'streamers': 'bg-primary/10 text-primary border-primary/20',
-      'torneios': 'bg-primary/10 text-primary border-primary/20',
-      'noticias': 'bg-secondary/10 text-secondary-foreground border-secondary/20',
-      'updates': 'bg-accent/10 text-accent-foreground border-accent/20',
-      'analises': 'bg-muted/10 text-muted-foreground border-muted/20'
+    const variantMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      'esports': 'destructive',
+      'streamers': 'default',
+      'torneios': 'default',
+      'noticias': 'secondary',
+      'updates': 'outline',
+      'analises': 'secondary'
     }
     
-    return colorMap[category.toLowerCase()] || 'bg-primary/10 text-primary border-primary/20'
+    return variantMap[category.toLowerCase()] || 'default'
   }
 
   // More generous line clamps for better content display
@@ -108,15 +111,17 @@ export function NewsCard({
         )}
       >
         {article.featuredImage && (
-          <div className="relative w-36 h-20 flex-shrink-0">
-            <img
-              src={article.featuredImage}
-              alt={article.title || 'Imagem da notícia'}
-              className="w-full h-full rounded object-cover"
-            />
+          <div className="relative w-36 flex-shrink-0">
+            <AspectRatio ratio={16 / 9}>
+              <img
+                src={article.featuredImage}
+                alt={article.title || 'Imagem da notícia'}
+                className="w-full h-full rounded object-cover"
+              />
+            </AspectRatio>
             {isNew && (
               <div className="absolute top-1 left-1">
-                <Badge variant="destructive" className="text-[9px] px-1.5 py-0.5 h-auto font-medium shadow-sm">
+                <Badge variant="destructive" className="text-[9px] px-1.5 py-0.5 h-auto font-light shadow-sm">
                   Nova
                 </Badge>
               </div>
@@ -126,10 +131,9 @@ export function NewsCard({
         
         <div className="flex-1 min-w-0">
           <h3 className={cn(
-            "font-semibold text-sm group-hover:text-primary transition-colors leading-tight",
-            lineClamps.title
+            "font-normal text-sm group-hover:text-primary transition-colors leading-tight"
           )}>
-            {formatNewsTitle(article.title, variant)}
+            {formatNewsTitle(article.title, { applyCapitalization: true })}
           </h3>
         </div>
       </Link>
@@ -142,24 +146,28 @@ export function NewsCard({
         "group overflow-hidden transition-all duration-300 cursor-pointer border-border/50 bg-card",
         "hover:shadow-xl hover:border-primary/20 hover:-translate-y-1",
         "ring-2 ring-primary/20 shadow-lg shadow-primary/10",
-        "h-[480px] sm:h-[520px] md:h-[560px] grid grid-rows-[auto_1fr_auto] gap-0 p-0", // Added p-0 to remove all padding
+        hideDescription 
+          ? "h-[380px] sm:h-[420px] md:h-[460px] grid grid-rows-[auto_1fr_auto] gap-0 p-0"
+          : "h-[480px] sm:h-[520px] md:h-[560px] grid grid-rows-[auto_1fr_auto] gap-0 p-0", // Added p-0 to remove all padding
         className
       )}>
         <Link href={article.slug ? `/noticias/${article.slug}` : '#'} className="grid grid-rows-subgrid row-span-3 h-full">
           {/* Featured header with image */}
-          <div className="relative h-44 sm:h-48 md:h-52 overflow-hidden flex-shrink-0 rounded-t-lg -m-px">
-            {article.featuredImage ? (
-              <>
-                <img 
-                  src={article.featuredImage} 
-                  alt={article.title || 'Featured news'}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-              </>
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary/80 via-primary/60 to-purple-600/80" />
-            )}
+          <div className="relative overflow-hidden flex-shrink-0 rounded-t-lg -m-px">
+            <AspectRatio ratio={16 / 9}>
+              {article.featuredImage ? (
+                <>
+                  <img 
+                    src={article.featuredImage} 
+                    alt={article.title || 'Featured news'}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                </>
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary/80 via-primary/60 to-purple-600/80" />
+              )}
+            </AspectRatio>
             
             {/* Featured badge */}
             <div className="absolute top-4 left-4">
@@ -171,7 +179,7 @@ export function NewsCard({
             {/* Category badge */}
             {article.category && (
               <div className="absolute top-4 right-4">
-                <Badge variant="outline" className={cn("text-xs", getCategoryColor(article.category))}>
+                <Badge variant={getCategoryVariant(article.category)} className="text-xs">
                   {article.category}
                 </Badge>
               </div>
@@ -184,158 +192,100 @@ export function NewsCard({
             <div className="flex items-center justify-between text-sm mb-3 flex-shrink-0">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="w-4 h-4" />
-                <span>{publishDate ? formatDateToBrazilian(article.publishDate) : 'Data não informada'}</span>
+                <span>{article.publishDate ? formatDateToBrazilian(article.publishDate) : 'Data não informada'}</span>
               </div>
-              {getTimeAgo() && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Clock className="w-3 h-3" />
-                  <span className="text-xs">{getTimeAgo()}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3 text-muted-foreground">
+                {(() => {
+                  const timeAgo = getTimeAgo()
+                  return timeAgo && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span className="text-xs">{timeAgo}</span>
+                    </div>
+                  )
+                })()}
+                {article.excerpt && (
+                  <div className="text-xs flex-shrink-0">
+                    {Math.max(1, Math.ceil((article.excerpt.length + (article.title?.length || 0)) / 200))} min
+                  </div>
+                )}
+              </div>
             </div>
 
             <Separator className="bg-border/30 mb-4" />
 
             {/* Title with adequate spacing */}
             <h2 className={cn(
-              "font-bold text-xl leading-snug text-foreground group-hover:text-primary transition-colors mb-4 flex-shrink-0",
-              lineClamps.title
+              "font-medium text-xl leading-snug text-foreground group-hover:text-primary transition-colors flex-shrink-0",
+              hideDescription ? "mb-8" : "mb-4"
             )}>
-              {formatNewsTitle(article.title, variant)}
+              {formatNewsTitle(article.title, { applyCapitalization: true })}
             </h2>
             
             {/* Description with natural height - ensure minimum space for footer */}
-            <div className="flex-1 flex items-start mb-4">
-              <p className={cn(
-                "text-muted-foreground leading-relaxed text-base",
-                lineClamps.excerpt
-              )}>
-                {formatNewsExcerpt(article.excerpt, variant)}
-              </p>
-            </div>
-          </div>
-
-          {/* Footer - guaranteed space at bottom */}
-          <div className="p-4 sm:p-5 md:p-6 pt-2 flex-shrink-0 min-h-[56px] sm:min-h-[60px]">
-            <div className="flex items-center justify-between pt-4 border-t border-border/20">
-              <div className="inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all duration-200">
-                Ler notícia completa <ArrowRight className="w-4 h-4" />
+            {!hideDescription && (
+              <div className="flex-1 flex items-start mb-4">
+                <p className={cn(
+                  "text-muted-foreground leading-relaxed text-base",
+                  lineClamps.excerpt
+                )}>
+                  {formatNewsExcerpt(article.excerpt, { variant })}
+                </p>
               </div>
-              
-              {/* Reading time estimate */}
-              {article.excerpt && (
-                <div className="text-xs text-muted-foreground flex-shrink-0">
-                  {Math.max(1, Math.ceil((article.excerpt.length + (article.title?.length || 0)) / 200))} min
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </Link>
       </Card>
     )
   }
 
-  // Default variant with responsive grid layout
+  // Default variant with Material Tailwind structure
   return (
-    <Card className={cn(
-      "group overflow-hidden transition-all duration-200 cursor-pointer border-border/50 bg-card",
-      "hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5",
-      "h-[420px] sm:h-[460px] md:h-[500px] grid grid-rows-[auto_1fr_auto] gap-0 p-0", // Added p-0 to remove all padding
-      isRecent && "ring-1 ring-primary/20",
+    <div className={cn(
+      "relative flex max-w-[24rem] flex-col rounded-md bg-card text-card-foreground shadow-md h-full",
+      "group transition-all duration-500 ease-out cursor-pointer",
+      "hover:shadow-xl hover:-translate-y-1",
       className
     )}>
-      <Link href={article.slug ? `/noticias/${article.slug}` : '#'} className="grid grid-rows-subgrid row-span-3 h-full">
-        {/* Image with optimized height for more text space */}
-        <div className="relative h-40 sm:h-44 md:h-48 overflow-hidden flex-shrink-0 rounded-t-lg -m-px">
-          {article.featuredImage ? (
-            <img 
-              src={article.featuredImage} 
-              alt={article.title || 'News image'}
-              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center">
-              <div className="text-muted-foreground text-center p-4">
-                <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-muted flex items-center justify-center">
-                  <Eye className="w-6 h-6" />
-                </div>
-                <span className="text-sm">Sem imagem</span>
+      <Link href={article.slug ? `/noticias/${article.slug}` : '#'} className="block h-full flex flex-col">
+        {/* Imagem no topo com aspect ratio */}
+        <div className="relative m-0 overflow-hidden rounded-t-md">
+          <AspectRatio ratio={16 / 9}>
+            {article.featuredImage ? (
+              <img
+                className="w-full h-full object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
+                src={article.featuredImage}
+                alt={article.title || "Capa da notícia"}
+              />
+            ) : (
+              <div className="w-full h-full border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center">
+                <span className="text-muted-foreground text-sm">
+                  Sem imagem
+                </span>
               </div>
-            </div>
-          )}
-          
-          {/* New badge */}
-          {isNew && (
-            <div className="absolute top-3 left-3">
-              <Badge variant="destructive" className="text-xs">
-                Nova
-              </Badge>
-            </div>
-          )}
-          
-          {/* Category badge */}
+            )}
+          </AspectRatio>
+        </div>
+        
+        {/* Conteúdo principal */}
+        <div className="p-6 flex-1 flex flex-col">
+          {/* Tag da categoria */}
           {article.category && (
-            <div className="absolute top-3 right-3">
-              <Badge variant="outline" className={cn("text-xs", getCategoryColor(article.category))}>
-                {article.category}
-              </Badge>
-            </div>
+            <Badge variant={getCategoryVariant(article.category)} className="mb-3 text-xs">
+              {article.category}
+            </Badge>
           )}
-        </div>
-
-        {/* Content area with adequate spacing */}
-        <div className="p-3 sm:p-4 md:p-5 flex flex-col min-h-[160px] sm:min-h-[180px]">
-          {/* Metadata */}
-          <div className="flex items-center justify-between mb-3 flex-shrink-0">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="w-4 h-4" />
-              <span>{publishDate ? formatDateToBrazilian(article.publishDate) : 'Data não informada'}</span>
-            </div>
-            {getTimeAgo() && (
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                <span className="text-xs">{getTimeAgo()}</span>
-              </div>
-            )}
-          </div>
-
-          <Separator className="bg-border/30 mb-3" />
-
-          {/* Title with adequate spacing */}
-          <h3 className={cn(
-            "font-bold text-sm sm:text-base md:text-lg leading-snug text-foreground group-hover:text-primary transition-colors mb-3 flex-shrink-0",
-            lineClamps.title
-          )}>
-            {formatNewsTitle(article.title, variant)}
-          </h3>
           
-          {/* Description with natural height - ensure minimum space for footer */}
-          <div className="flex-1 flex items-start mb-3">
-            <p className={cn(
-              "text-sm text-muted-foreground leading-relaxed",
-              lineClamps.excerpt
-            )}>
-              {formatNewsExcerpt(article.excerpt, variant)}
+          <h4 className="text-lg font-normal leading-tight text-card-foreground hover:text-primary transition-colors duration-300 mb-3 min-h-[4.5rem]">
+            {formatNewsTitle(article.title, { applyCapitalization: true })}
+          </h4>
+          {!hideDescription && article.excerpt && (
+            <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">
+              {formatNewsExcerpt(article.excerpt, { variant })}
             </p>
-          </div>
-        </div>
-
-        {/* Footer - guaranteed space at bottom */}
-        <div className="p-3 sm:p-4 md:p-5 pt-2 flex-shrink-0 min-h-[46px] sm:min-h-[50px]">
-          <div className="flex items-center justify-between pt-3 border-t border-border/20">
-            <div className="inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all duration-200">
-              Leia mais <ArrowRight className="w-4 h-4" />
-            </div>
-            
-            {/* Reading time estimate */}
-            {article.excerpt && (
-              <div className="text-xs text-muted-foreground flex-shrink-0">
-                {Math.max(1, Math.ceil((article.excerpt.length + (article.title?.length || 0)) / 200))} min
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </Link>
-    </Card>
+    </div>
   )
 }

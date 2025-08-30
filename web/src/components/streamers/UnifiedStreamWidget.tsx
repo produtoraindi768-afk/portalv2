@@ -20,6 +20,7 @@ import { useStreamerStatus } from '@/hooks/useStreamerStatus'
 import { useAutoPreload } from '@/hooks/usePlayerPreload'
 import { twitchStatusService } from '@/lib/twitch-status'
 import { cn } from '@/lib/utils'
+import { ProgressiveBlur } from '@/components/magicui/progressive-blur'
 import {
   ChevronLeft,
   ChevronRight,
@@ -448,11 +449,13 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
         ref={widgetRef}
         className={cn(
           "relative w-full max-w-6xl mx-auto",
-          "bg-background/85 backdrop-blur-[24px] border border-border/30 rounded-3xl overflow-hidden",
+          "bg-background/85 backdrop-blur-[24px] border border-border/30 overflow-hidden",
           "shadow-2xl shadow-black/10",
           "transition-all duration-700 ease-out",
           "apple-glass", // Classe Apple conforme especificação
           "min-h-0", // Remove altura fixa, deixa o conteúdo definir
+          // Breakpoints específicos para bordas responsivas
+          "rounded-xl sm:rounded-2xl md:rounded-3xl",
           className
         )}
       >
@@ -461,9 +464,9 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
           <div className="flex flex-col lg:flex-row">
             {/* Player Principal - Responsivo */}
             <div className="w-full lg:w-[80%] relative order-1">
-              <div className="px-6 py-4"> {/* Padding otimizado - reduzido padding vertical */}
-                <AspectRatio ratio={16 / 9}>
-                  <div className="relative w-full h-full bg-muted/50 rounded-2xl overflow-hidden border border-border/20">
+              <div className="px-2 py-2 sm:px-3 sm:py-3 md:px-4 md:py-3 lg:px-6 lg:py-4"> {/* Padding ultra-responsivo para maximizar iframe */}
+                <AspectRatio ratio={16 / 9} className="w-full">
+                  <div className="relative w-full h-full bg-muted/50 overflow-hidden border border-border/20 rounded-lg sm:rounded-xl md:rounded-2xl">
                     
                     {/* Loading State */}
                     {(isPlayerLoading || (embedUrl && !isPlayerReady)) && (
@@ -510,7 +513,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                 </AspectRatio>
 
                 {/* Barra de Controles Estilo YouTube */}
-                <div className="flex items-center justify-between mt-4 px-4 py-2 overflow-hidden">
+                <div className="flex items-center justify-between mt-2 sm:mt-3 md:mt-4 px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 overflow-hidden">
                   {/* 👤 Seção Esquerda - Info do Streamer */}
                   {selectedStreamer && (
                     <div className="flex items-center gap-3">
@@ -578,7 +581,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
             </div>
 
             {/* Lista de Streamers - Responsivo */}
-            <div className="w-full lg:w-[25%] lg:border-l border-t lg:border-t-0 border-border/20 backdrop-blur-[8px] flex flex-col relative rounded-b-xl lg:rounded-b-none lg:rounded-r-xl max-h-[300px] lg:max-h-[600px] order-2 min-w-0">
+            <div className="w-full lg:w-[25%] lg:border-l border-t lg:border-t-0 border-border/20 backdrop-blur-[8px] flex flex-col relative rounded-b-xl lg:rounded-b-none lg:rounded-r-xl max-h-[250px] sm:max-h-[280px] md:max-h-[320px] lg:max-h-[600px] order-2 min-w-0">
               {/* Scroll container customizado para mobile com drag */}
               <div className="lg:hidden relative">
                 <div className="px-3 py-2.5 border-b border-border/20 backdrop-blur-[8px]">
@@ -689,12 +692,27 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                     </div>
                   </div>
                   
-                  {/* Gradientes laterais para suavizar o corte - Mobile */}
-                  <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background/95 via-background/60 to-transparent z-10 pointer-events-none" />
-                  <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/95 via-background/60 to-transparent z-10 pointer-events-none" />
+                  {/* Progressive Blur laterais para suavizar o corte - Mobile */}
+                  <ProgressiveBlur 
+                    className="left-0 top-0 bottom-0 w-8" 
+                    position="both" 
+                    height="100%"
+                    blurLevels={[0.5, 1, 2, 4, 8]}
+                  />
+                  <ProgressiveBlur 
+                    className="right-0 top-0 bottom-0 w-8 rotate-180" 
+                    position="both" 
+                    height="100%"
+                    blurLevels={[0.5, 1, 2, 4, 8]}
+                  />
                   
-                  {/* Gradiente inferior para mobile */}
-                  <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-background/90 to-transparent z-10 pointer-events-none rounded-b-xl" />
+                  {/* Progressive Blur inferior para mobile */}
+                  <ProgressiveBlur 
+                    className="bottom-0 left-0 right-0 rounded-b-xl" 
+                    position="bottom" 
+                    height="16px"
+                    blurLevels={[0.5, 1, 2, 4, 8, 16]}
+                  />
                 </div>
               </div>
 
@@ -713,7 +731,7 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
 
                 <div className="flex-1 relative rounded-br-3xl">
                   <ScrollArea className="h-full max-h-[520px] rounded-br-3xl">
-                    <div className="p-4 pr-6 pb-0 space-y-2 rounded-br-3xl">
+                    <div className="p-4 pr-6 pb-8 space-y-2 rounded-br-3xl">
                       {streamers.map((streamer, index) => (
                         <div key={streamer.id} className="relative group">
                           <HoverCard>
@@ -792,8 +810,13 @@ export function UnifiedStreamWidget({ className, autoplay = true }: UnifiedStrea
                     </div>
                   </ScrollArea>
                   
-                  {/* Gradiente para suavizar o corte - Desktop */}
-                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/95 via-background/70 to-transparent z-10 pointer-events-none rounded-br-3xl" />
+                  {/* Progressive Blur para suavizar o corte - Desktop */}
+                  <ProgressiveBlur 
+                    className="bottom-0 left-0 right-0 rounded-br-3xl" 
+                    position="bottom" 
+                    height="64px"
+                    blurLevels={[0.5, 1, 2, 4, 8, 16, 32]}
+                  />
                 </div>
               </div>
             </div>

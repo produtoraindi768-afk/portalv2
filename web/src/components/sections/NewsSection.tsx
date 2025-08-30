@@ -33,6 +33,7 @@ export function NewsSection({
   enablePagination = false,
   pageSize = 9,
   onMeta,
+  hideDescriptions = false,
 }: {
   limit?: number
   showHeader?: boolean
@@ -42,6 +43,7 @@ export function NewsSection({
   enablePagination?: boolean
   pageSize?: number
   onMeta?: (meta: { categories: string[]; tags: string[] }) => void
+  hideDescriptions?: boolean
 }) {
   const [items, setItems] = useState<NewsDoc[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -207,6 +209,7 @@ export function NewsSection({
           showFilters={false}
           showSearch={false}
           showSorting={false}
+          hideDescriptions={hideDescriptions}
         />
       )}
 

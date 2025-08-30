@@ -76,7 +76,7 @@ export default function HomeWithGSAP() {
             </Typography>
           </div>
           
-          <NewsSection limit={3} showHeader={false} />
+          <NewsSection limit={3} showHeader={false} hideDescriptions={true} />
         </PageWrapper>
       </SectionWrapper>
     </StarsBackground>

@@ -37,6 +37,7 @@ export default function NoticiasPage() {
             excludeFeaturedFromList={false} // Incluir notícia em destaque na lista
             enablePagination={true} // Habilitar paginação
             pageSize={12} // Mais artigos por página
+            hideDescriptions={true} // Ocultar descrições dos cards
           />
         </div>
       </section>

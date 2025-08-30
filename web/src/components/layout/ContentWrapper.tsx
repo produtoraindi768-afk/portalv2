@@ -20,7 +20,7 @@ interface ContentWrapperProps {
    * - loose: gap-8 - extra spacing
    * - spacious: gap-12 - maximum spacing
    */
-  gap?: "tight" | "normal" | "loose" | "spacious"
+  gap?: "tight" | "normal" | "compact" | "loose" | "spacious"
   /**
    * Alignment for flex and grid layouts
    */
@@ -44,6 +44,7 @@ const layoutClasses = {
 const gapClasses = {
   tight: "gap-3 sm:gap-4",
   normal: "gap-4 sm:gap-6",
+  compact: "gap-3 sm:gap-4",
   loose: "gap-6 sm:gap-8", 
   spacious: "gap-8 sm:gap-12"
 }

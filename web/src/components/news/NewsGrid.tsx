@@ -31,6 +31,7 @@ interface NewsGridProps {
   pageSize?: number
   showFilters?: boolean
   onFilterChange?: (filters: NewsFilters) => void
+  hideDescriptions?: boolean // Nova prop para ocultar descrições globalmente
 }
 
 export interface NewsFilters {
@@ -45,7 +46,8 @@ export function NewsGrid({
   enablePagination = false, 
   pageSize = 9,
   showFilters = false,
-  onFilterChange
+  onFilterChange,
+  hideDescriptions = false
 }: NewsGridProps) {
   const [visibleCount, setVisibleCount] = useState(enablePagination ? pageSize : articles.length)
   const [filters, setFilters] = useState<NewsFilters>({
@@ -156,7 +158,7 @@ export function NewsGrid({
               <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
               <Typography variant="h3" className="text-base sm:text-lg">Filtros</Typography>
               {hasActiveFilters && (
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                <Badge variant="default">
                   {Object.values(filters).filter(v => v !== 'all' && v !== '' && v !== 'date' && v !== 'desc').length} ativo{Object.values(filters).filter(v => v !== 'all' && v !== '' && v !== 'date' && v !== 'desc').length !== 1 ? 's' : ''}
                 </Badge>
               )}
@@ -310,29 +312,22 @@ export function NewsGrid({
               article={article}
               variant="compact"
               priority={index === 0}
+              hideDescription={hideDescriptions}
             />
           ))}
         </div>
         
         {/* Desktop: Grid layout */}
-        <ContentWrapper layout="grid-3" gap="loose" className="hidden md:grid auto-rows-fr md:gap-spacious">
-          {displayArticles.map((article, index) => {
-            // First article gets featured treatment if marked as featured
-            const isFeaturedDisplay = article.isFeatured
-            
-            return (
-              <div 
-                key={article.id} 
-                className={isFeaturedDisplay ? "col-span-full md:col-span-2" : ""}
-              >
-                <NewsCard 
-                  article={article}
-                  variant={isFeaturedDisplay ? "featured" : "default"}
-                  priority={index === 0}
-                />
-              </div>
-            )
-          })}
+        <ContentWrapper layout="grid-3" gap="compact" className="hidden md:grid" style={{gridAutoRows: '1fr'}}>
+          {displayArticles.map((article, index) => (
+            <NewsCard 
+              key={article.id}
+              article={article}
+              variant="default"
+              priority={index === 0}
+              hideDescription={hideDescriptions}
+            />
+          ))}
         </ContentWrapper>
       </div>
 
